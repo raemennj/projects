@@ -1,7 +1,7 @@
 
 # Captain's Log 📜
 
-Arr, this be the logbook of `[Your Repository Name]`, a haven for me very own website and a treasure trove of web apps soon to grace the World Wide Waters. Keep in mind, every pixel and code snippet within be me own handiwork, and I hold onto me rights tighter than a barnacle on a ship's hull.
+Arr, this be the logbook of Cap'n raemenn, a haven for me very own website and a treasure trove of web apps soon to grace the World Wide Waters. Keep in mind, every pixel and code snippet within be me own handiwork, and I hold onto me rights tighter than a barnacle on a ship's hull.
 
 ## Ship Manifest 🚢
 
@@ -59,5 +59,5 @@ Fair winds and following seas, mateys! May yer code be bug-free and yer ideas as
 
 Yours in bits and bytes,
 
-**Captain [Your Name]**  
-_Caretaker of Code and Captain of Creativity_
+**Cap'n raemenn**  
+
