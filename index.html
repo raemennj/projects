@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .menu-container {
+            max-width: 100%;
+            padding: 20px;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            color: #666;
+        }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .dropbtn {
+            background-color: #e0e0e0;
+            color: #333;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #e0e0e0;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Additional Styles */
+        .prompt-box {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+    <title>Prompt Menu</title>
+</head>
+<body>
+    <div class="menu-container">
+        <h2>Raemenn's Favorite Prompts</h2>
+        <p>Pick your poison</p>
+        
+        <div class="dropdown">
+            <button class="dropbtn">Prompts</button>
+            <div class="dropdown-content">
+                <a href="#" onclick="showPrompt('This Prompt describes the working condition of the litchen and what we generaly like.', 'I\'m an intermediate-level cook, primarily cooking for 2-3 adults and a picky child. I enjoy Mexican and Italian cuisines with a medium to mild spice level. My kitchen is well-equipped with appliances like an air fryer, rice cooker, electric roasting pan, Ninja food processor, crockpots, and a gas oven/stove. I have standard pots, pans, and Pyrex, and I love using ingredients like cheese, milk, butter, olive oil, sour cream, and salsa. I avoid poultry and have no specific dietary restrictions or allergies. I\'m open to both quick and elaborate recipes, focusing on dinner, breakfast, and lunch. While I like to eat healthily, taste is a priority, and I enjoy baking cakes, pies, and apple dumplings. I don\'t have specific preferences for seasonal ingredients, drink pairings, or budget considerations.')">My Kitchen</a>
+                <a href="#" onclick="showPrompt('Mexican Cuisine', 'I love Mexican cuisine and prefer dishes with a medium to mild spice level. I have a well-equipped kitchen with appliances like an air fryer, rice cooker, electric roasting pan, and Ninja food processor. I enjoy using ingredients like cheese, milk, butter, olive oil, sour cream, and salsa. I\'m looking for both quick and elaborate recipes that cater to my family\'s taste preferences.')">4th Step</a>
+                <a href="#" onclick="showPrompt('Italian Delights', 'Italian cuisine is a favorite, and I enjoy dishes with a medium to mild spice level. I have a well-equipped kitchen including an air fryer, rice cooker, and electric roasting pan. I often use ingredients like cheese, milk, butter, olive oil, and sour cream. I\'m looking for dinner, breakfast, and lunch recipes that offer variety and cater to both quick and elaborate cooking preferences.')">Italian Delights</a>
+                <a href="#" onclick="showPrompt('Baking Adventures', 'I love baking cakes, pies, and apple dumplings. I\'m an intermediate-level cook with a well-equipped kitchen, including an oven/stove, air fryer, and Ninja food processor. I enjoy using ingredients like butter, milk, cheese, and olive oil. I\'m open to recipes that are both delicious and visually appealing.')">Baking Adventures</a>
+                <a href="#" onclick="showPrompt('Flavorful Breakfasts', 'I\'m looking for creative breakfast recipes that cater to 2-3 adults and a picky child. I enjoy flavors from Mexican and Italian cuisines with a medium to mild spice level. My kitchen is equipped with appliances like an air fryer, rice cooker, and Ninja food processor. I use ingredients like cheese, milk, butter, and olive oil. I want breakfast recipes that are tasty and nutritious.')">Flavorful Breakfasts</a>
+                <!-- Add more prompts here -->
+            </div>
+        </div>
+        
+        <!-- Add more dropdowns here -->
+
+        <div class="prompt-box" id="prompt-output">
+            <h3>Prompt Text</h3>
+            <p>Select a prompt to see the details here.</p>
+        </div>
+
+        <script>
+            function showPrompt(promptTitle, promptText) {
+                var promptOutput = document.getElementById('prompt-output');
+                promptOutput.innerHTML = `
+                    <h3>${promptTitle}</h3>
+                    <p>${promptText}</p>
+                `;
+            }
+        </script>
+    </div>
+</body>
+</html>
