@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship Heatmap Predictor</title>
+    <style>
+        /* Add any CSS styling here */
+    </style>
+</head>
+<body>
+
+<!-- Add your HTML structure here -->
+
+<script>
+    // Add your JavaScript/jQuery for AJAX calls here
+    function updateHeatmap() {
+        fetch('/update_heatmap', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ /* send any necessary data */ })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Process and display the heatmap data
+        });
+    }
+</script>
+
+{% if running_on_server %}
+    <!-- Server-side Python code embedded -->
+    {% include 'server_code.py' %}
+{% endif %}
+
+</body>
+</html>
