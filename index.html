@@ -1,115 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        .menu-container {
-            max-width: 100%;
-            padding: 20px;
-            background-color: #f0f0f0;
-            text-align: center;
-        }
-
-        h2 {
-            color: #333;
-        }
-
-        p {
-            color: #666;
-        }
-
-        /* Dropdown Styles */
-        .dropdown {
-            position: relative;
-            display: inline-block;
-            margin-top: 20px;
-        }
-
-        .dropbtn {
-            background-color: #e0e0e0;
-            color: #333;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-        }
-
-        .dropdown-content a {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-
-        .dropdown-content a:hover {
-            background-color: #e0e0e0;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        /* Additional Styles */
-        .prompt-box {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            text-align: left;
-        }
-    </style>
-    <title>Prompt Menu</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Light Theme</title>
+<link href="updated_simpleGridTemplate.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-    <div class="menu-container">
-        <h2>Raemenn's Favorite Prompts</h2>
-        <p>Pick your poison</p>
-        
-        <div class="dropdown">
-            <button class="dropbtn">Prompts</button>
-            <div class="dropdown-content">
-                <a href="#" onclick="showPrompt('This Prompt describes the working condition of the litchen and what we generaly like.', 'I\'m an intermediate-level cook, primarily cooking for 2-3 adults and a picky child. I enjoy Mexican and Italian cuisines with a medium to mild spice level. My kitchen is well-equipped with appliances like an air fryer, rice cooker, electric roasting pan, Ninja food processor, crockpots, and a gas oven/stove. I have standard pots, pans, and Pyrex, and I love using ingredients like cheese, milk, butter, olive oil, sour cream, and salsa. I avoid poultry and have no specific dietary restrictions or allergies. I\'m open to both quick and elaborate recipes, focusing on dinner, breakfast, and lunch. While I like to eat healthily, taste is a priority, and I enjoy baking cakes, pies, and apple dumplings. I don\'t have specific preferences for seasonal ingredients, drink pairings, or budget considerations.')">My Kitchen</a>
-                <a href="#" onclick="showPrompt('Mexican Cuisine', 'I love Mexican cuisine and prefer dishes with a medium to mild spice level. I have a well-equipped kitchen with appliances like an air fryer, rice cooker, electric roasting pan, and Ninja food processor. I enjoy using ingredients like cheese, milk, butter, olive oil, sour cream, and salsa. I\'m looking for both quick and elaborate recipes that cater to my family\'s taste preferences.')">4th Step</a>
-                <a href="#" onclick="showPrompt('Italian Delights', 'Italian cuisine is a favorite, and I enjoy dishes with a medium to mild spice level. I have a well-equipped kitchen including an air fryer, rice cooker, and electric roasting pan. I often use ingredients like cheese, milk, butter, olive oil, and sour cream. I\'m looking for dinner, breakfast, and lunch recipes that offer variety and cater to both quick and elaborate cooking preferences.')">Italian Delights</a>
-                <a href="#" onclick="showPrompt('Baking Adventures', 'I love baking cakes, pies, and apple dumplings. I\'m an intermediate-level cook with a well-equipped kitchen, including an oven/stove, air fryer, and Ninja food processor. I enjoy using ingredients like butter, milk, cheese, and olive oil. I\'m open to recipes that are both delicious and visually appealing.')">Baking Adventures</a>
-                <a href="#" onclick="showPrompt('Flavorful Breakfasts', 'I\'m looking for creative breakfast recipes that cater to 2-3 adults and a picky child. I enjoy flavors from Mexican and Italian cuisines with a medium to mild spice level. My kitchen is equipped with appliances like an air fryer, rice cooker, and Ninja food processor. I use ingredients like cheese, milk, butter, and olive oil. I want breakfast recipes that are tasty and nutritious.')">Flavorful Breakfasts</a>
-                <!-- Add more prompts here -->
-            </div>
-        </div>
-        
-        <!-- Add more dropdowns here -->
-
-        <div class="prompt-box" id="prompt-output">
-            <h3>Prompt Text</h3>
-            <p>Select a prompt to see the details here.</p>
-        </div>
-		<div><a href="btlshp.html">btlshp</a></div>
-
-        <script>
-            function showPrompt(promptTitle, promptText) {
-                var promptOutput = document.getElementById('prompt-output');
-                promptOutput.innerHTML = `
-                    <h3>${promptTitle}</h3>
-                    <p>${promptText}</p>
-                `;
-            }
-        </script>
+<!-- Main Container -->
+<div class="container"> 
+  <!-- Header -->
+  <header class="header">
+    <h4 class="logo">Convergence of Imagination</h4>
+  </header>
+  <!-- Hero Section -->
+  <section class="intro">
+    <div class="column">
+      <h3>Raemenn Jewall</h3>
+      <img src="images/profile.png" alt="" class="profile"> </div>
+    <div class="column">
+      <p>I have always been known for my unique blend of characteristics, embodying traits that many find appealing. With a background that spans various experiences, I have developed a perspective that resonates with a wide audience. My interests are diverse, reflecting a curiosity about the world around me. </p>
+      <p>Driven by a sense of purpose and guided by values that are universally respected, I navigate life's challenges with grace. Whether in personal relationships or professional endeavors, I always demonstrate a commitment to excellence and a desire to contribute positively to others. My story continues to unfold, marked by growth and discovery.</p>
     </div>
+  </section>
+  <!-- Stats Gallery Section -->
+  <div class="gallery">
+    <div class="thumbnail"> <a href="#"><img src="images/bee.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Beekeeping</h4>
+      <p class="tag">Nurturing hives, harvesting honey.</p>
+      <p class="text_column">Buzzing opportunity: Bee hive seeks skilled keeper. Hive maintenance, colony care, honey production. Enthusiasm for pollination a must. Join us!</p>
+    </div>
+    <div class="thumbnail"> <a href="#"><img src="images/cloud.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Cloud Watching</h4>
+      <p class="tag">Interpreting sky's tableau.</p>
+      <p class="text_column">Unlocking nebulous narratives, I decipher cloud formations, revealing meteorological secrets and painting stories across azure canvases.</p>
+    </div>
+    <div class="thumbnail"> <a href="#"><img src="images/kite.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Kite Aerial Photography</h4>
+      <p class="tag">Capturing vistas from above.</p>
+      <p class="text_column">Man, kite aerial photography, it's like, takin' it old school, y'know? Drones may buzz, but kites? They abide, man</p>
+    </div>
+    <div class="thumbnail"> <a href="#"><img src="images/urban.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Urban Foraging</h4>
+      <p class="tag">Harvesting edible finds.</p>
+      <p class="text_column">Huntin' nature's treasures amidst the concrete jungle, turnin' overlooked corners into culinary goldmines. Flavourtown, baby!</p>
+    </div>
+  </div>
+  <div class="gallery">
+    <div class="thumbnail"> <a href="#"><img src="images/shadow.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Shadow Puppetry</h4>
+      <p class="tag">Narrating tales through light and shade.</p>
+      <p class="text_column">My off-off Broadway shadow puppet extravaganza brings tales to life in mesmerizing silhouette. Immerse yourself in wonder!</p>
+    </div>
+    <div class="thumbnail"> <a href="#"><img src="images/small.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Microsculpting</h4>
+      <p class="tag">Carving intricate miniatures.</p>
+      <p class="text_column"> I make teeny-tiny stuff, like little stories you gotta squint to see. Check 'em out in the gallery!</p>
+    </div>
+    <div class="thumbnail"> <a href="#"><img src="images/arcade.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Retro Arcade Restoration</h4>
+      <p class="tag">Reviving vintage gaming machines.</p>
+      <p class="text_column">Fixing and fine-tuning old-school machines for peak gameplay. Repairing circuits, screens, and controls to keep the fun rolling.</p>
+    </div>
+    <div class="thumbnail"> <a href="#"><img src="images/farmer.jpg" alt="" width="400" class="cards"/></a>
+      <h4>Edible Landscaping</h4>
+      <p class="tag">Designing edible gardens.</p>
+      <p class="text_column">Taste the land's richness! Edible gardens offer hearty flavors. Plow, sow, reap and embrace the earth's bounty!</p>
+    </div>
+  </div>
+  <!-- Footer Section -->
+  <footer id="contact">
+    <p class="hero_header">Let's make our worlds collide in a spectacular explosion of confetti!</p>
+    <div class="button">Drop me a line </div>
+  </footer>
+  <!-- Copyrights Section -->
+  <div class="copyright">&copy;2023 - <strong>Convergence of Imagination</strong></div>
+</div>
+<!-- Main Container Ends -->
 </body>
 </html>
