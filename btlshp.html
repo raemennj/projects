@@ -3,36 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battleship Heatmap Predictor</title>
+    <title>Battleship Grid</title>
     <style>
-        /* Add any CSS styling here */
+		body {background-color: aqua;}
+		
+		#grid {
+            width: 400px;
+            height: 400px;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            border: 1px solid black;
+        }
+
+        .square {
+            border: 1px solid gray;
+            cursor: pointer;
+        }
+
+        .square.miss {
+            background-color: white;
+        }
+
+        .square.hit {
+            background-color: red;
+        }
     </style>
 </head>
 <body>
+    <div id="grid"></div>
 
-<div><a href="btlshp.html">btlshp</a></div><!-- Add your HTML structure here -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.getElementById('grid');
 
-<script>
-    // Add your JavaScript/jQuery for AJAX calls here
-    function updateHeatmap() {
-        fetch('/update_heatmap', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ /* send any necessary data */ })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Process and display the heatmap data
+            // Generate 100 squares
+            for (let i = 0; i < 100; i++) {
+                const square = document.createElement('div');
+                square.classList.add('square');
+                grid.appendChild(square);
+            }
+
+            const squares = document.querySelectorAll('.square');
+            squares.forEach(square => {
+                square.addEventListener('click', function() {
+                    if (square.classList.contains('hit')) {
+                        square.classList.remove('hit');
+                    } else if (square.classList.contains('miss')) {
+                        square.classList.remove('miss');
+                        square.classList.add('hit');
+                    } else {
+                        square.classList.add('miss');
+                    }
+                });
+            });
         });
-    }
-</script>
-
-{% if running_on_server %}
-    <!-- Server-side Python code embedded -->
-    {% include 'server_code.py' %}
-{% endif %}
-
+    </script>
 </body>
 </html>
