@@ -117,14 +117,14 @@ function calculateSpacing() {
     // Convert the fractional part to its nearest common fraction
     const fraction = decimalToFraction(fractionalPart);
 
-    let resultText = "Spacing between holes: ";
+    let resultText = "Start at 1 1/2 inch from end, then space the holes ";
     if (wholePart > 0) {
         resultText += `<strong>${wholePart}</strong> `;
     }
     if (fraction.num > 0) {
         resultText += `<strong>${fraction.num}/${fraction.den}</strong>`;
     }
-    resultText += " inches";
+    resultText += " inches apart, until you reach 1 1/2 inches from other end.";
     
     resultDiv.innerHTML = resultText;
 }
