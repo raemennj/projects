@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Strip Hole Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Metal Strip Hole Calculator</h1>
+        <div class="input-group">
+            <label for="length">Enter Strip Length (inches):</label>
+            <input type="text" id="length">
+        </div>
+        <button onclick="calculateSpacing()">Calculate</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function decimalToFraction(decimal) {
+    const fractions = [
+        {num: 0, den: 1},
+        {num: 1, den: 8},
+        {num: 1, den: 4},
+        {num: 3, den: 8},
+        {num: 1, den: 2},
+        {num: 5, den: 8},
+        {num: 3, den: 4},
+        {num: 7, den: 8}
+    ];
+
+    let closestFraction = fractions[0];
+    let minDifference = Math.abs(decimal - closestFraction.num / closestFraction.den);
+
+    for (let i = 1; i < fractions.length; i++) {
+        const difference = Math.abs(decimal - fractions[i].num / fractions[i].den);
+        if (difference < minDifference) {
+            closestFraction = fractions[i];
+            minDifference = difference;
+        }
+    }
+
+    return closestFraction;
+}
+
+function calculateSpacing() {
+    const lengthInput = document.getElementById("length");
+    const resultDiv = document.getElementById("result");
+
+    const L = parseFloat(lengthInput.value);
+
+    // Check if input is valid
+    if (isNaN(L)) {
+        resultDiv.innerHTML = "<span style='color:red;'>Please enter a valid number.</span>";
+        return;
+    }
+
+    // Estimate the number of holes based on 8 inch spacing
+    const n = Math.ceil((L - 3) / 8);
+
+    // If n is 1, it means there's no space for additional holes, just the two on the ends.
+    if (n <= 1) {
+        resultDiv.innerHTML = "Not enough space for additional holes.";
+        return;
+    }
+
+    // Compute the exact spacing based on the estimated number of holes
+    const d = (L - 3) / (n - 1);
+    const wholePart = Math.floor(d);
+    const fractionalPart = d - wholePart;
+
+    // Convert the fractional part to its nearest common fraction
+    const fraction = decimalToFraction(fractionalPart);
+
+    let resultText = "Spacing between holes: ";
+    if (wholePart > 0) {
+        resultText += `<strong>${wholePart}</strong> `;
+    }
+    if (fraction.num > 0) {
+        resultText += `<strong>${fraction.num}/${fraction.den}</strong>`;
+    }
+    resultText += " inches";
+    
+    resultDiv.innerHTML = resultText;
+}
+
+    </script>
+</body>
+</html>
