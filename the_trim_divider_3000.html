@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nail Trim Divider</title>
+    <!-- Viewport Meta Tag for Responsive Design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Basic Reset */
+        body, h1, label, ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ul {
+            margin-top: 20px;
+        }
+
+        ul li {
+            font-size: 18px;
+            list-style-type: none;
+            margin-bottom: 10px;
+        }
+
+        /* Media query for smaller screens */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+            
+            label, ul li {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Factor Finder 3000</h1>
+    <label for="boardLength">Board Length (57 1/2):</label>
+    <input type="text" id="boardLength">
+    <button onclick="calculateDivisions()">Figure It Out!</button>
+    <ul id="results"></ul>
+	<p>Equation: 
+		G=(M−2)÷F</p>
+
+	<p>Where:</br>
+		M is the original measurement.</br>
+		G is the space between divisions.</br>
+		F is the number of divisions to get the desired space.</p>
+
+    <script>
+        function simplifyFraction(numerator, denominator) {
+            function gcd(a, b) {
+                if (!b) return a;
+                return gcd(b, a % b);
+            }
+            let greatestCommonDivisor = gcd(numerator, denominator);
+            return [numerator / greatestCommonDivisor, denominator / greatestCommonDivisor];
+        }
+
+        function calculateDivisions() {
+            const boardLength = parseFloat(document.getElementById("boardLength").value);
+            if (isNaN(boardLength) || boardLength <= 2) {
+                alert('Please enter a valid number greater than 2 inches.');
+                return;
+            }
+
+            let remainingLength = boardLength - 2;
+
+            // Get the number of divisions that offers a gap between 12 to 16 inches
+            let divisions;
+            for (divisions = Math.floor(remainingLength / 16); divisions <= 16; divisions++) {
+                if (remainingLength / divisions <= 16 && remainingLength / divisions >= 12) {
+                    break;
+                }
+            }
+
+            let gap = remainingLength / divisions;
+            let resultsList = document.getElementById("results");
+            resultsList.innerHTML = '';
+
+            for (let i = 0; i <= divisions; i++) {
+                let markPosition = 1 + (i * gap);
+                let wholeNumber = Math.floor(markPosition);
+                let fraction = markPosition - wholeNumber;
+
+                let roundedFraction16 = Math.round(fraction * 16);
+
+                let displayValue = wholeNumber;
+                if (roundedFraction16 > 0) {
+                    let [simpleNumerator, simpleDenominator] = simplifyFraction(roundedFraction16, 16);
+                    displayValue += " " + simpleNumerator + "/" + simpleDenominator;
+                }
+
+                let listItem = document.createElement('li');
+                listItem.textContent = displayValue + '”';
+                resultsList.appendChild(listItem);
+            }
+        }
+    </script>
+</body>
+</html>
