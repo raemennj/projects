@@ -6,7 +6,7 @@
 <body>
     <h1>Nail Trim Divider</h1>
     <label for="boardLength">Enter board length (in inches):</label>
-    <input type="text" id="boardLength">
+    <input type="text" id="boardLength" pattern="[0-9]*">
     <button onclick="calculateDivisions()">Calculate</button>
     <ul id="results"></ul>
 
