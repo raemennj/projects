@@ -21,13 +21,13 @@ body {
         }
 
         h1 {
-            text-align: center;
+            text-align: left;
 			font-family: "dogma-bold", sans-serif;
 			font-size: 150%;
         }
 
 		h2 {
-            text-align: center;
+            text-align: left;
 			font-family: "viva-std-condensed", arial;
 			font-size: 150%;
         }
