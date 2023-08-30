@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
  <head>
@@ -30,18 +31,38 @@
      Rango de segmento:
     </label>
     <select id="segmentRange">
-     <option value="12-16">
-      12" - 16"
-     </option>
-     <option value="7-10">
-      Casi 8"
-     </option>
+      <option value="near-8">
+       Casi 8"
+      </option>
+      <option value="near-10">
+       Casi 10"
+      </option>
+      <option value="near-12">
+       Casi 12"
+      </option>
+      <option value="near-14">
+       Casi 14"
+      </option>
+      <option value="near-16">
+       Casi 16"
+      </option>
+      <option value="parts-3">
+       3 Partes
+      </option>
+      <option value="parts-4">
+       4 Partes
+      </option>
+      <option value="parts-5">
+       5 Partes
+      </option>
+      <option value="parts-6">
+       6 Partes
+      </option>
+      <option value="parts-7">
+       7 Partes
+      </option>
     </select>
    </div>
-   <!-- Button to calculate -->
-   <button id="calculate">
-    Calcular
-   </button>
    <!-- Div to display results -->
    <div class="results-section">
     <h2>
@@ -53,7 +74,20 @@
    </div>
   </div>
   <script>
-   // Function to calculate the markings
+    // Previous JavaScript code for calculating markings can be here.
+    
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                func.apply(context, args);
+            }, wait);
+        };
+    }
+
     // Function to find the Greatest Common Divisor (GCD) for reducing fractions
     function gcd(a, b) {
         while (b) {
@@ -63,77 +97,79 @@
         }
         return a;
     }
-        function calculateMarkings() {
-            // Capture the total board length from user input
-            const boardLengthInput = document.getElementById('boardLength').value;
-            const [whole, fraction] = boardLengthInput.split(" ");
-            let boardLength = parseFloat(whole);
-            
-            if (fraction) {
+
+    function calculateMarkings() {
+        // Capture the total board length from user input
+        const boardLengthInput = document.getElementById('boardLength').value;
+        const [whole, fraction] = boardLengthInput.split(" ");
+        let boardLength = parseFloat(whole);
+        
+        if (fraction) {
+            try {
                 const [numerator, denominator] = fraction.split("/").map(Number);
-                boardLength += numerator / denominator;
-            }
-
-            // Capture the segment range from the dropdown
-            const segmentRange = document.getElementById('segmentRange').value;
-            const [minRange, maxRange] = segmentRange.split("-").map(Number);
-
-            // Calculate the distance between the two 1-inch marks
-            const distance = boardLength - 2;
-
-            // Calculate the number of segments and the segment length
-            // Calculate the closest number of segments to achieve a segment length close to 8 inches
-            let closestNumSegments = Math.round(distance / 8);
-            if (closestNumSegments < 1) closestNumSegments = 1;
-
-            // Calculate the corresponding segment length
-            let closestSegmentLength = distance / closestNumSegments;
-
-            // Ensure the segment length adheres to min and max range
-            while (closestSegmentLength < minRange || closestSegmentLength > maxRange) {
-                if (closestSegmentLength < minRange) {
-                    closestNumSegments -= 1;
-                } else {
-                    closestNumSegments += 1;
+                if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+                    boardLength += numerator / denominator;
                 }
-                closestSegmentLength = distance / closestNumSegments;
+            } catch (error) {
+                console.error("Invalid fraction input:", error);
             }
-
-            // Use the closest segment length
-            let segmentLength = closestSegmentLength;
-            let numSegments = closestNumSegments;
-
-            // Generate the markings
-            let markings = [];
-            for (let i = 1; i <= numSegments; i++) {
-                const mark = 1 + (i * segmentLength);
-                const wholePart = Math.floor(mark);
-    const fractionPart = (mark - wholePart);  // Capture the fractional part as a decimal
-    const denominator = 16;  // You can increase this for more precision
-    const numerator = Math.round(fractionPart * denominator);
-    const commonDivisor = gcd(numerator, denominator);  // Find GCD for reducing fraction
-    const reducedNumerator = numerator / commonDivisor;
-    const reducedDenominator = denominator / commonDivisor;
-                
-                if (fractionPart === 0) {
-                    markings.push(`${wholePart}"`);
-                } else {
-    markings.push(`${wholePart} <span class="fraction"><sup>${reducedNumerator}</sup>/<sub>${reducedDenominator}</sub></span>`);  // Push reduced fraction
-                }
-            }
-
-            // Ensure the first result starts at 1 inch
-            if (markings.length === 0 || markings[0] !== 1) {
-                markings.unshift(1);
-            }
-
-            // Display the results
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = markings.join('<br>');
         }
 
-        // Attach event listener to the Calculate button
-        document.getElementById('calculate').addEventListener('click', calculateMarkings);
+        // Calculate the distance between the two 1-inch marks
+        const distance = boardLength - 2;
+
+        // Capture the segment range from the dropdown
+        const segmentOption = document.getElementById('segmentRange').value;
+        const [type, value] = segmentOption.split("-");
+
+        let numSegments, segmentLength;
+
+        if (type === "near") {
+            numSegments = Math.round(distance / parseInt(value));
+            if (numSegments < 1) numSegments = 1;
+            segmentLength = distance / numSegments;
+        } else if (type === "parts") {
+            numSegments = parseInt(value);
+            segmentLength = distance / numSegments;
+        }
+
+        // Generate the markings
+        let markings = [];
+        for (let i = 1; i <= numSegments; i++) {
+            const mark = 1 + (i * segmentLength);
+            const wholePart = Math.floor(mark);
+            const fractionPart = (mark - wholePart);
+            const denominator = 16;
+            const numerator = Math.round(fractionPart * denominator);
+            const commonDivisor = gcd(numerator, denominator);
+            const reducedNumerator = numerator / commonDivisor;
+            const reducedDenominator = denominator / commonDivisor;
+
+            if (fractionPart === 0) {
+                markings.push(`${wholePart}"`);
+            } else {
+                markings.push(`${wholePart} <span class='fraction'><sup>${reducedNumerator}</sup>/<sub>${reducedDenominator}</sub></span>`);
+            }
+        }
+
+        // Ensure the first result starts at 1 inch
+        if (markings.length === 0 || !markings[0].includes('1"')) {
+            markings.unshift('1"');
+        }
+        // Display the results
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = markings.join('<br>');
+    }
+
+    // The debounced version of calculateMarkings
+    const debouncedCalculateMarkings = debounce(calculateMarkings, 500);
+
+    // Attach event listener to the 'boardLength' input field
+    document.getElementById('boardLength').addEventListener('input', debouncedCalculateMarkings);
+
+    // Attach event listener to the 'segmentRange' dropdown
+    document.getElementById('segmentRange').addEventListener('change', debouncedCalculateMarkings);
+
   </script>
  </body>
 </html>
