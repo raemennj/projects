@@ -17,59 +17,40 @@
    <h1>
     Buscador de Factores
    </h1>
-   <!-- Input for custom starting mark -->
-   <div class="input-section">
-    <label for="startingMark">
-    Marca de inicio en pulgadas:
-    </label>
-    <input id="startingMark" placeholder="e.g., 0.5, 1, 1 1/4" type="text" value="1"/>
+   <div class="input-container">
+     <!-- Input for total board length -->
+     <div class="input-section-a">
+      <input id="boardLength" placeholder="p.ej., 69 7/16" type="text"/>
+      <label for="boardLength">
+       Longitud:
+      </label>
+     </div>
+     <!-- Input for custom starting mark -->
+     <div class="input-section-b">
+      <input id="startingMark" placeholder="p.ej., 0.5, 1, 1 1/4" type="text" value="1"/>
+      <label for="startingMark">
+      Quemar:
+      </label>
+     </div>
+     <!-- Dropdown for selecting the segment range -->
+     <div class="dropdown-section">
+      <select id="segmentRange">
+        <option value="near-8">Casi 8"</option>
+        <option value="near-10">Casi 10"</option>
+        <option value="near-12">Casi 12"</option>
+        <option value="near-14">Casi 14"</option>
+        <option value="near-16">Casi 16"</option>
+        <option value="parts-3">3 Partes</option>
+        <option value="parts-4">4 Partes</option>
+        <option value="parts-5">5 Partes</option>
+        <option value="parts-6">6 Partes</option>
+        <option value="parts-7">7 Partes</option>
+      </select>
+      <label for="segmentRange">
+       Segmento:
+      </label>
+     </div>
    </div>
-   <!-- Input for total board length -->
-   <div class="input-section">
-    <label for="boardLength">
-     Longitud total de la tabla en pulgadas:
-    </label>
-    <input id="boardLength" placeholder="e.g., 69 7/16" type="text"/>
-   </div>
-   <!-- Dropdown for selecting the segment range -->
-   <div class="dropdown-section">
-    <label for="segmentRange">
-     Rango de segmento:
-    </label>
-    <select id="segmentRange">
-      <option value="near-8">
-       Casi 8"
-      </option>
-      <option value="near-10">
-       Casi 10"
-      </option>
-      <option value="near-12">
-       Casi 12"
-      </option>
-      <option value="near-14">
-       Casi 14"
-      </option>
-      <option value="near-16">
-       Casi 16"
-      </option>
-      <option value="parts-3">
-       3 Partes
-      </option>
-      <option value="parts-4">
-       4 Partes
-      </option>
-      <option value="parts-5">
-       5 Partes
-      </option>
-      <option value="parts-6">
-       6 Partes
-      </option>
-      <option value="parts-7">
-       7 Partes
-      </option>
-    </select>
-   </div>
-   <!-- Div to display results -->
    <div class="results-section">
     <h2>
      Factores:
