@@ -15,37 +15,31 @@
  <body>
   <div class="calculator" id="calculator">
    <h1>
-    Buscador de Factores
+    <id class="deco">l</id>Buscador de Factores 
    </h1>
    <div class="input-container">
      <div class="input-section-a">
-      <input id="boardLength" type="text" placeholder="p.ej., 69 7/16"/>
       <label for="boardLength">
-       Longitud:
+        Longitud:
       </label>
+      <input id="boardLength" type="text"/>
      </div>
      <div class="input-section-b">
-      <input id="startingMark" type="text" value="1" placeholder="p.ej., 0.5, 1, 1 1/4"/>
       <label for="startingMark">
-      quemar:
+        Quemar:
       </label>
+      <input id="startingMark" type="text" value="1"/>
      </div>
-     <div class="dropdown-section">
-      <select id="segmentRange">
-        <option value="near-8">Casi 8"</option>
-        <option value="near-10">Casi 10"</option>
-        <option value="near-12">Casi 12"</option>
-        <option value="near-14">Casi 14"</option>
-        <option value="near-16">Casi 16"</option>
-        <option value="parts-3">3 Partes</option>
-        <option value="parts-4">4 Partes</option>
-        <option value="parts-5">5 Partes</option>
-        <option value="parts-6">6 Partes</option>
-        <option value="parts-7">7 Partes</option>
-      </select>
-      <label for="segmentRange">
-       Segmento:
+     <div class="">
+      <label for="customType">
+        Método:
       </label>
+      <select class="methodDropdown" id="customType" onchange="toggleCustomInput()">
+        <option value="near">Casi</option>
+        <option value="parts">Partes</option>
+      </select>
+      <input type="text" class="methodInput" id="customValueNear" style="display:block;" />
+      <input type="text" class="methodInput" id="customValueParts" style="display:none;" />
      </div>
    </div>
    <div class="results-section">
@@ -77,55 +71,50 @@
         return a;
     }
 
+    function toggleCustomInput() {
+      const customType = document.getElementById('customType').value;
+      if (customType === "near") {
+        document.getElementById('customValueNear').style.display = "block";
+        document.getElementById('customValueParts').style.display = "none";
+      } else if (customType === "parts") {
+        document.getElementById('customValueNear').style.display = "none";
+        document.getElementById('customValueParts').style.display = "block";
+      }
+    }
+
     function calculateMarkings() {
       const startingMarkInput = document.getElementById('startingMark').value;
-      let startingMark = 0;
-
-      if (startingMarkInput === "0") {
-          startingMark = 0;
-      } else if (startingMarkInput.includes('/')) {
-        const [wholeStart, fractionStart] = startingMarkInput.split(" ");
-        if (fractionStart || wholeStart.includes('/')) {
-          const [numerator, denominator] = (fractionStart || wholeStart).split("/").map(Number);
-          if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-            startingMark += numerator / denominator;
-          }
-        }
-
-        if (wholeStart && !wholeStart.includes('/')) {
-          startingMark += parseFloat(wholeStart);
-        }
-      } else {
-        startingMark = startingMarkInput ? parseFloat(startingMarkInput) : 1;
-      }
-
-      const boardLengthInput = document.getElementById('boardLength').value;
-      const [whole, fraction] = boardLengthInput.split(" ");
-      let boardLength = parseFloat(whole);
+      let startingMark = parseFloat(startingMarkInput);
       
-      if (fraction) {
-        try {
-          const [numerator, denominator] = fraction.split("/").map(Number);
-          if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-            boardLength += numerator / denominator;
-          }
-        } catch (error) {
-          console.error("Invalid fraction input:", error);
+      const boardLengthInput = document.getElementById('boardLength').value;
+      let boardLength = parseFloat(boardLengthInput);
+      
+      const distance = boardLength - (2 * startingMark);
+      
+      const customType = document.getElementById('customType').value;
+      let customValueInput = "";
+      if (customType === "near") {
+        customValueInput = document.getElementById('customValueNear').value;
+      } else if (customType === "parts") {
+        customValueInput = document.getElementById('customValueParts').value;
+      }
+      let customValue = parseFloat(customValueInput);
+
+      if (customValueInput.includes('/')) {
+        const [numerator, denominator] = customValueInput.split("/").map(Number);
+        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+          customValue = numerator / denominator;
         }
       }
-
-      const distance = boardLength - (2 * startingMark);
-      const segmentOption = document.getElementById('segmentRange').value;
-      const [type, value] = segmentOption.split("-");
 
       let numSegments, segmentLength;
 
-      if (type === "near") {
-        numSegments = Math.round(distance / parseInt(value));
+      if (customType === "near") {
+        numSegments = Math.round(distance / customValue);
         if (numSegments < 1) numSegments = 1;
         segmentLength = distance / numSegments;
-      } else if (type === "parts") {
-        numSegments = parseInt(value);
+      } else if (customType === "parts") {
+        numSegments = customValue;
         segmentLength = distance / numSegments;
       }
 
@@ -153,8 +142,10 @@
 
     const debouncedCalculateMarkings = debounce(calculateMarkings, 500);
     document.getElementById('boardLength').addEventListener('input', debouncedCalculateMarkings);
-    document.getElementById('segmentRange').addEventListener('change', debouncedCalculateMarkings);
     document.getElementById('startingMark').addEventListener('input', debouncedCalculateMarkings);
+    document.getElementById('customValueNear').addEventListener('input', debouncedCalculateMarkings);
+    document.getElementById('customValueParts').addEventListener('input', debouncedCalculateMarkings);
+    document.getElementById('customType').addEventListener('change', debouncedCalculateMarkings);
   </script>
  </body>
 </html>

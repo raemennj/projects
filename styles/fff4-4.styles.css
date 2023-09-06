@@ -1,105 +1,125 @@
+
 @charset "utf-8";
 /* CSS Document */
 
 body {
-            font-family: elza, sans-serif;
-            background-color: #2c3e50;
-            color: #34495e;
-            margin: 0;
-            padding: 0;
-        }
+    font-family: elza, sans-serif;
+    background-color: #2c3e50;
+    color: #34495e;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Calculator Container */
-        .calculator {
-            width: 90%;
-            max-width: 400px;
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px #34495e;
-        }
+/* Calculator Container */
+.calculator {
+    width: 90%;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #ecf0f1;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px #34495e;
+    /*background-image:url("../../../mythological_guillotine/original images for cards/dream_TradingCard (53).jpg");*/
+    background-size:auto;
+    background-repeat: no-repeat;
+    background-position: top center;
+}
 
-        h1 {
-            text-align: left;
-			font-family: "dogma-bold", sans-serif;
-			font-size: 150%;
-        }
+h1, h2 {
+    text-align: left;
+}
 
-		h2 {
-            text-align: left;
-			font-family: "viva-std-condensed", arial;
-			font-size: 150%;
-        }
+h1 {
+	font-family: "epitaph", sans-serif;
+    font-size: 200%;
+}
+
+.deco {
+	font-family: "elido-ornaments", sans-serif;
+	font-weight: 400;
+	font-style: normal;
+}
+
+h2 {
+    font-family: "viva-std-condensed", arial;
+    font-size: 150%;
+}
+
 /* Input and Dropdown Side-by-Side Styles */
 .input-container {
     display: flex;
-	width: auto;
+    width: auto;
     justify-content: space-between;
     align-items: center;
 }
 
-.input-section-a, .input-section-b, .dropdown-section {
+.input-section-a, , ,  {
     flex: 1;
-	
-			max-width: 30%;
+    width: 25px;
     margin-right: 10px;
+	clear: both;
 }
-
-        label {
+.input-section-b{
+	flex: 1;
+	max-width: 15%;
+    margin-right: 10px;
+	clear: both;
+}
+.methodInput{
+    flex: 1;
+	max-width: 15px;
+    margin-right: 10px;
+	clear: both;
+}
+label, .methodLabel {
     display: block;
     max-width: 90%;
     margin-bottom: 8px;
     font-weight: bold;
     margin-top: 8px;
     margin-left: 4px;
-        }
-
-        input[type="text"] {
-			max-width: 90%;
-			font-family: "dunbar-tall", sans-serif;
-            padding: 10px;
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
-			
-        }
-        input[type="text"]:focus {
-   			border-color: #2c3e50;
-    		outline: 1px;
-}
-	
-        /* Dropdown Section */
-        select {
-            width: auto;
-			font-family: "dunbar-tall", sans-serif;
-            padding: 10px;
-			color: #2c3e50;
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
-        }
-
-
-
-		#results {
-  align-items: center;
 }
 
-        /* Results Section */
-        .results-section {
-            margin-top: 20px;
-			
-  background-image: url("images/logo02.jpg");
-  background-repeat: no-repeat;
-  background-position: bottom center;
-  background-size: 116px 51px;
-        }
-    
-.fraction sup {
-  font-size: 0.8em;
-  font-weight: italic;
+input[type="text"], .methodInput {
+    max-width: 75px;
+    font-family: "dunbar-tall", sans-serif;
+    padding: 5px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
 }
 
-.fraction sub {
-  font-size: 0.8em;
-  font-style: italic;
+input[type="text"]:focus, .methodInput:focus {
+    border-color: #2c3e50;
+    outline: 1px;
+}
+
+/* Dropdown and Textbox Float Styles */
+.methodDropdown, #customValueNear, #customValueParts {
+    float: left;
+    margin-right: 10px;
+	width: auto;
+}
+/* Dropdown Section */
+.methodDropdown {
+    width: auto;  /* Adjusted to take as much room as needed */
+    color: #2c3e50;
+}
+
+/* Textbox for Custom Values */
+#customValueNear, #customValueParts {
+    width: 6ch;  /* Adjusted to not need more than 6 characters */
+}
+
+/* Results Section */
+.results-section {
+    margin-top: 20px;
+    background-image: url("images/logo02.jpg");
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    background-size: 116px 51px;
+}
+
+.fraction sup, .fraction sub {
+    font-size: 0.8em;
+    font-style: italic;
 }
