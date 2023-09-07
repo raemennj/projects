@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+		<script type="text/javascript">
+    window.addEventListener(
+        'error',
+        function(event) {
+            var message = JSON.parse(JSON.stringify(event.message));
+            var source = event.filename;
+            var lineno = event.lineno;
+            var colno = event.colno;
+            var error = event.error;
+            
+            window.parent.postMessage({
+                type: 'iframeError',
+                details: {
+                    message: message,
+                    source: source,
+                    lineno: lineno,
+                    colno: colno,
+                    error: error ? error.stack : ''
+                }
+            }, '*');
+        }
+    );
+
+    // Continue to catch unhandled promise rejections as before
+    window.addEventListener('unhandledrejection', function(event) {
+        window.parent.postMessage({
+            type: 'iframePromiseRejection',
+            details: {
+                reason: event.reason
+            }
+        }, '*');
+    });
+</script>
+
+  <title>Factor Finder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .input-container {
+      flex: 1;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+    input, select {
+      width: 80px;
+      padding: 8px;
+      margin-bottom: 20px;
+    }
+    .result {
+      margin-top: 20px;
+      flex-basis: 100%;
+    }
+    button {
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
+
+	<link rel="canonical" href="https://calculator.tools/prompt/5862/">
+	<meta charset="utf-8">
+</head>
+<body>
+  <div class="container">
+    <div class="input-container"
+      <label for="boardLength">Longitud:</label>
+      <input type='text' id="boardLength" placeholder='Longitud' maxlength='8'>
+    </div>
+    <div class='input-container'>
+      <label for='distanceFromEnd'>Quemar:</label>
+      <input type='text' id='distanceFromEnd' placeholder='Distancia' maxlength='8'>
+    </div>
+    <div class='input-container'>
+      <label for='method'>Método:</label>
+      <select id='method'>
+        <option value='segments'>Segmentos</option>
+        <option value='desiredLength'>Longitud</option>
+      </select>
+    </div>
+    <div class='input-container'>
+      <label for='value'>Valor:</label>
+      <input type='text' id='value' placeholder='Valor' maxlength='8'>
+    </div>
+    <button id='toggleUnit'>Métrico</button>
+    <div class='result' id='result'></div>
+  </div>
+  <script>
+    let timeout;
+    let isMetric = false;
+    function parseInput(input) {
+      if (!input) return 0;
+      let total = 0;
+      const parts = input.split(' ');
+      if (parts.length === 2) {
+        total += parseFloat(parts[0]);
+        input = parts[1];
+      }
+      if (input.includes('/')) {
+        const [numerator, denominator] = input.split('/').map(Number);
+        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+          total += numerator / denominator;
+        }
+      } else {
+        total += parseFloat(input);
+      }
+      return total;
+    }
+    function toMixedNumber(x) {
+      const whole = Math.floor(x);
+      let fraction = x - whole;
+      fraction = Math.round(fraction * 16) / 16;
+      let numerator = Math.round(fraction * 16);
+      let denominator = 16;
+      let gcd = (a, b) => b ? gcd(b, a % b) : a;
+      let divisor = gcd(numerator, denominator);
+      numerator /= divisor;
+      denominator /= divisor;
+      if (denominator === 1) return whole ? `${whole + numerator}` : '';
+      return whole ? `${whole} ${numerator}/${denominator}` : `${numerator}/${denominator}`;
+    }
+    function calculate() {
+      const boardLength = parseInput(document.getElementById('boardLength').value);
+      const distanceFromEnd = parseInput(document.getElementById('distanceFromEnd').value);
+      const method = document.getElementById('method').value;
+      const value = parseInput(document.getElementById('value').value);
+      let result = '';
+      let segmentLength;
+      if (method === 'segments') {
+        segmentLength = (boardLength - 2 * distanceFromEnd) / value;
+      } else if (method === 'desiredLength') {
+        const numberOfSegments = Math.floor((boardLength - 2 * distanceFromEnd) / value);
+        segmentLength = (boardLength - 2 * distanceFromEnd) / numberOfSegments;
+      }
+      if (segmentLength) {
+        let factors = [];
+        for (let i = distanceFromEnd; i <= boardLength; i += segmentLength) {
+          factors.push(i);
+        }
+        if (isMetric) {
+          segmentLength *= 2.54;
+          factors = factors.map(x => (x * 2.54).toFixed(2));
+          result = `Cada segmento tendrá ${segmentLength.toFixed(2)} cm de largo.<br>Marcas: ${factors.join(' cm, ')} cm`;
+        } else {
+          result = `Cada segmento tendrá ${toMixedNumber(segmentLength)} pulgadas de largo.<br>Marcas: ${factors.map(toMixedNumber).join(' pulgadas, ')} pulgadas`;
+        }
+      }
+      document.getElementById('result').innerHTML = result;
+    }
+    document.querySelectorAll('input, select').forEach(input => {
+      input.addEventListener('input', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(calculate, 500);
+      });
+    });
+    document.getElementById('toggleUnit').addEventListener('click', () => {
+      isMetric = !isMetric;
+      document.getElementById('toggleUnit').innerText = isMetric ? 'Cambiar a imperial' : 'Cambiar a métrico';
+      calculate();
+    });
+    calculate();
+  </script>
+        <!-- Built-In Functions for Apps -->
+        <script type="text/javascript">
+            var localStoragePrefix = "ct-{{ cachebreaker }}";
+            var lastSave = 0;
+            // save to localstorage
+            function saveLocal(data) {
+                if (Date.now() - lastSave < 1000) {
+                    return;
+                }
+                // save to cookie
+                let cookie = localStoragePrefix + "=" + JSON.stringify(data) + "; path=" + window.location.pathname +  "'; SameSite=Strict";
+                cookie += "; expires=" + new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 1000).toUTCString();
+                document.cookie = cookie;
+                lastSave = Date.now();
+            }
+
+            // load from localstorage
+            function loadLocal() {
+                var cookiePrefix = localStoragePrefix + "=";
+                var cookieStart = document.cookie.indexOf(cookiePrefix);
+                if (cookieStart > -1) {
+                    let cookieEnd = document.cookie.indexOf(";", cookieStart);
+                    if (cookieEnd == -1) {
+                        cookieEnd = document.cookie.length;
+                    }
+                    var cookieData = document.cookie.substring(cookieStart + cookiePrefix.length, cookieEnd);
+                    return JSON.parse(cookieData);
+                }
+            }
+        </script>
+
+
+
+</body>
+</html>
