@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+		
+<title>factor finder</title>
+<!-- <link rel="stylesheet" type="text/css" href="styles/fff4-4_v7.styles.css">-->
+	
+
+	<link rel="canonical" href="https://calculator.tools/prompt/6574/">
+ <style>
+        /* Reset some default browser styles */
+        body, h1, h2, h3, p {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Background color and font */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Stylish container */
+        .container {
+            max-width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #e2e2e2;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007BFF;
+			font-family: "epitaph", sans-serif;
+   			font-size: 300%;
+        }
+
+hr {
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-top: 1px solid #BBFF85;
+}
+
+        /* Flexbox grid */
+        .grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+        }
+
+        /* Individual blocks */
+        .length {
+    flex: 1;
+    background-color: #C4F9C8;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #e2e2e2;
+        }
+	         .burn {
+            flex: 1;
+            background-color: #C4F9C8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e2e2;
+        }
+	         .method {
+            flex: 1;
+            background-color: #C4F9C8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e2e2;
+        }
+	         .value {
+            flex: 1;
+            background-color: #C4F9C8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e2e2;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        /* Input and select styles */
+        input, select {
+            width: 89%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Results section */
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #e2e2e2;
+        }
+	 .factor sup, .fa sub {
+    font-size: 0.8em;
+    font-style: italic;
+}
+    </style>
+	
+  <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+<meta charset="utf-8">
+</head>
+<body>
+test version seven
+<div class="container">
+    <h1>Factor Finder</h1>
+    <div class="grid">
+        <div class="length">
+            <label for="boardLength">Board Length:</label>
+            <input type="text" id="boardLength">
+        </div>
+        <div class="burn">
+            <label for="burnInch">Burn:</label>
+            <input type="text" id="burnInch">
+        </div>
+        <div class="method">
+            <label for="divisionMethod">Division Method:</label>
+            <select id="divisionMethod">
+                <option value="equal">Equal</option>
+                <option value="near">Near</option>
+            </select>
+        </div>
+        <div class="value">
+            <label for="divisionValue">Division Value:</label>
+            <input type="text" id="divisionValue">
+        </div>
+    </div>
+    
+    <!-- Results Section -->
+    <div class="results" id="results">
+        <!-- Content will be dynamically populated here -->
+    </div>
+</div>
+  <script>
+    let debounce;
+    const boardLength = document.getElementById('boardLength');
+    const burnInch = document.getElementById('burnInch');
+    const divisionMethod = document.getElementById('divisionMethod');
+    const divisionValue = document.getElementById('divisionValue');
+    const results = document.getElementById('results');
+
+    const parseMixedNumber = (input) => {
+      if (!input) return NaN;
+      const parts = input.split(' ');
+      let whole = 0;
+      let fraction = 0;
+      if (parts.length === 2) {
+        whole = parseFloat(parts[0]);
+        const [numerator, denominator] = parts[1].split('/').map(Number);
+        fraction = numerator / (denominator || 1);
+      } else if (parts[0].includes('/')) {
+        const [numerator, denominator] = parts[0].split('/').map(Number);
+        fraction = numerator / (denominator || 1);
+      } else {
+        whole = parseFloat(parts[0]);
+      }
+      return whole + fraction;
+    };
+
+
+
+	  const toFraction = (decimal) => {
+  const gcd = (a, b) => b ? gcd(b, a % b) : a;
+  let denominator = 16;
+  let numerator = Math.round(decimal * denominator);
+  let divisor = gcd(numerator, denominator);
+  let wholeNumber = Math.floor(numerator / denominator);
+  numerator %= denominator;
+  if (numerator === 0) return wholeNumber.toString();
+  return wholeNumber 
+    ? `${wholeNumber} <sup>${numerator / divisor}</sup>&frasl;<sub>${denominator / divisor}</sub>` 
+    : `<sup>${numerator / divisor}</sup>&frasl;<sub>${denominator / divisor}</sub>`;
+};
+
+	  
+	  
+    const validateInput = () => {
+      const missingFields = [];
+      if (isNaN(parseMixedNumber(boardLength.value))) missingFields.push('Board Length');
+      if (isNaN(parseMixedNumber(burnInch.value))) missingFields.push('Burn');
+      if (isNaN(parseMixedNumber(divisionValue.value))) missingFields.push('Division Value');
+      return missingFields;
+    };
+
+    const calculate = () => {
+      const missingFields = validateInput();
+      if (missingFields.length > 0) {
+        results.innerHTML = `Please fill in the following fields: ${missingFields.join(', ')}`;
+        return;
+      }
+
+      const length = parseMixedNumber(boardLength.value);
+      const burn = parseMixedNumber(burnInch.value);
+      const method = divisionMethod.value;
+      const value = parseMixedNumber(divisionValue.value);
+      let segmentLength = 0;
+      let factors = [];
+
+      const actualLength = length - 2 * burn;
+
+      if (method === 'equal') {
+        segmentLength = actualLength / value;
+        for (let i = burn; i <= length; i += segmentLength) {
+          factors.push(`<div class='factor'>${toFraction(i)}"</div><hr>`);
+        }
+      } else if (method === 'near') {
+        const approxSegments = Math.round(actualLength / value);
+        segmentLength = actualLength / approxSegments;
+        for (let i = burn; i <= length; i += segmentLength) {
+          factors.push(`<div class='factor'>${toFraction(i)}"</div><hr>`);
+        }
+      }
+
+      results.innerHTML = `Segment Length: ${toFraction(segmentLength)}"<br><br>Factors:<br>${factors.join('')}`;
+    };
+
+    const handleChange = () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(calculate, 500);
+    };
+
+    boardLength.addEventListener('input', handleChange);
+    burnInch.addEventListener('input', handleChange);
+    divisionMethod.addEventListener('change', handleChange);
+    divisionValue.addEventListener('input', handleChange);
+  </script>
+       
+
+
+</body>
+</html>
