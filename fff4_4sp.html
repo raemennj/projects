@@ -1,38 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-		
-
   <title>Buscador de Factores</title>
-
-	  
-<style>
-    /* Container Styles */
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
     body {
-      width: 94%;
-      margin: auto;
+      font-size: 18px;
+      margin: 0;
       padding: 5px;
-		background-color: darkslategrey;
+      background-color: darkslategrey;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    font-family: "dunbar-tall", sans-serif;
     }
-
-    /* Title Styles */
     h1 {
+      font-size: 28px;
       text-align: center;
-		color: lightyellow;
+      color: lightyellow;
+      margin-top: 20px;
+	font-family: "epitaph", sans-serif;
     }
-    hr {
-      border-left: 0;
-      border-right: 0;
-      border-bottom: 0;
-      border-top: 1px solid darkslategrey;
-}
-    /* Tab Styles */
     .tab-container {
       display: flex;
+      width: 100%;
     }
-    .tab {
-      flex: 1;
-      padding: 10px;
+    .tab {      flex: 1;
+      padding: 15px;
+		font-weight: 200; 
       cursor: pointer;
       border-left: 1px solid #363636;
       border-right: 1px solid #363636;
@@ -50,47 +45,46 @@
 	  border-top-right-radius: 10px;
 	  margin-top: 0px;
     }
-    #equalTab.active {
+	#equalTab.active {
       background-color: lightblue;
       border-left: 0px;
     }
     #nearTab.active {
       background-color: lightgreen;
       border-right: 0px;
-    }
+    } 
 	.inputLabel {
-		padding-top: 5px;
-		padding-bottom:  5px;
+	  padding-top: 5px;
+	  padding-bottom:  5px;
 	}
     .lightgreen-bg {
       background-color: lightgreen !important;
     }
-    /* Input Field Styles */
     .input-container {
       display: flex;
       justify-content: space-between;
+      width: 100%;
     }
     .input-container div {
       flex: 1;
-      padding: none;
       text-align: center;
-        border-bottom: 1px solid #363636;
     }
     input {
-      max-width: 70px;
-		text-align: center;
-	  padding: 3px;
-	  margin-top: 10px;
-		background-color: lightyellow;
+      font-size: 18px;
+      max-width: 100%;
+      text-align: center;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: lightyellow;
+      width: 70%;
+    font-family: "dunbar-tall", sans-serif;
     }
-
-    /* Result Styles */
+	   /* Result Styles */
     #marksResult {
       text-align: center;
     }
     #segmentResult {
       text-align: center;
-		padding-top: 70px;
 		
     }
 	.length {
@@ -120,54 +114,49 @@
 		background-color: lightblue;
         border-bottom: 1px solid #363636;
 	}
-	
-	.resultsBG {
-		padding-top: 10px;
-		background-color: lightyellow;
+    .resultsBG {
+      text-align: center;
+      background-color: lightyellow;
 		border-bottom-left-radius: 10px;
 		border-bottom-right-radius: 10px;
-		
-	}
-	
-.factor sup {
-  font-size: 0.85em;  
-  vertical-align: 0.2em; 
-}
-
-.factor sub {
-  font-size: 0.85em;  
-  vertical-align: -0.2em; 
-}	
+      width: 100%;
+    }
+    .factor sup, .factor sub {
+      font-size: 0.85em;
+    }
   </style>
-	<link rel="canonical" href="https://calculator.tools/prompt/6899/">
-	<meta charset="utf-8">
+	
+  <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
   <h1>Buscador de Factores</h1>
-  <form>
-	<div class="tab-container">
-      <div id="equalTab" class="tab active" onclick="changeTab('equal')">Igual</div>
-      <div id="nearTab" class="tab" onclick="changeTab('near')">Cercano</div>
+  <div class="tab-container">
+    <div id="equalTab" class="tab active" onclick="changeTab('equal')">Igual</div>
+    <div id="nearTab" class="tab" onclick="changeTab('near')">Cercano</div>
+  </div>
+  <form class="input-container">
+    <div class="length">
+      <label for="length">Longitud:</label><br>
+      <input type="text" id="length">
     </div>
-	  <div class="length">
-    <label for="length">Longitud:</label><br>
-    <input type="text" id="length">
-	  </div>
-	  <div class="burn">
-    <label for="endDistance">Quemar:</label><br>
-    <input type="text" id="endDistance">
-	  </div>
-	  <div class="segmentType">
-	<div class="center" id="dynamicLabel">Segmentos:</div>
-    <input type="text" id="valueUsed">
-	  </div>
+    <div class="burn">
+      <label for="endDistance">Quemar:</label><br>
+      <input type="text" id="endDistance">
+    </div>
+    <div class="segmentType">
+      <div id="dynamicLabel">Segmentos:</div>
+      <input type="text" id="valueUsed">
+    </div>
   </form>
-	<span>
-		<div class="resultsBG">
-  <p id="segmentResult"></p>
-  <p id="marksResult"></p>
-			<br></div>
-    </span>
+  <div class="resultsBG">
+    <p id="segmentResult"></p>
+    <p id="marksResult"></p>
+  </div>
+	
+	
+	
+	
+	
   <script>
 const changeTab = choice => {
   // Remove 'active' class from all tabs
