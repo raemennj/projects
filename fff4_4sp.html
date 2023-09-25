@@ -1,151 +1,243 @@
 <!DOCTYPE html>
-<html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>
-   Buscador de Factores
-  </title>
-  <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
-  <link href="styles/fff4-4.styles.css" rel="stylesheet"/>
-  <style>
-   /* Base Styles */
+<html>
+<head>
+		
+
+  <title>Buscador de Factores</title>
+
+	  
+<style>
+    /* Container Styles */
+    body {
+      width: 94%;
+      margin: auto;
+      padding: 5px;
+		background-color: darkslategrey;
+    }
+
+    /* Title Styles */
+    h1 {
+      text-align: center;
+		color: lightyellow;
+    }
+    hr {
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-top: 1px solid darkslategrey;
+}
+    /* Tab Styles */
+    .tab-container {
+      display: flex;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px;
+      cursor: pointer;
+      border-left: 1px solid #363636;
+      border-right: 1px solid #363636;
+      border-bottom: 1px solid #363636;
+      text-align: center;
+	  background-color: lightyellow;
+	  border-top-left-radius: 8px;
+	  border-top-right-radius: 8px;
+	  margin-top: 5px;
+    }
+    .tab.active {
+      background-color: #ccc;
+	  border-bottom: 0PX;
+	  border-top-left-radius: 10px;
+	  border-top-right-radius: 10px;
+	  margin-top: 0px;
+    }
+    #equalTab.active {
+      background-color: lightblue;
+      border-left: 0px;
+    }
+    #nearTab.active {
+      background-color: lightgreen;
+      border-right: 0px;
+    }
+	.inputLabel {
+		padding-top: 5px;
+		padding-bottom:  5px;
+	}
+    .lightgreen-bg {
+      background-color: lightgreen !important;
+    }
+    /* Input Field Styles */
+    .input-container {
+      display: flex;
+      justify-content: space-between;
+    }
+    .input-container div {
+      flex: 1;
+      padding: none;
+      text-align: center;
+        border-bottom: 1px solid #363636;
+    }
+    input {
+      max-width: 70px;
+		text-align: center;
+	  padding: 3px;
+	  margin-top: 10px;
+		background-color: lightyellow;
+    }
+
+    /* Result Styles */
+    #marksResult {
+      text-align: center;
+    }
+    #segmentResult {
+      text-align: center;
+		padding-top: 70px;
+		
+    }
+	.length {
+		width:33%;
+		float: left;
+		text-align: center;
+		padding-top: 15px;
+		padding-bottom: 14px;
+		background-color: lightblue;
+        border-bottom: 1px solid #363636;
+	}
+	.burn {
+		width:34%;
+		float: left;
+		text-align: center;
+		padding-top: 15px;
+		padding-bottom: 14px;
+		background-color: lightblue;
+        border-bottom: 1px solid #363636;
+	}
+	.segmentType {
+		width:33%;
+		float: left;
+		text-align: center;
+		padding-top: 15px;
+		padding-bottom: 14px;
+		background-color: lightblue;
+        border-bottom: 1px solid #363636;
+	}
+	
+	.resultsBG {
+		padding-top: 10px;
+		background-color: lightyellow;
+		border-bottom-left-radius: 10px;
+		border-bottom-right-radius: 10px;
+		
+	}
+	
+.factor sup {
+  font-size: 0.85em;  
+  vertical-align: 0.2em; 
+}
+
+.factor sub {
+  font-size: 0.85em;  
+  vertical-align: -0.2em; 
+}	
   </style>
- </head>
- <body>
-  <div class="calculator" id="calculator">
-   <h1>
-    <id class="deco">l</id>Buscador de Factores 
-   </h1>
-   <div class="input-container">
-     <div class="input-section-a">
-      <label for="boardLength">
-        Longitud:
-      </label>
-      <input id="boardLength" type="text"/>
-     </div>
-     <div class="input-section-b">
-      <label for="startingMark">
-        Quemar:
-      </label>
-      <input id="startingMark" type="text" value="1"/>
-     </div>
-     <div class="">
-      <label for="customType">
-        Método:
-      </label>
-      <select class="methodDropdown" id="customType" onchange="toggleCustomInput()">
-        <option value="near">Casi</option>
-        <option value="parts">Partes</option>
-      </select>
-      <input type="text" class="methodInput" id="customValueNear" style="display:block;" />
-      <input type="text" class="methodInput" id="customValueParts" style="display:none;" />
-     </div>
-   </div>
-   <div class="results-section">
-    <h2>
-     Factores:
-    </h2>
-    <div id="results">
+	<link rel="canonical" href="https://calculator.tools/prompt/6899/">
+	<meta charset="utf-8">
+</head>
+<body>
+  <h1>Buscador de Factores</h1>
+  <form>
+	<div class="tab-container">
+      <div id="equalTab" class="tab active" onclick="changeTab('equal')">Igual</div>
+      <div id="nearTab" class="tab" onclick="changeTab('near')">Cercano</div>
     </div>
-   </div>
-  </div>
+	  <div class="length">
+    <label for="length">Longitud:</label><br>
+    <input type="text" id="length">
+	  </div>
+	  <div class="burn">
+    <label for="endDistance">Quemar:</label><br>
+    <input type="text" id="endDistance">
+	  </div>
+	  <div class="segmentType">
+	<div class="center" id="dynamicLabel">Segmentos:</div>
+    <input type="text" id="valueUsed">
+	  </div>
+  </form>
+	<span>
+		<div class="resultsBG">
+  <p id="segmentResult"></p>
+  <p id="marksResult"></p>
+			<br></div>
+    </span>
   <script>
-    function debounce(func, wait) {
-        let timeout;
-        return function() {
-            const context = this, args = arguments;
-            clearTimeout(timeout);
-            timeout = setTimeout(function() {
-                func.apply(context, args);
-            }, wait);
-        };
-    }
-
-    function gcd(a, b) {
-        while (b) {
-            let temp = a;
-            a = b;
-            b = temp % a;
-        }
-        return a;
-    }
-
-    function toggleCustomInput() {
-      const customType = document.getElementById('customType').value;
-      if (customType === "near") {
-        document.getElementById('customValueNear').style.display = "block";
-        document.getElementById('customValueParts').style.display = "none";
-      } else if (customType === "parts") {
-        document.getElementById('customValueNear').style.display = "none";
-        document.getElementById('customValueParts').style.display = "block";
+const changeTab = choice => {
+  // Remove 'active' class from all tabs
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  
+  // Add 'active' class to the clicked tab
+  document.getElementById(choice + 'Tab').classList.add('active');
+  
+  // Change the label based on the active tab
+  document.getElementById('dynamicLabel').innerText = choice === 'equal' ? 'Segmentos:' : 'Pulgadas:';
+  
+  // Add or remove lightgreen-bg class based on active tab
+  const elementsToChange = document.querySelectorAll('.length, .burn, .segmentType');
+  if (choice === 'near') {
+    elementsToChange.forEach(el => el.classList.add('lightgreen-bg'));
+  } else {
+    elementsToChange.forEach(el => el.classList.remove('lightgreen-bg'));
+  }
+};
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+const toReadableFraction = x => {
+  if (isNaN(x)) return '';
+  const whole = Math.floor(x), fraction = x - whole;
+  let [numerator, denominator] = [Math.round(fraction * 16), 16], divisor = gcd(numerator, denominator);
+  [numerator, denominator] = [numerator / divisor, denominator / divisor];
+  return whole ? (numerator ? `${whole} <span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : `${whole}`) : (numerator ? `<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : '0');
+};
+    const parseInput = input => {
+      if (!input) return NaN;
+      if (input.includes(' ')) {
+        const [whole, fraction] = input.split(' '), [numerator, denominator] = fraction.split('/').map(Number);
+        return isNaN(numerator) || isNaN(denominator) || denominator === 0 ? NaN : Number(whole) + (numerator / denominator);
+      } else if (input.includes('/')) {
+        const [numerator, denominator] = input.split('/').map(Number);
+        return isNaN(numerator) || isNaN(denominator) || denominator === 0 ? NaN : numerator / denominator;
+      } else {
+        return Number(input);
       }
-    }
-
-    function calculateMarkings() {
-      const startingMarkInput = document.getElementById('startingMark').value;
-      let startingMark = parseFloat(startingMarkInput);
-      
-      const boardLengthInput = document.getElementById('boardLength').value;
-      let boardLength = parseFloat(boardLengthInput);
-      
-      const distance = boardLength - (2 * startingMark);
-      
-      const customType = document.getElementById('customType').value;
-      let customValueInput = "";
-      if (customType === "near") {
-        customValueInput = document.getElementById('customValueNear').value;
-      } else if (customType === "parts") {
-        customValueInput = document.getElementById('customValueParts').value;
+    };
+    let debounceTimer;
+    const debounceCalculate = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(calculate, 500);
+    };
+    const calculate = () => {
+      const [lengthInput, endDistanceInput, valueUsedInput] = [document.getElementById('length').value, document.getElementById('endDistance').value, document.getElementById('valueUsed').value];
+      const method = document.querySelector('.active').id.replace('Tab', '');
+      const [length, endDistance, valueUsed] = [parseInput(lengthInput), parseInput(endDistanceInput), parseInput(valueUsedInput)];
+      if (isNaN(length) || isNaN(endDistance) || isNaN(valueUsed)) {
+        document.getElementById('result').innerText = 'Entrada no válida. Por favor, ingrese números, fracciones o decimales válidos.';
+        return;
       }
-      let customValue = parseFloat(customValueInput);
-
-      if (customValueInput.includes('/')) {
-        const [numerator, denominator] = customValueInput.split("/").map(Number);
-        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-          customValue = numerator / denominator;
-        }
+      let remainingLength = length - 2 * endDistance, segments = [toReadableFraction(endDistance)], segmentLength;
+      if (method === 'equal') {
+        segmentLength = remainingLength / valueUsed;
+        for (let i = 0; i < valueUsed; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
+      } else if (method === 'near') {
+        const numSegments = Math.floor(remainingLength / valueUsed);
+        segmentLength = remainingLength / numSegments;
+        for (let i = 0; i < numSegments; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
       }
-
-      let numSegments, segmentLength;
-
-      if (customType === "near") {
-        numSegments = Math.round(distance / customValue);
-        if (numSegments < 1) numSegments = 1;
-        segmentLength = distance / numSegments;
-      } else if (customType === "parts") {
-        numSegments = customValue;
-        segmentLength = distance / numSegments;
-      }
-
-      let markings = [];
-      for (let i = 0; i <= numSegments; i++) {
-        const mark = startingMark + (i * segmentLength);
-        const wholePart = Math.floor(mark);
-        const fractionPart = (mark - wholePart);
-        const denominator = 16;
-        const numerator = Math.round(fractionPart * denominator);
-        const commonDivisor = gcd(numerator, denominator);
-        const reducedNumerator = numerator / commonDivisor;
-        const reducedDenominator = denominator / commonDivisor;
-
-        if (fractionPart === 0) {
-          markings.push(`${wholePart}"`);
-        } else {
-          markings.push(`${wholePart} <span class='fraction'><sup>${reducedNumerator}</sup>/<sub>${reducedDenominator}</sub></span>`);
-        }
-      }
-      
-      const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = markings.join('<br>');
-    }
-
-    const debouncedCalculateMarkings = debounce(calculateMarkings, 500);
-    document.getElementById('boardLength').addEventListener('input', debouncedCalculateMarkings);
-    document.getElementById('startingMark').addEventListener('input', debouncedCalculateMarkings);
-    document.getElementById('customValueNear').addEventListener('input', debouncedCalculateMarkings);
-    document.getElementById('customValueParts').addEventListener('input', debouncedCalculateMarkings);
-    document.getElementById('customType').addEventListener('change', debouncedCalculateMarkings);
+      document.getElementById('segmentResult').innerHTML = `Longitud del Segmento: ${toReadableFraction(segmentLength)}"`;
+      document.getElementById('marksResult').innerHTML = `Factores:<br><br>${segments.join('"<hr><br>')}`;
+    };
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('length').addEventListener('input', debounceCalculate);
+      document.getElementById('endDistance').addEventListener('input', debounceCalculate);
+      document.getElementById('valueUsed').addEventListener('input', debounceCalculate);
+      document.querySelectorAll('.tab').forEach(el => el.addEventListener('click', debounceCalculate));
+    });
   </script>
- </body>
+</body>
 </html>
