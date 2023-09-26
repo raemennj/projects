@@ -181,7 +181,7 @@ const toReadableFraction = x => {
   const whole = Math.floor(x), fraction = x - whole;
   let [numerator, denominator] = [Math.round(fraction * 16), 16], divisor = gcd(numerator, denominator);
   [numerator, denominator] = [numerator / divisor, denominator / divisor];
-  return whole ? (numerator ? `${whole} <span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : `${whole}`) : (numerator ? `<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : '0');
+  return whole ? (numerator ? `${whole} &nbsp;&nbsp;<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : `${whole}`) : (numerator ? `<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : '0');
 };
     const parseInput = input => {
       if (!input) return NaN;
