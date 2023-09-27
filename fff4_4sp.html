@@ -183,7 +183,11 @@
   max-height: calc(100vh - 40px); /* 20px top and bottom margin */
   overflow-y: auto; 
 }
-
+@media screen and (orientation:landscape) {
+  .modal-content {
+    max-height: calc(100vh - 60px); /* Adjusted height for landscape */
+  }
+}
   </style>
 	
   <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
