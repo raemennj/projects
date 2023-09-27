@@ -118,28 +118,29 @@
       text-align: center;
       background-color: lightyellow;
       width: 100%;
+      border-left: 1px solid #363636;
+      border-right: 1px solid #363636;
     }
     .factor sup, .factor sub {
       font-size: 0.85em;
     }
-	  .readme-container{      
+	.readme-container{      
 	  display: flex;
       justify-content: space-between;
-		  text-align: center;
+	text-align: center;
       width: 100%;
-		  position: relative, bottom;
 	  }
-	  .readme-container button {
+	.readme-container button {
       flex: 1;
       text-align: center;text-decoration: underline;
-		  background-color: lightyellow;
-		  border: none;
-		border-bottom-left-radius: 10px;
-		border-bottom-right-radius: 10px;
-		  font-size: 18px;
-		  padding-bottom: 10px;
-    font-family: "dunbar-tall", sans-serif;
-    }
+	  background-color: lightyellow;
+	  border: none;
+	  border-bottom-left-radius: 10px;
+	  border-bottom-right-radius: 10px;
+	  font-size: 18px;
+	  padding-bottom: 10px;
+      font-family: "dunbar-tall", sans-serif;
+      }
 	  .close-btn {
 		  text-decoration: underline;
 	  }
@@ -159,7 +160,7 @@
 		border-bottom-right-radius: 10px;
       width: 100%;
 	  }
-	  /* Modal styles */
+	  
 .modal {
   display: none;
   position: fixed;
@@ -170,7 +171,9 @@
   height: 100%;
   background-color: rgba(0,0,0,0.4);
 }
-
+#showModalBtn {
+  color: black;
+}
 .modal-content {
   background-color: lightyellow;
   margin: 5% auto;
@@ -178,6 +181,8 @@
 	border-radius: 14px;
   border: 1px solid #888;
   width: 80%;
+  overflow-y: auto; 
+  max-height: 99vh; 
 }
   </style>
 	
@@ -297,7 +302,7 @@ const toReadableFraction = x => {
         for (let i = 0; i < numSegments; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
       }
       document.getElementById('segmentResult').innerHTML = `Longitud del Segmento: ${toReadableFraction(segmentLength)}"`;
-      document.getElementById('marksResult').innerHTML = `Factores:<br><br>${segments.join('"<hr><br>')}`;
+      document.getElementById('marksResult').innerHTML = `Factores:<br><br>${segments.join('"<hr><br>')} "`;
     };
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('length').addEventListener('input', debounceCalculate);
