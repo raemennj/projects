@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gyro Div</title>
+  <style>
+    #gyroDiv {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background-color: blue;
+      color: white;
+      text-align: center;
+      line-height: 100px;
+      transition: top 0.3s ease, left 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="gyroDiv">I flop around!</div>
+  <script>
+    // Check if DeviceOrientationEvent API is available
+    if (window.DeviceOrientationEvent) {
+      let div = document.getElementById("gyroDiv");
+
+      // Initial Positioning
+      div.style.left = window.innerWidth / 2 + "px";
+      div.style.top = window.innerHeight / 2 + "px";
+
+      window.addEventListener("deviceorientation", function(event) {
+        let alpha = event.alpha;
+        let beta = event.beta;
+        let gamma = event.gamma;
+
+        // Calculate new positions
+        let newLeft = window.innerWidth / 2 + gamma;
+        let newTop = window.innerHeight / 2 + beta;
+
+        // Bounds Check
+        if (newLeft < 0) newLeft = 0;
+        if (newTop < 0) newTop = 0;
+        if (newLeft > window.innerWidth - 100) newLeft = window.innerWidth - 100;
+        if (newTop > window.innerHeight - 100) newTop = window.innerHeight - 100;
+
+        // Update div position
+        div.style.left = newLeft + "px";
+        div.style.top = newTop + "px";
+      });
+    } else {
+      alert("Sorry, your device doesn't support DeviceOrientationEvent API.");
+    }
+  </script>
+</body>
+</html>
