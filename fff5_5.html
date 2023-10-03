@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+		
+
+    <title>Calculadora de Dentículos</title>
+    <style>
+        body {
+            font-size: 18px;
+            margin: 0;
+            padding-top: 5px;
+            background-color: darkslategrey;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: "dunbar-tall", sans-serif;
+        }
+        h2 {
+            font-size: 28px;
+            text-align: center;
+            color: lightyellow;
+            margin-top: 20px;
+            font-family: "epitaph", sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            background-color: lightyellow;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: darkslategrey;
+        }
+        input[type='text'] {
+            font-size: 18px;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: lightgreen;
+            border: 1px solid #363636;
+            text-align: center;
+            font-family: "dunbar-tall", sans-serif;
+        }
+        .result {
+            margin-top: 20px;
+            background-color: lightblue;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #363636;
+        }
+        #measurements ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #measurements li {
+            border-bottom: 1px solid #363636;
+            padding: 5px 0;
+            color: darkslategrey;
+		}
+		    .input-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    }
+    .input-container div {
+      flex: 1;
+      text-align: center;
+    }
+		
+		    .resultsBG {
+      text-align: center;
+      background-color: lightyellow;
+      width: 100%;
+    }
+    .factor sup, .factor sub {
+      font-size: 0.85em;
+    }
+		
+	.length {
+		width:25%;
+		float: left;
+		text-align: center;
+		padding-top: 15px;
+		padding-bottom: 14px;
+		background-color: lightblue;
+		border-top-left-radius: 8px;
+		border-bottom-left-radius: 8px;
+        border-bottom: 1px solid #363636;
+        border-top: 1px solid #363636;
+        border-left: 1px solid #363636;
+        border-right: 0px solid #363636;
+	}
+	.blockWidth {
+		width:25%;
+		float: left;
+		text-align: center;
+		padding-top: 15px;
+		padding-bottom: 14px;
+		background-color: lightblue;
+        border-bottom: 1px solid #363636;
+        border-top: 1px solid #363636;
+        border-left: 0px solid #363636;
+        border-right: 0px solid #363636;
+	}
+	.burn {
+		width:25%;
+		float: left;
+		text-align: center;
+		padding-top: 15px;
+		padding-bottom: 14px;
+		background-color: lightblue;
+        border-bottom: 1px solid #363636;
+        border-top: 1px solid #363636;
+        border-left: 0px solid #363636;
+        border-right: 0px solid #363636;
+	}
+	.quantity	 {
+		width:25%;
+		float: left;
+		text-align: center;
+		padding-top: 15px;
+		padding-bottom: 14px;
+		background-color: lightblue;
+		border-bottom-right-radius: 8px;
+		border-top-right-radius: 8px;
+        border-bottom: 1px solid #363636;
+        border-top: 1px solid #363636;
+        border-left: 0px solid #363636;
+        border-right: 1px solid #363636;
+	}
+		.input-container input {
+      font-size: 18px;
+      max-width: 100%;
+      text-align: center;
+      padding: 10px;
+      margin: 0px;
+      background-color: lightyellow;
+      width: 70%;
+    font-family: "dunbar-tall", sans-serif;
+    }
+		
+    </style>
+    <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+	<meta charset="utf-8">
+</head>
+<body>
+	 <h2>Calculadora de Dentículos</h2>
+<div class="container">	
+  <form class="input-container">
+	<div class="length">
+      <label>Longitud:</label>
+      <input type="text" id="horizontalLength" value="11">
+	</div>
+	<div class="blockWidth">
+      <label>Ancho:</label>
+      <input type="text" id="blockWidth" value="1">
+	</div>
+	<div class="burn">
+      <label>Inicio:</label>
+      <input type="text" id="edgeDistance" value="1">
+	</div>
+	<div class="quantity">
+      <label>Cantidad:</label>
+      <input type="text" id="numBlocks" value="5">
+	</div>
+  </form>
+	<div class="resultsBG">
+    <div class="result" id="result">Distancia:</div>
+    <div class="result" id="measurements">Factores:</div>	
+	</div>
+</div>
+
+	  
+	  
+	  
+<script type="text/javascript">
+ 
+
+    document.getElementById('horizontalLength').addEventListener('input', debounce(calculate, 500));
+    document.getElementById('blockWidth').addEventListener('input', debounce(calculate, 500));
+    document.getElementById('edgeDistance').addEventListener('input', debounce(calculate, 500));
+    document.getElementById('numBlocks').addEventListener('input', debounce(calculate, 500));
+
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(func, wait);
+        };
+    }
+
+    function toDecimal(input) {
+        if (input.includes('/')) {
+            let parts = input.split(' ');
+            let decimal;
+            if (parts.length > 1) {
+                let whole = parseInt(parts[0]);
+                let fraction = parts[1].split('/');
+                decimal = whole + parseFloat(fraction[0]) / parseFloat(fraction[1]);
+            } else {
+                let fraction = parts[0].split('/');
+                decimal = parseFloat(fraction[0]) / parseFloat(fraction[1]);
+            }
+            return decimal;
+        } else {
+            return parseFloat(input);
+        }
+    }
+
+   
+
+		
+		function toFraction(decimal) {
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+    let whole = Math.floor(decimal);
+    let remainder = decimal - whole;
+
+    // Convert the decimal remainder to a fraction
+    let numerator = Math.round(remainder * 16);
+    let denominator = 16;
+
+    // Simplify the fraction
+    let divisor = gcd(numerator, denominator);
+    numerator /= divisor;
+    denominator /= divisor;
+
+    if (whole) {
+        if (numerator) {
+            return `${whole} &nbsp;&nbsp;<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>"`;
+        } else {
+            return `${whole}"`;
+        }
+    } else {
+        if (numerator) {
+            return `<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>"`;
+        } else {
+            return '0"';
+        }
+    }
+}
+		
+		
+    function calculate() {
+        var horizontalLength = toDecimal(document.getElementById('horizontalLength').value);
+        var blockWidth = toDecimal(document.getElementById('blockWidth').value);
+        var edgeDistance = toDecimal(document.getElementById('edgeDistance').value);
+        var numBlocks = parseInt(document.getElementById('numBlocks').value);
+        var totalBlockWidth = numBlocks * blockWidth;
+        var totalGaps = numBlocks + 1;
+        var availableGapLength = horizontalLength - totalBlockWidth;
+        var gapWidth = availableGapLength / totalGaps;
+        document.getElementById('result').innerHTML = 'Distancia: ' + toFraction(gapWidth);
+
+        var measurements = [];
+        var currentMeasurement = edgeDistance;
+        for (var i = 0; i < numBlocks; i++) {
+            measurements.push(toFraction(currentMeasurement));
+            currentMeasurement += blockWidth;
+            measurements.push(toFraction(currentMeasurement));
+            currentMeasurement += gapWidth;
+        }
+        var measurementList = '<ul>';
+        measurements.forEach(function(measurement) {
+            measurementList += '<li>' + measurement + '</li><br>';
+        });
+        measurementList += '</ul>';
+        document.getElementById('measurements').innerHTML = 'Factores:' + measurementList;
+    }
+    calculate();
+</script>
+       
+
+</body>
+</html>
