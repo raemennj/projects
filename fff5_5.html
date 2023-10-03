@@ -9,6 +9,8 @@
             font-size: 18px;
             margin: 0;
             padding-top: 5px;
+  			padding-left: 10px;
+  			padding-right: 10px;
             background-color: darkslategrey;
             display: flex;
             flex-direction: column;
@@ -23,11 +25,11 @@
             font-family: "epitaph", sans-serif;
         }
         .container {
-            max-width: 400px;
-            background-color: lightyellow;
-            border-radius: 8px;
-            padding: 8px;
-            text-align: center;
+    width: 100%;
+    background-color: lightyellow;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
         }
         label {
             display: block;
@@ -141,7 +143,11 @@
       width: 70%;
     font-family: "dunbar-tall", sans-serif;
     }
-		
+@media screen and (min-width: 768px) {
+    .container {
+        max-width: 600px;
+    }
+}
     </style>
     <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 	<meta charset="utf-8">
