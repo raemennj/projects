@@ -299,10 +299,10 @@ const calculate = () => {
   const method = document.querySelector('.tab.active').id.startsWith('equal') ? 'equal' : 'near';
   const [length, endDistance, valueUsed] = [parseInput(lengthInput), parseInput(endDistanceInput), parseInput(valueUsedInput)];
 
-  if (isNaN(length) || isNaN(endDistance) || isNaN(valueUsed)) {
-    document.getElementById('segmentResult').innerText = 'Please enter valid numbers or fractions.';
+ if (isNaN(length) || isNaN(endDistance) || isNaN(valueUsed)) {
+    document.getElementById('segmentResult').innerText = 'Por favor, introduzca numeros o fracciones validos.';
     return;
-  }
+}
 
   let remainingLength = length - 2 * endDistance, segments = [toReadableFraction(endDistance)], segmentLength;
 
