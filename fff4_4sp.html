@@ -199,8 +199,8 @@
 </head>
 <body>
   <div class="tab-container">
-    <div id="equalTab" class="tab active" onclick="changeTab('equal')">Igual</div>
-    <div id="nearTab" class="tab" onclick="changeTab('near')">Cercano</div>
+	<div id="equalTab" class="tab active" tabindex="0" role="button" onclick="changeTab('equal')">Igual</div>
+	<div id="nearTab" class="tab" tabindex="0" role="button" onclick="changeTab('near')">Cercano</div>
   </div>
   <form class="input-container">
     <div class="length">
@@ -211,10 +211,10 @@
       <label for="endDistance"> Inicio:</label><br>
       <input type="text" id="endDistance">
     </div>
-    <div class="segmentType">
-      <div id="dynamicLabel">Segmentos:</div>
-      <input type="text" id="valueUsed">
-    </div>
+	<div class="segmentType">
+		<label id="dynamicLabel" for="valueUsed">Segmentos:</label><br>
+		<input type="text" id="valueUsed">
+	</div>
   </form>
   <div class="resultsBG">
     <p id="segmentResult"></p>
@@ -327,6 +327,23 @@ const debounceCalculate = () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(calculate, 500);
 };
+	
+// Event listeners for tab focus
+	  document.getElementById('equalTab').addEventListener('keydown', function(event) {
+    // Check if the key pressed is "Enter"
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent any default action, if necessary
+        changeTab('equal'); // Call the function that changes the tab
+    }
+});
+
+document.getElementById('nearTab').addEventListener('keydown', function(event) {
+    // Check if the key pressed is "Enter"
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent any default action, if necessary
+        changeTab('near'); // Call the function that changes the tab
+    }
+});
 
 // Event listeners for input changes
 document.getElementById('length').addEventListener('input', debounceCalculate);
