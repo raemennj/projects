@@ -26,8 +26,8 @@
       width: 100%;
     }
     .tab {      flex: 1;
-      padding: 15px;
-		font-weight: 200; 
+      padding: 15px; 
+	  font-size: 19px;
       cursor: pointer;
       border-left: 1px solid #363636;
       border-right: 1px solid #363636;
@@ -69,9 +69,6 @@
       flex: 1;
       text-align: center;
     }
-    input sup, inputr sub {
-      font-size: 0.85em;
-    }
     input {
       font-size: 18px;
       max-width: 100%;
@@ -80,7 +77,9 @@
       margin-top: 10px;
       background-color: lightyellow;
       width: 70%;
-    font-family: "dunbar-tall", sans-serif;
+      font-family: "dunbar-tall", sans-serif;
+      cursor: pointer;
+		
     }
 	   /* Result Styles */
     #marksResult {
@@ -185,18 +184,18 @@
 	border-radius: 14px;
   border: 1px solid #888;
   width: 80%;
-  max-height: calc(100vh - 40px); /* 20px top and bottom margin */
+  max-height: calc(100vh - 40px); 
   overflow-y: auto; 
 }
 @media screen and (orientation:landscape) {
   .modal-content {
-    max-height: calc(100vh - 80px); /* Adjusted height for landscape */
+    max-height: calc(100vh - 80px); 
   }
 }
 	    @media (min-width: 601px) {
     body {
-      margin: 0 auto; /* centers the content on screens wider than 600px */
-      max-width: 600px; /* sets max-width to 600px for screens wider than 600px */
+      margin: 0 auto; 
+      max-width: 600px; 
     }
   }
   </style>
@@ -223,8 +222,8 @@
 	</div>
   </form>
   <div class="resultsBG">
-    <p id="segmentResult"></p>
-    <p id="marksResult"></p>
+<p id="segmentResult" role="text" aria-live="assertive" aria-label="Resultado de la Longitud del Segmento"></p>
+<p id="marksResult" role="text" aria-live="assertive" aria-label=" Resultado de las Marcas del Segmento"></p>
   </div>
 	
 	
