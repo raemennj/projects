@@ -12,14 +12,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-    font-family: "dunbar-tall", sans-serif;
+      font-family: "dunbar-tall", sans-serif;
     }
     h1 {
       font-size: 28px;
       text-align: center;
       color: lightyellow;
       margin-top: 20px;
-	font-family: "epitaph", sans-serif;
+	  font-family: "epitaph", sans-serif;
     }
     .tab-container {
       display: flex;
@@ -79,42 +79,39 @@
       width: 70%;
       font-family: "dunbar-tall", sans-serif;
       cursor: pointer;
-		
     }
-	   /* Result Styles */
     #marksResult {
       text-align: center;
     }
     #segmentResult {
       text-align: center;
-		
     }
 	.length {
-		width:33%;
-		float: left;
-		text-align: center;
-		padding-top: 15px;
-		padding-bottom: 14px;
-		background-color: lightblue;
-        border-bottom: 1px solid #363636;
+	  width:33%;
+	  float: left;
+	  text-align: center;
+	  padding-top: 15px;
+	  padding-bottom: 14px;
+	  background-color: lightblue;
+	  border-bottom: 1px solid #363636;
 	}
 	.burn {
-		width:34%;
-		float: left;
-		text-align: center;
-		padding-top: 15px;
-		padding-bottom: 14px;
-		background-color: lightblue;
-        border-bottom: 1px solid #363636;
+	  width:34%;
+	  float: left;
+	  text-align: center;
+	  padding-top: 15px;
+	  padding-bottom: 14px;
+	  background-color: lightblue;
+	  border-bottom: 1px solid #363636;
 	}
 	.segmentType {
-		width:33%;
-		float: left;
-		text-align: center;
-		padding-top: 15px;
-		padding-bottom: 14px;
-		background-color: lightblue;
-        border-bottom: 1px solid #363636;
+	  width:33%;
+	  float: left;
+	  text-align: center;
+	  padding-top: 15px;
+	  padding-bottom: 14px;
+	  background-color: lightblue;
+      border-bottom: 1px solid #363636;
 	}
     .resultsBG {
       text-align: center;
@@ -130,7 +127,7 @@
 	  text-align: center;
       width: 100%;
 	  border: none;
-	  }
+	}
 	.readme-container button {
       flex: 1;
       text-align: center;text-decoration: underline;
@@ -141,65 +138,62 @@
 	  font-size: 18px;
 	  padding-bottom: 10px;
       font-family: "dunbar-tall", sans-serif;
-      }
-	  .close-btn {
+    }
+	.close-btn {
 	  text-decoration: underline;
       cursor: pointer;
-	  }
-	  .info{
+	}
+	.info{
       float:right;
       text-align: center;
       background-color: lightyellow;
       width: 100%;
-		  padding-left: 5px;
-		  padding-right: 5px;
-	  }
-	  .credits{
-      
+	  padding-left: 5px;
+	  padding-right: 5px;
+	}
+	.credits {
       text-align: center;
       background-color: lightyellow;
-		border-bottom-left-radius: 10px;
-		border-bottom-right-radius: 10px;
+	  border-bottom-left-radius: 10px;
+	  border-bottom-right-radius: 10px;
       width: 100%;
-	  }
-	  
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.4);
-}
-#showModalBtn {
-  color: black;
-  cursor: pointer;
-}
-.modal-content {
-  background-color: lightyellow;
-  margin: 5% auto;
-  padding: 20px;
-	border-radius: 14px;
-  border: 1px solid #888;
-  width: 80%;
-  max-height: calc(100vh - 40px); 
-  overflow-y: auto; 
-}
-@media screen and (orientation:landscape) {
-  .modal-content {
-    max-height: calc(100vh - 80px); 
-  }
-}
-	    @media (min-width: 601px) {
+	} 
+	.modal {
+	  display: none;
+	  position: fixed;
+	  z-index: 1;
+	  left: 0;
+	  top: 0;
+	  width: 100%;
+	  height: 100%;
+	  background-color: rgba(0,0,0,0.4);
+	}
+	#showModalBtn {
+ 	  color: black;
+  	  cursor: pointer;
+	}
+	.modal-content {
+ 	  background-color: lightyellow;
+      margin: 5% auto;
+      padding: 20px;
+	  border-radius: 14px;
+ 	  border: 1px solid #888;
+ 	  width: 80%;
+ 	  max-height: calc(100vh - 40px); 
+ 	  overflow-y: auto; 
+	}
+	@media screen and (orientation:landscape) {
+  	.modal-content {
+  	  max-height: calc(100vh - 80px); 
+    }
+	}
+	@media (min-width: 601px) {
     body {
       margin: 0 auto; 
       max-width: 600px; 
     }
-  }
+    }
   </style>
-	
   <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
@@ -217,44 +211,41 @@
       <input type="text" id="endDistance">
     </div>
 	<div class="segmentType">
-		<label id="dynamicLabel" for="valueUsed">Segmentos:</label><br>
-		<input type="text" id="valueUsed">
+	  <label id="dynamicLabel" for="valueUsed">Segmentos:</label><br>
+	  <input type="text" id="valueUsed">
 	</div>
   </form>
   <div class="resultsBG">
-<p id="segmentResult" role="text" aria-live="assertive" aria-label="Resultado de la Longitud del Segmento"></p>
-<p id="marksResult" role="text" aria-live="assertive" aria-label=" Resultado de las Marcas del Segmento"></p>
+      <p id="segmentResult" role="text" aria-live="assertive" aria-label="Resultado de la Longitud del Segmento"></p>
+	  <p id="marksResult" role="text" aria-live="assertive" aria-label=" Resultado de las Marcas del Segmento"></p>
   </div>
-	
-	
 	<div class="readme-container">
 	<button id="showModalBtn">Instrucciones</button>
-	
-	
 	<div id="instructionsModal" class="modal">
        <div class="modal-content">
-Toque "Igual" para segmentos iguales o "Cercano" para segmentos cercanos a una longitud espec&iacute;fica.
-<br><br>
-Complete el campo "Longitud" con la longitud total de su material.
-<br><br>
-Introduce la distancia que dejar&aacute;s en cada extremo en el campo "Inicio".
-<br><br>
-En el &uacute;ltimo campo, ingrese el n&uacute;mero de segmentos o el tama&ntilde;o aproximado de cada segmento, seg&uacute;n el modo elegido.
-<br><br>
-Las longitudes y factores de segmento calculados aparecer&aacute;n debajo de los campos de entrada.
-	<br><br>	<span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>	
+         	Toque "Igual" para segmentos iguales o "Cercano" para
+		 	segmentos cercanos a una longitud espec&iacute;fica.
+         <br><br>
+         	Complete el campo "Longitud" con la longitud total de 
+		 	su material.
+         <br><br>
+         	Introduce la distancia que dejar&aacute;s en cada 
+		 	extremo en el campo "Inicio".
+         <br><br>
+		 	En el &uacute;ltimo campo, ingrese el n&uacute;mero de 
+		 	segmentos o el tama&ntilde;o aproximado de cada segmento, 
+		 	seg&uacute;n el modo elegido.
+         <br><br>
+         	Las longitudes y factores de segmento calculados 
+		 	aparecer&aacute;n debajo de los campos de entrada.
+	     <br><br>	
+	   <span class="close-btn" id="closeModalBtn" tabindex="0">Cerrar</span>	
 	  </div>
-	</div>
+   </div>
+</div>
 	
+<script>
 	
-	
-	</div>
-	
-	
-	
-	
-	
-  <script>
 // Helper function to calculate the greatest common divisor
 const gcd = (a, b) => b ? gcd(b, a % b) : a;
 
@@ -304,29 +295,25 @@ const calculate = () => {
   const method = document.querySelector('.tab.active').id.startsWith('equal') ? 'equal' : 'near';
   const [length, endDistance, valueUsed] = [parseInput(lengthInput), parseInput(endDistanceInput), parseInput(valueUsedInput)];
 
- if (isNaN(length) || isNaN(endDistance) || isNaN(valueUsed)) {
+  if (isNaN(length) || isNaN(endDistance) || isNaN(valueUsed)) {
     document.getElementById('segmentResult').innerText = 'Por favor, introduzca numeros o fracciones validos.';
     return;
-}
-
+  }
   let remainingLength = length - 2 * endDistance, segments = [toReadableFraction(endDistance)], segmentLength;
-
   if (method === 'equal') {
     segmentLength = remainingLength / valueUsed;
     for (let i = 0; i < valueUsed; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
   } else if (method === 'near') {
     const exactNumSegments = remainingLength / valueUsed;
-    const numSegments = Math.round(exactNumSegments);  // This change ensures rounding to the nearest whole number
-
-    segmentLength = remainingLength / numSegments; // Recalculate segment length based on actual number of segments
+    const numSegments = Math.round(exactNumSegments); 
+    segmentLength = remainingLength / numSegments; 
     for (let i = 0; i < numSegments; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
   }
-
   document.getElementById('segmentResult').innerHTML = `Longitud del Segmento: ${toReadableFraction(segmentLength)}"`;
   document.getElementById('marksResult').innerHTML = `Factores:<br><br>${segments.join('"<hr><br>')} "`;
 };
 
-// Debouncing function to prevent excessive calculations
+// Debouncing function
 let debounceTimer;
 const debounceCalculate = () => {
   clearTimeout(debounceTimer);
@@ -335,18 +322,16 @@ const debounceCalculate = () => {
 	
 // Event listeners for tab focus
 	  document.getElementById('equalTab').addEventListener('keydown', function(event) {
-    // Check if the key pressed is "Enter"
     if (event.key === 'Enter') {
-        event.preventDefault(); // Prevent any default action, if necessary
-        changeTab('equal'); // Call the function that changes the tab
+        event.preventDefault(); 
+        changeTab('equal'); 
     }
 });
 
 document.getElementById('nearTab').addEventListener('keydown', function(event) {
-    // Check if the key pressed is "Enter"
     if (event.key === 'Enter') {
-        event.preventDefault(); // Prevent any default action, if necessary
-        changeTab('near'); // Call the function that changes the tab
+        event.preventDefault(); 
+        changeTab('near'); 
     }
 });
 
@@ -368,38 +353,33 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 // Function to open the modal and set the focus on the close button
 function openModal() {
   modal.style.display = "block";
-  closeModalBtn.focus(); // This sets focus to the close button when the modal is opened
+  closeModalBtn.focus();
 }
 
 // Function to close the modal and return the focus to the showModal button
 function closeModal() {
   modal.style.display = "none";
-  showModalBtn.focus(); // This returns focus to the showModal button when the modal is closed
+  showModalBtn.focus(); 
 }
 
-// Event listener for opening the modal when the showModal button is clicked
 showModalBtn.addEventListener('click', openModal);
-
-// Event listener for closing the modal when the closeModal button is clicked or 'Enter' key is pressed
-closeModalBtn.addEventListener('click', closeModal); // This listener is for mouse users
-
-// Adjusted event listener for the 'Enter' key on the closeModalBtn
+closeModalBtn.addEventListener('click', closeModal);
 closeModalBtn.addEventListener('keypress', function(event) {
-  // The 'Enter' key should work on keypress, especially for non-button elements
   if (event.key === 'Enter' || event.keyCode === 13) {
-    closeModal(); // This listener is for keyboard users, enhancing accessibility
+    closeModal(); 
   }
 });
 
 // Event listener to close the modal if a click is detected outside of it
 window.addEventListener('click', function(event) {
   if (event.target === modal) {
-    closeModal(); // This also ensures the focus is returned to showModalBtn
+    closeModal(); 
   }
 });
 
 // Initial calculation on page load
 calculate();
-  </script>
+	
+</script>
 </body>
 </html>
