@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drag-scrollable Container</title>
+<style>
+  #scroll-wheel {
+	max-width: 400px;
+	 
+    display: flex;
+    flex-direction: column;
+    max-height: 200px;
+    overflow-y: auto;
+    cursor: pointer;
+    border: 1px solid #000;
+    align-items: center;
+    user-select: none; /* Prevent text selection */
+  }
+
+  .item {
+    padding: 10px;
+    text-align: center;
+  }
+
+  .selected {
+    background-color: yellow;
+  }
+</style>
+</head>
+<body>
+
+<div id="scroll-wheel">
+  <!-- Items here -->
+  <div class="item">Item 1</div>
+  <div class="item">Item 2</div>
+  <div class="item">Item 3</div>
+  <div class="item">Item 4</div>
+  <div class="item">Item 5</div>
+  <div class="item">Item 6</div>
+  <div class="item">Item 6</div>
+  <div class="item">Item 7</div>
+  <div class="item">Item 8</div>
+  <div class="item">Item 9</div>
+  <div class="item">Item 0</div>
+  <div class="item">Item 2</div>
+  <div class="item">Item 20</div>
+</div>
+
+<script>
+  // Make the container drag-scrollable
+  const scrollWheel = document.querySelector('#scroll-wheel');
+  let isDown = false;
+  let startY;
+  let scrollTop;
+
+  scrollWheel.addEventListener('mousedown', (e) => {
+    isDown = true;
+    startY = e.pageY - scrollWheel.offsetTop;
+    scrollTop = scrollWheel.scrollTop;
+  });
+
+  scrollWheel.addEventListener('mouseleave', () => {
+    isDown = false;
+  });
+
+  scrollWheel.addEventListener('mouseup', () => {
+    isDown = false;
+  });
+
+  scrollWheel.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const y = e.pageY - scrollWheel.offsetTop;
+    const delta = y - startY; // How far we've moved
+    scrollWheel.scrollTop = scrollTop - delta;
+  });
+
+  // Touch event support for mobile
+  scrollWheel.addEventListener('touchstart', (e) => {
+    isDown = true;
+    startY = e.touches[0].pageY - scrollWheel.offsetTop;
+    scrollTop = scrollWheel.scrollTop;
+  }, { passive: true });
+
+  scrollWheel.addEventListener('touchend', () => {
+    isDown = false;
+  });
+
+  scrollWheel.addEventListener('touchmove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const y = e.touches[0].pageY - scrollWheel.offsetTop;
+    const delta = y - startY;
+    scrollWheel.scrollTop = scrollTop - delta;
+  }, { passive: false });
+</script>
+</body>
+</html>
