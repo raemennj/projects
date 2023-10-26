@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extended Custom Keypad</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+
+  #numberDisplay, #secondInput {
+    margin-top: 20px;
+    font-size: large;
+    text-align: center;
+  }
+
+  .keypad {
+    margin-top: 20px;
+  }
+
+  .keypad-button {
+    font-size: 1.5em;
+    padding: 10px 20px;
+    margin: 5px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Extended Keypad Example</h1>
+
+<!-- Input fields without "readonly" attribute -->
+<input type="text" id="numberDisplay">
+<input type="text" id="secondInput">
+
+<!-- Custom keypad -->
+<div id="customKeypad" class="keypad">
+  <!-- Numeric buttons -->
+  <button class="keypad-button" value="1">1</button>
+  <button class="keypad-button" value="2">2</button>
+  <button class="keypad-button" value="3">3</button>
+  <button class="keypad-button" value="4">4</button>
+  <button class="keypad-button" value="5">5</button>
+  <button class="keypad-button" value="6">6</button>
+  <button class="keypad-button" value="7">7</button>
+  <button class="keypad-button" value="8">8</button>
+  <button class="keypad-button" value="9">9</button>
+  <button class="keypad-button" value="0">0</button>
+  <!-- Other buttons -->
+  <button class="keypad-button" value=" ">Space</button>
+  <button class="keypad-button" value=".">.</button>
+  <button class="keypad-button" value="/">/</button>
+  <!-- Clear field button -->
+  <button class="keypad-button" id="clearButton">Clear</button>
+  <!-- Next field button -->
+  <button class="keypad-button" id="nextFieldButton">Next Field</button>
+</div>
+
+<script>
+  // JavaScript part to handle touch and focus management
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if it's a touch device
+    var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints;
+
+    // If it's a touch device, prevent the on-screen keyboard from appearing
+    if (isTouchDevice) {
+      // Get the input elements
+      var inputElements = document.querySelectorAll('input[type=text]');
+
+      // Add a touchstart event listener to each input element
+      inputElements.forEach(function(input) {
+        input.addEventListener('touchstart', function(event) {
+          // Prevent the default action (focus) from occurring
+          event.preventDefault();
+
+          // Manually set the focus to the input field without triggering the virtual keyboard
+          input.blur(); // First, remove any existing focus
+          input.focus(); // Then set the focus again
+        });
+      });
+    }
+  });
+
+  // Existing keypad functionality script remains unchanged
+  // Get references for the input displays and buttons
+  var display = document.getElementById('numberDisplay');
+  var secondInput = document.getElementById('secondInput');
+  var buttons = document.querySelectorAll('.keypad-button');
+  var clearButton = document.getElementById('clearButton'); // The clear button
+  var nextFieldButton = document.getElementById('nextFieldButton'); // The next field button
+
+  // Current active input field
+  var activeInput = display;
+
+  // Function to handle button clicks
+  function onButtonClick(event) {
+    var value = event.target.value; // Get the value from the button
+
+    if (event.target === clearButton) {
+      activeInput.value = ''; // If the clear button was pressed, empty the display
+    } else if (event.target === nextFieldButton) {
+      // If the next field button was pressed, change the active input field
+      activeInput = (activeInput === display) ? secondInput : display;
+      activeInput.focus(); // Optionally, give focus to the new active input field
+    } else {
+      activeInput.value += value; // Otherwise, append the button's value to the current display value
+    }
+  }
+
+  // Attach event listeners to the buttons
+  buttons.forEach(function(button) {
+    button.addEventListener('click', onButtonClick);
+  });
+</script>
+
+</body>
+</html>
