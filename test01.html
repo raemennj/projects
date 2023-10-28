@@ -197,17 +197,27 @@
  	  max-height: calc(100vh - 40px); 
  	  overflow-y: auto; 
 	}
-	  
 	#calcButtons {
-		background-color: lightyellow;
-	  }
+  	  display: flex;
+ 	  flex-wrap: wrap; /* If you want the items to wrap onto the next line as needed */
+	  justify-content: space-around; /* Adjust the distribution of space around items */
+	  gap: 0px; /* Optional: if you want to have a gap between the flex items */
+	  background-color: lightyellow;
+}  
+
 	  
-	  	#calcButtons button{
+	#calcButtons button{
+	  flex: 1 0 auto; /* It tells the browser to allow the button to grow & shrink. */
+      padding: 7px; /* Optional: for button size adjustment */
+      margin: 5px; /* Optional: for space outside the button */
+      text-align: center; /* Aligns the content (usually text) within your buttons */
+
+      /* Additional styling properties for your buttons */
+      border: 1px solid #ccc;
+      background-color: #f3f3f3;
+      border-radius: 5px; /* Optional: if you want rounded corners */
 	  width: 10 %;
 	  font-size: 19px;
-			padding-left: 10px;
-			padding-right:  10px;
-			padding-top: 5px;
 		  
 	  }
 	  
