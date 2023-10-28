@@ -1,119 +1,482 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Extended Custom Keypad</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-  }
+	
+<!-- 
+		 This web page is the sole creation and production of 
+         raemenn jewall. 2023
 
-  #numberDisplay, #secondInput {
-    margin-top: 20px;
-    font-size: large;
-    text-align: center;
-  }
+         By automating the mathematical process, this segment calculator 
+         eliminates errors due to manual calculation. We can focus on the  
+		 physical crafting process with accurate numerical backing. 
+		 This allows for projects to be completed with a higher  
+		 degree of precision, efficiency, and confidence.
 
-  .keypad {
-    margin-top: 20px;
-  }
+		 Esta pagina web es la unica creacion y produccion de 
+		 raemenn jewall. 2023
 
-  .keypad-button {
-    font-size: 1.5em;
-    padding: 10px 20px;
-    margin: 5px;
-  }
-</style>
+		 Al automatizar el proceso matematico, esta calculadora de segmentos 
+		 elimina los errores debidos a calculos manuales. Podemos concentrarnos 
+		 en el proceso de elaboracion fisica con un respaldo numerico preciso. 
+		 Esto permite que los proyectos se completen con un mayor grado de 
+		 precision, eficiencia y confianza.
+-->
+	
+  <title>Calculadora de Segmentoss</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+  <style>
+    body {
+      font-size: 18px;
+      margin: 0;
+      padding: 5px;
+      background-color: darkslategrey;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      font-family: "dunbar-tall", sans-serif;
+    }
+    .tab-container {
+      display: flex;
+      width: 100%;
+    }
+    .tab {      flex: 1;
+      padding: 15px; 
+	  font-size: 19px;
+      cursor: pointer;
+      border-left: 1px solid #363636;
+      border-right: 1px solid #363636;
+      border-bottom: 1px solid #363636;
+      text-align: center;
+	  background-color: lightyellow;
+	  border-top-left-radius: 8px;
+	  border-top-right-radius: 8px;
+	  margin-top: 5px;
+    }
+    .tab.active {
+      background-color: #ccc;
+	  border-bottom: 0PX;
+	  border-top-left-radius: 10px;
+	  border-top-right-radius: 10px;
+	  margin-top: 0px;
+    }
+	#equalTab.active {
+      background-color: lightblue;
+      border-left: 0px;
+    }
+    #nearTab.active {
+      background-color: lightgreen;
+      border-right: 0px;
+    } 
+	.inputLabel {
+	  padding-top: 5px;
+	  padding-bottom:  5px;
+	}
+    .lightgreen-bg {
+      background-color: lightgreen !important;
+    }
+    .input-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .input-container div {
+      flex: 1;
+      text-align: center;
+    }
+    input {
+      font-size: 18px;
+      max-width: 100%;
+      text-align: center;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: lightyellow;
+      width: 70%;
+      font-family: "dunbar-tall", sans-serif;
+      cursor: pointer;
+    }
+    #marksResult {
+      text-align: center;
+    }
+    #segmentResult {
+      text-align: center;
+    }
+	.length {
+	  width:33%;
+	  float: left;
+	  text-align: center;
+	  padding-top: 15px;
+	  padding-bottom: 14px;
+	  background-color: lightblue;
+	  border-bottom: 1px solid #363636;
+	}
+	.burn {
+	  width:34%;
+	  float: left;
+	  text-align: center;
+	  padding-top: 15px;
+	  padding-bottom: 14px;
+	  background-color: lightblue;
+	  border-bottom: 1px solid #363636;
+	}
+	.segmentType {
+	  width:33%;
+	  float: left;
+	  text-align: center;
+	  padding-top: 15px;
+	  padding-bottom: 14px;
+	  background-color: lightblue;
+      border-bottom: 1px solid #363636;
+	}
+    .resultsBG {
+      text-align: center;
+      background-color: lightyellow;
+      width: 100%;
+    }
+    .factor sup, .factor sub {
+      font-size: 0.85em;
+    }
+	.readme-container{      
+	  display: flex;
+      justify-content: space-between;
+	  text-align: center;
+      width: 100%;
+	  border: none;
+	}
+	.readme-container button {
+      flex: 1;
+      text-align: center;text-decoration: underline;
+	  background-color: lightyellow;
+	  border: none;
+	  border-bottom-left-radius: 10px;
+	  border-bottom-right-radius: 10px;
+	  font-size: 18px;
+	  padding-bottom: 10px;
+      font-family: "dunbar-tall", sans-serif;
+    }
+	.close-btn {
+	  text-decoration: underline;
+      cursor: pointer;
+	}
+	.info{
+      float:right;
+      text-align: center;
+      background-color: lightyellow;
+      width: 100%;
+	  padding-left: 5px;
+	  padding-right: 5px;
+	}
+	.credits {
+      text-align: center;
+      background-color: lightyellow;
+	  border-bottom-left-radius: 10px;
+	  border-bottom-right-radius: 10px;
+      width: 100%;
+	} 
+	.modal {
+	  display: none;
+	  position: fixed;
+	  z-index: 1;
+	  left: 0;
+	  top: 0;
+	  width: 100%;
+	  height: 100%;
+	  background-color: rgba(0,0,0,0.4);
+	}
+	#showModalBtn {
+ 	  color: black;
+  	  cursor: pointer;
+	}
+	.modal-content {
+ 	  background-color: lightyellow;
+      margin: 5% auto;
+      padding: 20px;
+	  border-radius: 14px;
+ 	  border: 1px solid #888;
+ 	  width: 80%;
+ 	  max-height: calc(100vh - 40px); 
+ 	  overflow-y: auto; 
+	}
+	  
+	#calcButtons {
+	  width: 90 %;
+	  font-size: 19px;
+		  
+	  }
+	  
+	@media screen and (orientation:landscape) {
+  	.modal-content {
+  	  max-height: calc(100vh - 80px); 
+    }
+	}
+	@media (min-width: 601px) {
+    body {
+      margin: 0 auto; 
+      max-width: 600px; 
+    }
+    }
+  </style>
+  <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
+  <div class="tab-container">
+    <div id="equalTab" class="tab active" tabindex="0" role="button" onclick="changeTab('equal')">Igual</div>
+    <div id="nearTab" class="tab" tabindex="0" role="button" onclick="changeTab('near')">Cercano</div>
+  </div>
+  <form class="input-container">
+    <div class="length">
+      <label for="length">Longitud:</label><br>
+      <input type="text" id="length" readonly onclick="focusInput(this);">
+    </div>
+    <div class="burn">
+      <label for="endDistance"> Inicio:</label><br>
+      <input type="text" id="endDistance" readonly onclick="focusInput(this);">
+    </div>
+    <div class="segmentType">
+      <label id="dynamicLabel" for="valueUsed">Segmentos:</label><br>
+      <input type="text" id="valueUsed" readonly onclick="focusInput(this);">
+    </div>  
+  </form>
+  
+  <div id="calcButtons">
+    <!-- Buttons for navigating, inputting numbers, and modifying entries -->
+    <button onclick="moveToPreviousField()">&larr;</button>
+    <button onclick="insertValue('1')">1</button>
+    <button onclick="insertValue('2')">2</button>
+    <button onclick="insertValue('3')">3</button>
+    <button onclick="insertValue('4')">4</button>
+    <button onclick="insertValue('5')">5</button>
+    <button onclick="insertValue('6')">6</button>
+    <button onclick="insertValue('7')">7</button>
+    <button onclick="insertValue('8')">8</button>
+    <button onclick="insertValue('9')">9</button>
+    <button onclick="insertValue('0')">0</button>
+    <button onclick="moveToNextField()">&rarr;</button>
+    <button onclick="insertValue('.')">.</button>
+    <button onclick="insertValue('/')">/</button>
+    <button onclick="insertValue(' ')" style="min-width: 50px;">Space</button>
+    <button onclick="insertValue('/16')">/16</button>
+    <button onclick="insertValue('/8')">/8</button>
+    <button onclick="insertValue('/4')">/4</button>
+    <button onclick="insertValue('/2')">/2</button>
+    <button onclick="deleteLastEntry()">DEL</button>
+  </div>
 
-<h1>Extended Keypad Example</h1>
+  <div class="resultsBG">
+    <p id="segmentResult" role="text" aria-live="assertive" aria-label="Resultado de la Longitud del Segmento"></p>
+    <p id="marksResult" role="text" aria-live="assertive" aria-label=" Resultado de las Marcas del Segmento"></p>
+  </div>
+  <div class="readme-container">
+    <button id="showModalBtn">Instrucciones</button>
+    <div id="instructionsModal" class="modal">
+      <div class="modal-content">
+        <!-- Content of the instructions modal -->
+        Toque "Igual" para segmentos iguales o "Cercano" para segmentos cercanos a una longitud específica.
+        <!-- More instructions here -->
+        <span class="close-btn" id="closeModalBtn" tabindex="0">Cerrar</span>  
+      </div>
+    </div>
+  </div>
 
-<!-- Input fields without "readonly" attribute -->
-<input type="text" id="numberDisplay">
-<input type="text" id="secondInput">
+  <script>
+    // New functions and changes are integrated here with the original script
+    var currentInput = null;
 
-<!-- Custom keypad -->
-<div id="customKeypad" class="keypad">
-  <!-- Numeric buttons -->
-  <button class="keypad-button" value="1">1</button>
-  <button class="keypad-button" value="2">2</button>
-  <button class="keypad-button" value="3">3</button>
-  <button class="keypad-button" value="4">4</button>
-  <button class="keypad-button" value="5">5</button>
-  <button class="keypad-button" value="6">6</button>
-  <button class="keypad-button" value="7">7</button>
-  <button class="keypad-button" value="8">8</button>
-  <button class="keypad-button" value="9">9</button>
-  <button class="keypad-button" value="0">0</button>
-  <!-- Other buttons -->
-  <button class="keypad-button" value=" ">Space</button>
-  <button class="keypad-button" value=".">.</button>
-  <button class="keypad-button" value="/">/</button>
-  <!-- Clear field button -->
-  <button class="keypad-button" id="clearButton">Clear</button>
-  <!-- Next field button -->
-  <button class="keypad-button" id="nextFieldButton">Next Field</button>
-</div>
-
-<script>
-  // JavaScript part to handle touch and focus management
-  document.addEventListener('DOMContentLoaded', function() {
-    // Check if it's a touch device
-    var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints;
-
-    // If it's a touch device, prevent the on-screen keyboard from appearing
-    if (isTouchDevice) {
-      // Get the input elements
-      var inputElements = document.querySelectorAll('input[type=text]');
-
-      // Add a touchstart event listener to each input element
-      inputElements.forEach(function(input) {
-        input.addEventListener('touchstart', function(event) {
-          // Prevent the default action (focus) from occurring
-          event.preventDefault();
-
-          // Manually set the focus to the input field without triggering the virtual keyboard
-          input.blur(); // First, remove any existing focus
-          input.focus(); // Then set the focus again
-        });
-      });
+    function insertValue(value) {
+      if (currentInput) {
+        var currentValue = currentInput.value;
+        currentInput.value = currentValue + value;
+        calculate();  // Recalculate after inserting
+      }
     }
-  });
 
-  // Existing keypad functionality script remains unchanged
-  // Get references for the input displays and buttons
-  var display = document.getElementById('numberDisplay');
-  var secondInput = document.getElementById('secondInput');
-  var buttons = document.querySelectorAll('.keypad-button');
-  var clearButton = document.getElementById('clearButton'); // The clear button
-  var nextFieldButton = document.getElementById('nextFieldButton'); // The next field button
-
-  // Current active input field
-  var activeInput = display;
-
-  // Function to handle button clicks
-  function onButtonClick(event) {
-    var value = event.target.value; // Get the value from the button
-
-    if (event.target === clearButton) {
-      activeInput.value = ''; // If the clear button was pressed, empty the display
-    } else if (event.target === nextFieldButton) {
-      // If the next field button was pressed, change the active input field
-      activeInput = (activeInput === display) ? secondInput : display;
-      activeInput.focus(); // Optionally, give focus to the new active input field
-    } else {
-      activeInput.value += value; // Otherwise, append the button's value to the current display value
+    function deleteLastEntry() {
+      if (currentInput) {
+        var currentValue = currentInput.value;
+        currentInput.value = currentValue.substring(0, currentValue.length - 1);
+        calculate();  // Recalculate after deleting
+      }
     }
+
+    function moveToNextField() {
+      var inputs = Array.prototype.slice.call(document.getElementsByTagName('input'));
+      var currentIndex = inputs.indexOf(document.activeElement);
+      if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
+        var nextInput = inputs[currentIndex + 1];
+        nextInput.focus();
+      }
+    }
+
+    function moveToPreviousField() {
+      var inputs = Array.prototype.slice.call(document.getElementsByTagName('input'));
+      var currentIndex = inputs.indexOf(document.activeElement);
+      if (currentIndex > 0) {
+        var previousInput = inputs[currentIndex - 1];
+        previousInput.focus();
+      }
+    }
+
+
+    function focusInput(inputElement) {
+      if (currentInput) { 
+        currentInput.style.backgroundColor = "";
+      }
+      inputElement.removeAttribute('readonly'); 
+      inputElement.focus(); 
+      currentInput = inputElement; 
+      currentInput.style.backgroundColor = "#c1f0c1"; 
+    }
+	  
+	  function insertValue(value) {
+  if (currentInput) {
+    var currentValue = currentInput.value;
+    currentInput.value = currentValue + value; // Append the new character
+    calculate();  // Trigger the calculation after the value changes
+  }
+}
+
+function deleteLastEntry() {
+  if (currentInput) {
+    var currentValue = currentInput.value;
+    currentInput.value = currentValue.substring(0, currentValue.length - 1); // Remove the last character
+    calculate();  // Trigger the calculation after the value changes
+  }
+}
+
+	
+// Helper function to calculate the greatest common divisor
+const gcd = (a, b) => b ? gcd(b, a % b) : a;
+
+// Helper function to convert decimal numbers into readable fractions
+const toReadableFraction = x => {
+  if (isNaN(x)) return '';
+  const whole = Math.floor(x), fraction = x - whole;
+  let [numerator, denominator] = [Math.round(fraction * 16), 16], divisor = gcd(numerator, denominator);
+  [numerator, denominator] = [numerator / divisor, denominator / divisor];
+  return whole ? (numerator ? `${whole} &nbsp;&nbsp;<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : `${whole}`) : (numerator ? `<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : '0');
+};
+
+// Helper function to parse input values from the form
+const parseInput = input => {
+  if (!input) return NaN;
+  if (input.includes(' ')) {
+    const [whole, fraction] = input.split(' '), [numerator, denominator] = fraction.split('/').map(Number);
+    return isNaN(numerator) || isNaN(denominator) || denominator === 0 ? NaN : Number(whole) + (numerator / denominator);
+  } else if (input.includes('/')) {
+    const [numerator, denominator] = input.split('/').map(Number);
+    return isNaN(numerator) || isNaN(denominator) || denominator === 0 ? NaN : numerator / denominator;
+  } else {
+    return Number(input);
+  }
+};
+
+// Function to handle tab changes
+const changeTab = choice => {
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  document.getElementById(choice + 'Tab').classList.add('active');
+  document.getElementById('dynamicLabel').innerText = choice === 'equal' ? 'Segmentos:' : 'Pulgadas:';
+
+  const elementsToChange = document.querySelectorAll('.length, .burn, .segmentType');
+  if (choice === 'near') {
+    elementsToChange.forEach(el => el.classList.add('lightgreen-bg'));
+  } else {
+    elementsToChange.forEach(el => el.classList.remove('lightgreen-bg'));
   }
 
-  // Attach event listeners to the buttons
-  buttons.forEach(function(button) {
-    button.addEventListener('click', onButtonClick);
-  });
-</script>
+  // Trigger the calculation function when tab is changed
+  calculate();
+};
 
+// Main function to calculate segment lengths and factors
+const calculate = () => {
+  const [lengthInput, endDistanceInput, valueUsedInput] = [document.getElementById('length').value, document.getElementById('endDistance').value, document.getElementById('valueUsed').value];
+  const method = document.querySelector('.tab.active').id.startsWith('equal') ? 'equal' : 'near';
+  const [length, endDistance, valueUsed] = [parseInput(lengthInput), parseInput(endDistanceInput), parseInput(valueUsedInput)];
+
+  if (isNaN(length) || isNaN(endDistance) || isNaN(valueUsed)) {
+    document.getElementById('segmentResult').innerText = 'Por favor, introduzca numeros o fracciones validos.';
+    return;
+  }
+  let remainingLength = length - 2 * endDistance, segments = [toReadableFraction(endDistance)], segmentLength;
+  if (method === 'equal') {
+    segmentLength = remainingLength / valueUsed;
+    for (let i = 0; i < valueUsed; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
+  } else if (method === 'near') {
+    const exactNumSegments = remainingLength / valueUsed;
+    const numSegments = Math.round(exactNumSegments); 
+    segmentLength = remainingLength / numSegments; 
+    for (let i = 0; i < numSegments; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
+  }
+  document.getElementById('segmentResult').innerHTML = `Longitud del Segmento: ${toReadableFraction(segmentLength)}"`;
+  document.getElementById('marksResult').innerHTML = `Factores:<br><br>${segments.join('"<hr><br>')} "`;
+};
+
+// Debouncing function
+let debounceTimer;
+const debounceCalculate = () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(calculate, 500);
+};
+	
+// Event listeners for tab focus
+	  document.getElementById('equalTab').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); 
+        changeTab('equal'); 
+    }
+});
+
+document.getElementById('nearTab').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); 
+        changeTab('near'); 
+    }
+});
+
+
+// Event listeners for input changes
+document.getElementById('length').addEventListener('input', debounceCalculate);
+document.getElementById('endDistance').addEventListener('input', debounceCalculate);
+document.getElementById('valueUsed').addEventListener('input', debounceCalculate);
+
+// Event listeners for tab changes
+document.getElementById('equalTab').addEventListener('click', () => changeTab('equal'));
+document.getElementById('nearTab').addEventListener('click', () => changeTab('near'));
+
+// Instructions modal handling
+const modal = document.getElementById('instructionsModal');
+const showModalBtn = document.getElementById('showModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+
+// Function to open the modal and set the focus on the close button
+function openModal() {
+  modal.style.display = "block";
+  closeModalBtn.focus();
+}
+
+// Function to close the modal and return the focus to the showModal button
+function closeModal() {
+  modal.style.display = "none";
+  showModalBtn.focus(); 
+}
+showModalBtn.addEventListener('click', openModal);
+closeModalBtn.addEventListener('click', closeModal);
+closeModalBtn.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter' || event.keyCode === 13) {
+    closeModal(); 
+  }
+});
+
+// Event listener to close the modal if a click is detected outside of it
+window.addEventListener('click', function(event) {
+  if (event.target === modal) {
+    closeModal(); 
+  }
+});
+
+// Initial calculation on page load
+calculate();
+	
+  </script>
 </body>
 </html>
