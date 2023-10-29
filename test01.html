@@ -199,8 +199,8 @@
 	}
 	#calcButtons {
   	  display: flex;
- 	  flex-wrap: wrap; /* If you want the items to wrap onto the next line as needed */
-	  justify-content: space-around; /* Adjust the distribution of space around items */
+ 	  flex-wrap: wrap;   /* If you want the items to wrap onto the next line as needed */
+	  justify-content:flex-start; /* Adjust the distribution of space around items */
 	  gap: 0px; /* Optional: if you want to have a gap between the flex items */
 	  background-color: lightyellow;
 }  
@@ -220,6 +220,9 @@
 	  font-size: 19px;
 		  
 	  }
+	#calcButtons button.buttonSpace {
+      width: auto;
+      }
 	  
 	@media screen and (orientation:landscape) {
   	.modal-content {
@@ -269,13 +272,21 @@
     <button onclick="insertValue('9')">9</button>
     <button onclick="insertValue('0')">0</button>
     <br> 
-    <button onclick="insertValue('.')">.</button>
-    <button onclick="insertValue(' ')" style="min-width: 50px;">Space</button>
-    <button onclick="insertValue('/16')">/16</button>
-    <button onclick="insertValue('/8')">/8</button>
+    <button onclick="insertValue(' 1/16')">1/16</button>
+    <button onclick="insertValue(' 1/8')">1/8</button>
+    <button onclick="insertValue(' 3/16')">3/16</button>
     <button onclick="insertValue(' 1/4')">1/4</button>
+    <button onclick="insertValue(' 5/16')">5/16</button>
+    <button onclick="insertValue(' 3/8')">3/8</button>
+    <button onclick="insertValue(' 7/16')">7/16</button>
     <button onclick="insertValue(' 1/2')">1/2</button>
+    <button onclick="insertValue(' 9/16')">9/16</button>
+    <button onclick="insertValue(' 5/8')">5/8</button>
+    <button onclick="insertValue(' 11/16')">11/16</button>
     <button onclick="insertValue(' 3/4')">3/4</button>
+    <button onclick="insertValue(' 13/16')">13/16</button>
+    <button onclick="insertValue(' 7/8')">7/8</button>
+    <button onclick="insertValue(' 15/16')">15/16</button>
     <button onclick="deleteLastEntry()">DEL</button>
   </div>
 
