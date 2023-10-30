@@ -408,14 +408,19 @@ document.addEventListener('touchstart', function(event) {
     }
 }, { passive: false }); 
 
-var lastTouchEnd = 0;
+
+	  
+	  let lastTouchTime = 0;
+
 document.addEventListener('touchend', function(event) {
-    var now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) {
+    const now = Date.now();
+    const delta = now - lastTouchTime;
+    lastTouchTime = now;
+
+    if (delta < 300) {
         event.preventDefault();
     }
-    lastTouchEnd = now;
-}, false);
+});
 	
 // Helper function to calculate the greatest common divisor
 const gcd = (a, b) => b ? gcd(b, a % b) : a;
