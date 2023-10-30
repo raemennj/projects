@@ -184,7 +184,7 @@
 	  background-color: rgba(0,0,0,0.4);
 	}
 	#showModalBtn {
- 	  color: black;
+ 	  color: #darkslategrey;
   	  cursor: pointer;
 	}
 	.modal-content {
@@ -198,32 +198,41 @@
  	  overflow-y: auto; 
 	}
 	#calcButtons {
-  	  display: flex;
- 	  flex-wrap: wrap;   /* If you want the items to wrap onto the next line as needed */
-	  justify-content:flex-start; /* Adjust the distribution of space around items */
-	  gap: 0px; /* Optional: if you want to have a gap between the flex items */
-	  background-color: lightyellow;
-}  
-
-	  
+  display: flex;
+  flex-direction: column; /* makes the main axis vertical */
+  width: 100%; /* Full width of the parent */
+  background-color: lightyellow;
+}    
 	#calcButtons button{
-	  flex: 1 0 auto; /* It tells the browser to allow the button to grow & shrink. */
-      padding: 7px; /* Optional: for button size adjustment */
-      margin: 5px; /* Optional: for space outside the button */
-      text-align: center; /* Aligns the content (usually text) within your buttons */
-
-      /* Additional styling properties for your buttons */
+	  flex: 1 ; 
+      padding: 2px; /* Optional: for button size adjustment */
+      margin: 0px; /* Optional: for space outside the button */
+      text-align: center;
       border: 1px solid #ccc;
-      background-color: #f3f3f3;
+      background-color: floralwhite;
       border-radius: 5px; /* Optional: if you want rounded corners */
-	  width: 10 %;
+	  width: auto;
+		margin-left: 1px;
+		margin-right: 1px;
 	  font-size: 19px;
 		  
 	  }
-	#calcButtons button.buttonSpace {
-      width: auto;
+	#calcButtons button.wholeNumber {
+	  flex: 1 0 auto;
+		justify-content: flex-start;
+      }	
+	#calcButtons button.fractionNumber {
+	  flex: 1 0 auto;
+		justify-content: flex-start;
       }
-	  
+	.button-row {
+ 	  display: flex;
+  	  flex; 1;
+  justify-content: space-between;
+		margin-top: 4px;
+		margin-left: 3px;
+		margin-right: 3px;
+}
 	@media screen and (orientation:landscape) {
   	.modal-content {
   	  max-height: calc(100vh - 80px); 
@@ -260,34 +269,37 @@
   
   <div id="calcButtons">
     <!-- Buttons for navigating, inputting numbers, and modifying entries -->
-   
-    <button onclick="insertValue('1')">1</button>
-    <button onclick="insertValue('2')">2</button>
-    <button onclick="insertValue('3')">3</button>
-    <button onclick="insertValue('4')">4</button>
-    <button onclick="insertValue('5')">5</button>
-    <button onclick="insertValue('6')">6</button>
-    <button onclick="insertValue('7')">7</button>
-    <button onclick="insertValue('8')">8</button>
-    <button onclick="insertValue('9')">9</button>
-    <button onclick="insertValue('0')">0</button>
-    <br> 
-    <button onclick="insertValue(' 1/16')">1/16</button>
-    <button onclick="insertValue(' 1/8')">1/8</button>
-    <button onclick="insertValue(' 3/16')">3/16</button>
-    <button onclick="insertValue(' 1/4')">1/4</button>
-    <button onclick="insertValue(' 5/16')">5/16</button>
-    <button onclick="insertValue(' 3/8')">3/8</button>
-    <button onclick="insertValue(' 7/16')">7/16</button>
-    <button onclick="insertValue(' 1/2')">1/2</button>
-    <button onclick="insertValue(' 9/16')">9/16</button>
-    <button onclick="insertValue(' 5/8')">5/8</button>
-    <button onclick="insertValue(' 11/16')">11/16</button>
-    <button onclick="insertValue(' 3/4')">3/4</button>
-    <button onclick="insertValue(' 13/16')">13/16</button>
-    <button onclick="insertValue(' 7/8')">7/8</button>
-    <button onclick="insertValue(' 15/16')">15/16</button>
-    <button onclick="deleteLastEntry()">DEL</button>
+   <div class="button-row">
+    <button class="wholeNumber" onclick="insertValue('1')">1</button>
+    <button class="wholeNumber" onclick="insertValue('2')">2</button>
+    <button class="wholeNumber" onclick="insertValue('3')">3</button>
+    <button class="wholeNumber" onclick="insertValue('4')">4</button>
+    <button class="wholeNumber" onclick="insertValue('5')">5</button>
+    <button class="wholeNumber" onclick="insertValue('6')">6</button>
+    <button class="wholeNumber" onclick="insertValue('7')">7</button>
+    <button class="wholeNumber" onclick="insertValue('8')">8</button>
+    <button class="wholeNumber" onclick="insertValue('9')">9</button>
+    <button class="wholeNumber" onclick="insertValue('0')">0</button>
+   </div>
+   <div class="button-row">
+    <button class="fractionNumber" onclick="insertValue(' 1/16')">1/16</button>
+    <button class="fractionNumber" onclick="insertValue(' 1/8')">1/8</button>
+    <button class="fractionNumber" onclick="insertValue(' 3/16')">3/16</button>
+    <button class="fractionNumber" onclick="insertValue(' 1/4')">1/4</button>
+    <button class="fractionNumber" onclick="insertValue(' 5/16')">5/16</button>
+    <button class="fractionNumber" onclick="insertValue(' 3/8')">3/8</button>
+    <button class="fractionNumber" onclick="insertValue(' 7/16')">7/16</button>
+    <button class="fractionNumber" onclick="insertValue(' 1/2')">1/2</button>
+   </div>
+   <div class="button-row">
+    <button class="fractionNumber" onclick="insertValue(' 9/16')">9/16</button>
+    <button class="fractionNumber" onclick="insertValue(' 5/8')">5/8</button>
+    <button class="fractionNumber" onclick="insertValue(' 11/16')">11/16</button>
+    <button class="fractionNumber" onclick="insertValue(' 3/4')">3/4</button>
+    <button class="fractionNumber" onclick="insertValue(' 13/16')">13/16</button>
+    <button class="fractionNumber" onclick="insertValue(' 7/8')">7/8</button>
+    <button class="fractionNumber" onclick="insertValue(' 15/16')">15/16</button>
+    <button class="fractionNumber" onclick="deleteLastEntry()">DEL</button>
   </div>
 
   <div class="resultsBG">
