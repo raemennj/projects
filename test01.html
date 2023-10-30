@@ -242,6 +242,8 @@
 	  margin-left: 3px;
 	  margin-right: 3px;
 }
+	
+	
 	@media screen and (orientation:landscape) {
   	.modal-content {
   	  max-height: calc(100vh - 80px); 
@@ -264,15 +266,15 @@
   <form class="input-container">
     <div class="length">
       <label for="length">Longitud:</label><br>
-      <input type="text" id="length" readonly onclick="focusInput(this);">
+		<input type="text" id="length" readonly onclick="focusInput(this);"><span class="fake-cursor"></span>
     </div>
     <div class="burn">
       <label for="endDistance"> Inicio:</label><br>
-      <input type="text" id="endDistance" readonly onclick="focusInput(this);">
+      <input type="text" id="endDistance" readonly onclick="focusInput(this);"><span class="fake-cursor"></span>
     </div>
     <div class="segmentType">
       <label id="dynamicLabel" for="valueUsed">Segmentos:</label><br>
-      <input type="text" id="valueUsed" readonly onclick="focusInput(this);">
+      <input type="text" id="valueUsed" readonly onclick="focusInput(this);"><span class="fake-cursor"></span>
     </div>  
   </form>
   <div id="calcButtons">
