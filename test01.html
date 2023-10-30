@@ -40,7 +40,8 @@
       display: flex;
       width: 100%;
     }
-    .tab {      flex: 1;
+    .tab {      
+	  flex: 1;
       padding: 15px; 
 	  font-size: 19px;
       cursor: pointer;
@@ -198,40 +199,51 @@
  	  overflow-y: auto; 
 	}
 	#calcButtons {
-  display: flex;
-  flex-direction: column; /* makes the main axis vertical */
-  width: 100%; /* Full width of the parent */
-  background-color: lightyellow;
+	  display: flex;
+	  flex-direction: column; 
+	  width: 100%;
+	  background-color: lightyellow;
 }    
 	#calcButtons button{
-	  flex: 1 ; 
-      padding: 2px; /* Optional: for button size adjustment */
-      margin: 0px; /* Optional: for space outside the button */
+      flex: 1;
+      padding-top: 6px;
+      padding-right: 2px;
+      padding-left: 2px;
+      padding-bottom: 4px;
+      margin: 0px;
       text-align: center;
       border: 1px solid #ccc;
-      background-color: floralwhite;
-      border-radius: 5px; /* Optional: if you want rounded corners */
-	  width: auto;
-		margin-left: 1px;
-		margin-right: 1px;
-	  font-size: 19px;
-		  
+      background-color:khaki ;
+      border-radius: 4px;
+      width: auto;
+      margin-left: 1px;
+      margin-right: 1px;
+      font-size: 19px;
+      transition: background-color 0.3s ease;
 	  }
+	#calcButtons button:hover {
+      background-color: chocolate;
+      border: 1px solid #723C01;
+      }
+	#calcButtons button:active {
+      background-color: #6B4E31; /* A slightly darker shade than chocolate */
+      border: 1px solid #3B2401;
+      }
 	#calcButtons button.wholeNumber {
 	  flex: 1 0 auto;
-		justify-content: flex-start;
+	  justify-content: flex-start;
       }	
 	#calcButtons button.fractionNumber {
 	  flex: 1 0 auto;
-		justify-content: flex-start;
+	  justify-content: flex-start;
       }
 	.button-row {
  	  display: flex;
   	  flex; 1;
-  justify-content: space-between;
-		margin-top: 4px;
-		margin-left: 3px;
-		margin-right: 3px;
+      justify-content: space-between;
+	  margin-top: 4px;
+	  margin-left: 3px;
+	  margin-right: 3px;
 }
 	@media screen and (orientation:landscape) {
   	.modal-content {
@@ -266,9 +278,7 @@
       <input type="text" id="valueUsed" readonly onclick="focusInput(this);">
     </div>  
   </form>
-  
   <div id="calcButtons">
-    <!-- Buttons for navigating, inputting numbers, and modifying entries -->
    <div class="button-row">
     <button class="wholeNumber" onclick="insertValue('1')">1</button>
     <button class="wholeNumber" onclick="insertValue('2')">2</button>
@@ -300,8 +310,7 @@
     <button class="fractionNumber" onclick="insertValue(' 7/8')">7/8</button>
     <button class="fractionNumber" onclick="insertValue(' 15/16')">15/16</button>
     <button class="fractionNumber" onclick="deleteLastEntry()">DEL</button>
-  </div>
-
+	  </div></div>
   <div class="resultsBG">
     <p id="segmentResult" role="text" aria-live="assertive" aria-label="Resultado de la Longitud del Segmento"></p>
     <p id="marksResult" role="text" aria-live="assertive" aria-label=" Resultado de las Marcas del Segmento"></p>
@@ -309,24 +318,37 @@
   <div class="readme-container">
     <button id="showModalBtn">Instrucciones</button>
     <div id="instructionsModal" class="modal">
-      <div class="modal-content">
-        <!-- Content of the instructions modal -->
-        Toque "Igual" para segmentos iguales o "Cercano" para segmentos cercanos a una longitud específica.
-        <!-- More instructions here -->
-        <span class="close-btn" id="closeModalBtn" tabindex="0">Cerrar</span>  
-      </div>
+     <div class="modal-content">
+         	Toque "Igual" para segmentos iguales o "Cercano" para
+		 	segmentos cercanos a una longitud espec&iacute;fica.
+         <br><br>
+         	Complete el campo "Longitud" con la longitud total de 
+		 	su material.
+         <br><br>
+         	Introduce la distancia que dejar&aacute;s en cada 
+		 	extremo en el campo "Inicio".
+         <br><br>
+		 	En el &uacute;ltimo campo, ingrese el n&uacute;mero de 
+		 	segmentos o el tama&ntilde;o aproximado de cada segmento, 
+		 	seg&uacute;n el modo elegido.
+         <br><br>
+         	Las longitudes y factores de segmento calculados 
+		 	aparecer&aacute;n debajo de los campos de entrada.
+	     <br><br>	
+	   <span class="close-btn" id="closeModalBtn" tabindex="0">Cerrar</span>	
+	  </div>
     </div>
   </div>
 
   <script>
-    // New functions and changes are integrated here with the original script
+    
     var currentInput = null;
 
     function insertValue(value) {
       if (currentInput) {
         var currentValue = currentInput.value;
         currentInput.value = currentValue + value;
-        calculate();  // Recalculate after inserting
+        calculate(); 
       }
     }
 
@@ -334,7 +356,7 @@
       if (currentInput) {
         var currentValue = currentInput.value;
         currentInput.value = currentValue.substring(0, currentValue.length - 1);
-        calculate();  // Recalculate after deleting
+        calculate();  
       }
     }
 
@@ -364,14 +386,14 @@
       inputElement.removeAttribute('readonly'); 
       inputElement.focus(); 
       currentInput = inputElement; 
-      currentInput.style.backgroundColor = "#c1f0c1"; 
+      currentInput.style.backgroundColor = "#ffffb0" ; 
     }
 	  
 	  function insertValue(value) {
   if (currentInput) {
     var currentValue = currentInput.value;
-    currentInput.value = currentValue + value; // Append the new character
-    calculate();  // Trigger the calculation after the value changes
+    currentInput.value = currentValue + value;
+    calculate(); 
   }
 }
 
@@ -387,7 +409,7 @@ document.addEventListener('touchstart', function(event) {
         // the event is multi-touch, you can then prevent the behavior
         event.preventDefault();
     }
-}, { passive: false }); // the passive option is set to false to allow preventDefault
+}, { passive: false }); 
 
 var lastTouchEnd = 0;
 document.addEventListener('touchend', function(event) {
