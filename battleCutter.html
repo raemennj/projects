@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battleship Heatmap Tracker</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* Grid Styles */
+    .grid-container {
+      display: inline-block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 40px);
+      grid-template-rows: repeat(10, 40px);
+      gap: 2px;
+    }
+
+    .cell {
+      width: 40px;
+      height: 40px;
+      background-color: lightgray;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* Cell States */
+    .cell.empty {
+      background-color: lightgray;
+    }
+
+    .cell.miss {
+      background-color: #87CEFA;
+      color: white;
+    }
+
+    .cell.hit {
+      background-color: #FF4500;
+      color: white;
+    }
+
+    /* Heatmap Colors */
+    .cell.heat-1 { background-color: #e0f7fa; }
+    .cell.heat-2 { background-color: #b2ebf2; }
+    .cell.heat-3 { background-color: #80deea; }
+    .cell.heat-4 { background-color: #4dd0e1; }
+    .cell.heat-5 { background-color: #26c6da; }
+    .cell.heat-6 { background-color: #00bcd4; }
+    .cell.heat-7 { background-color: #00acc1; }
+    .cell.heat-8 { background-color: #0097a7; }
+    .cell.heat-9 { background-color: #00838f; }
+    .cell.heat-10 { background-color: #006064; }
+  </style>
+</head>
+<body>
+  <h1>Battleship Heatmap Tracker</h1>
+  <div class="controls">
+    <button id="toggle-heatmap">Toggle Heatmap</button>
+    <button id="reset-grid">Reset Grid</button>
+  </div>
+  <div class="grid-container">
+    <div class="grid"></div>
+  </div>
+
+  <script>
+    // Grid Configuration
+    const gridSize = 10;
+    const gridElement = document.querySelector('.grid');
+    const cellStates = ['empty', 'miss', 'hit'];
+    let cells = [];
+    let heatmap = [];
+
+    const ships = [
+      { name: 'Carrier', size: 5 },
+      { name: 'Battleship', size: 4 },
+      { name: 'Cruiser', size: 3 },
+      { name: 'Submarine', size: 3 },
+      { name: 'Destroyer', size: 2 }
+    ];
+
+    // Initialize the Grid
+    function createGrid() {
+      gridElement.innerHTML = '';
+      cells = [];
+      for (let i = 0; i < gridSize * gridSize; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell', 'empty');
+        cell.dataset.state = 'empty';
+        cell.dataset.index = i;
+        gridElement.appendChild(cell);
+        cells.push(cell);
+
+        cell.addEventListener('click', () => {
+          cycleCellState(cell);
+        });
+      }
+    }
+
+    createGrid();
+
+    function cycleCellState(cell) {
+      let currentState = cell.dataset.state;
+      let nextState = cellStates[(cellStates.indexOf(currentState) + 1) % cellStates.length];
+      cell.dataset.state = nextState;
+
+      cell.classList.remove('empty', 'miss', 'hit');
+      cell.classList.add(nextState);
+
+      if (document.body.classList.contains('heatmap-active')) {
+        calculateHeatmap();
+        updateHeatmapDisplay();
+      }
+    }
+
+    function calculateHeatmap() {
+      heatmap = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
+
+      ships.forEach(ship => {
+        for (let row = 0; row < gridSize; row++) {
+          for (let col = 0; col <= gridSize - ship.size; col++) {
+            let valid = true;
+
+            for (let k = 0; k < ship.size; k++) {
+              const index = row * gridSize + (col + k);
+              const cell = cells[index];
+              if (cell.dataset.state === 'miss') {
+                valid = false;
+                break;
+              }
+            }
+
+            if (valid) {
+              for (let k = 0; k < ship.size; k++) {
+                heatmap[row][col + k]++;
+              }
+            }
+          }
+        }
+
+        for (let row = 0; row <= gridSize - ship.size; row++) {
+          for (let col = 0; col < gridSize; col++) {
+            let valid = true;
+
+            for (let k = 0; k < ship.size; k++) {
+              const index = (row + k) * gridSize + col;
+              const cell = cells[index];
+              if (cell.dataset.state === 'miss') {
+                valid = false;
+                break;
+              }
+            }
+
+            if (valid) {
+              for (let k = 0; k < ship.size; k++) {
+                heatmap[row + k][col]++;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateHeatmapDisplay() {
+      let maxHeat = Math.max(...heatmap.flat());
+
+      cells.forEach((cell, index) => {
+        const row = Math.floor(index / gridSize);
+        const col = index % gridSize;
+
+        cell.classList.remove(...cell.classList);
+        cell.classList.add('cell');
+
+        const state = cell.dataset.state;
+        cell.classList.add(state);
+
+        if (document.body.classList.contains('heatmap-active') && state === 'empty') {
+          const heatValue = heatmap[row][col];
+          if (heatValue > 0) {
+            const heatLevel = Math.ceil((heatValue / maxHeat) * 10);
+            cell.classList.add(`heat-${heatLevel}`);
+          }
+        }
+      });
+    }
+
+    document.getElementById('toggle-heatmap').addEventListener('click', () => {
+      document.body.classList.toggle('heatmap-active');
+      if (document.body.classList.contains('heatmap-active')) {
+        calculateHeatmap();
+      }
+      updateHeatmapDisplay();
+    });
+
+    document.getElementById('reset-grid').addEventListener('click', () => {
+      createGrid();
+      if (document.body.classList.contains('heatmap-active')) {
+        calculateHeatmap();
+        updateHeatmapDisplay();
+      }
+    });
+  </script>
+</body>
+</html>
