@@ -15,6 +15,7 @@
             align-items: center;
             user-select: none;
             font-family: "dunbar-tall", sans-serif;
+            position: relative;
         }
 
         .calculator {
@@ -150,10 +151,33 @@
             text-decoration: underline;
             cursor: pointer;
         }
+
+        .instructions-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .hamburger-icon {
+            width: 30px;
+            height: 3px;
+            background-color: #fff;
+            margin: 6px 0;
+            transition: 0.4s;
+        }
     </style>
     <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
+    <button id="showModalBtn" class="instructions-button">
+        <div class="hamburger-icon"></div>
+        <div class="hamburger-icon"></div>
+        <div class="hamburger-icon"></div>
+    </button>
+
     <div class="calculator">
         <div id="display">
             <div id="input"></div>
@@ -206,26 +230,24 @@
     </div>
 
     <!-- Instructions Modal -->
-    <div class="readme-container">
-        <button id="showModalBtn">Instructions</button>
-        <div id="instructionsModal" class="modal">
-            <div class="modal-content">
-                <p>
-                    Use this calculator to add, subtract, multiply, or divide fractions and decimals easily. You can also work with mixed numbers.
-                </p>
-                <p>
-                    <strong>Instructions:</strong>
-                    <ul>
-                        <li>Enter numbers using the number buttons.</li>
-                        <li>Click on fractions to add them to the calculation.</li>
-                        <li>Use the operators (+, −, ×, ÷) to perform operations.</li>
-                        <li>Press the decimal button to add a decimal point.</li>
-                        <li>Click the backspace button to delete the last entry.</li>
-                        <li>Press 'C' to clear all entries.</li>
-                    </ul>
-                </p>
-                <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
-            </div>
+    <div id="instructionsModal" class="modal">
+        <div class="modal-content">
+            <p>
+                Use this calculator to add, subtract, multiply, or divide fractions and decimals easily. You can also work with mixed numbers.
+            </p>
+            <p>
+                <strong>Instructions:</strong>
+                <ul>
+                    <li>Enter numbers using the number buttons.</li>
+                    <li>Click on fractions to add them to the calculation.</li>
+                    <li>Use the operators (+, −, ×, ÷) to perform operations.</li>
+                    <li>Press the decimal button to add a decimal point.</li>
+                    <li>Click the backspace button to delete the last entry.</li>
+                    <li>Press 'C' to clear all entries.</li>
+                    <li><a href="fff4_4sp.html">Segment Calculator</a></li>
+                </ul>
+            </p>
+            <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
         </div>
     </div>
 
