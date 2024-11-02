@@ -81,6 +81,15 @@
             background: #42a5f5;
         }
 
+        .decimal {
+            background: #a5d6a7;
+            color: #fff;
+        }
+
+        .decimal:hover {
+            background: #81c784;
+        }
+
         .clear {
             background: #e57373;
             color: #fff;
@@ -118,23 +127,24 @@
             <button class="btn fraction" data-value="1/16">1/16</button>
             <button class="btn fraction" data-value="1/8">1/8</button>
 
-            <button class="btn" data-value="0">0</button>
-            <!-- You can include the decimal button if needed -->
+            <button class="btn decimal" data-value=".">.</button>
+			<button class="btn" data-value="0">0</button>
             <button class="btn fraction" data-value="3/16">3/16</button>
             <button class="btn fraction" data-value="1/4">1/4</button>
             <button class="btn fraction" data-value="5/16">5/16</button>
-            <button class="btn fraction" data-value="3/8">3/8</button>
 
+            <button class="btn fraction" data-value="3/8">3/8</button>
             <button class="btn fraction" data-value="7/16">7/16</button>
             <button class="btn fraction" data-value="1/2">1/2</button>
             <button class="btn fraction" data-value="9/16">9/16</button>
             <button class="btn fraction" data-value="5/8">5/8</button>
-            <button class="btn fraction" data-value="11/16">11/16</button>
 
+            <button class="btn fraction" data-value="11/16">11/16</button>
             <button class="btn fraction" data-value="3/4">3/4</button>
             <button class="btn fraction" data-value="13/16">13/16</button>
             <button class="btn fraction" data-value="7/8">7/8</button>
             <button class="btn fraction" data-value="15/16">15/16</button>
+
             <!-- Clear Button -->
             <button class="btn clear" data-value="C">C</button>
         </div>
@@ -163,13 +173,27 @@
                         return;
                     }
 
-                    // Determine if the button is a fraction or operator
+                    // Determine if the button is a fraction, decimal, or operator
                     const isFraction = button.classList.contains('fraction');
                     const isOperator = button.classList.contains('operator');
+                    const isDecimal = button.classList.contains('decimal');
 
-                    if (!isOperator && !isFraction) {
+                    if (!isOperator && !isFraction && !isDecimal) {
                         // Number button
                         currentEntry += value;
+                        updateInputDisplay();
+                    } else if (isDecimal) {
+                        // Decimal button
+                        if (currentEntry.includes('.')) {
+                            // Prevent multiple decimals in the same number
+                            return;
+                        }
+                        if (currentEntry === '') {
+                            // If starting with a decimal, prepend 0
+                            currentEntry = '0.';
+                        } else {
+                            currentEntry += '.';
+                        }
                         updateInputDisplay();
                     } else if (isFraction) {
                         // Fraction button
@@ -181,8 +205,13 @@
                                 // Prevent multiple fractions in the same number
                                 return;
                             }
-                            // Append fraction to currentEntry as part of mixed number
-                            currentEntry += ' ' + value;
+                            if (currentEntry.includes('.')) {
+                                // If currentEntry is a decimal, treat it as a whole number
+                                currentEntry += ' ' + value;
+                            } else {
+                                // Append fraction to currentEntry as part of mixed number
+                                currentEntry += ' ' + value;
+                            }
                         }
                         updateInputDisplay();
                     } else if (isOperator) {
@@ -314,7 +343,7 @@
 
             function parseNumber(token) {
                 if (token.includes(' ')) {
-                    // Mixed number (e.g., '4 1/2')
+                    // Mixed number (e.g., '4 1/2' or '4.5 1/2')
                     const [wholePart, fractionPart] = token.split(' ');
                     const wholeNumber = parseFloat(wholePart);
                     const fractionValue = parseFraction(fractionPart);
