@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Inch Fraction Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* styles.css */
-
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #f0f0f0;
+            font-size: 18px;
             margin: 0;
-            font-family: Arial, sans-serif;
+            padding: 5px;
+            background-color: darkslategrey;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            font-family: "dunbar-tall", sans-serif;
         }
 
         .calculator {
@@ -54,7 +55,7 @@
             font-size: 1em;
             border: none;
             border-radius: 5px;
-            background: #e0e0e0;
+            background: lightyellow;
             cursor: pointer;
             transition: background 0.3s;
         }
@@ -103,13 +104,54 @@
         .backspace {
             background: #ffb74d;
             color: #fff;
-            grid-column: span 5; /* Backspace spans all columns for emphasis */
+            grid-column: span 5;
         }
 
         .backspace:hover {
             background: #ffa726;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: lightyellow;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid #888;
+            width: 80%;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        @media screen and (orientation:landscape) {
+            .modal-content {
+                max-height: calc(100vh - 80px);
+            }
+        }
+
+        @media (min-width: 601px) {
+            body {
+                margin: 0 auto;
+                max-width: 600px;
+            }
+        }
+
+        .close-btn {
+            text-decoration: underline;
+            cursor: pointer;
+        }
     </style>
+    <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
     <div class="calculator">
@@ -162,15 +204,41 @@
             <button class="btn clear" data-value="C">C</button>
         </div>
     </div>
-    <script>
-        // Updated JavaScript Code
 
+    <!-- Instructions Modal -->
+    <div class="readme-container">
+        <button id="showModalBtn">Instructions</button>
+        <div id="instructionsModal" class="modal">
+            <div class="modal-content">
+                <p>
+                    Use this calculator to add, subtract, multiply, or divide fractions and decimals easily. You can also work with mixed numbers.
+                </p>
+                <p>
+                    <strong>Instructions:</strong>
+                    <ul>
+                        <li>Enter numbers using the number buttons.</li>
+                        <li>Click on fractions to add them to the calculation.</li>
+                        <li>Use the operators (+, −, ×, ÷) to perform operations.</li>
+                        <li>Press the decimal button to add a decimal point.</li>
+                        <li>Click the backspace button to delete the last entry.</li>
+                        <li>Press 'C' to clear all entries.</li>
+                    </ul>
+                </p>
+                <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const inputDisplay = document.getElementById('input');
             const resultDisplay = document.getElementById('result');
             const buttons = document.querySelectorAll('.btn');
-            let tokens = []; // Array to hold numbers and operators
-            let currentEntry = ''; // Current number being entered
+            const modal = document.getElementById('instructionsModal');
+            const showModalBtn = document.getElementById('showModalBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            let tokens = [];
+            let currentEntry = '';
             let timeout = null;
 
             buttons.forEach(button => {
@@ -187,74 +255,59 @@
                     }
 
                     if (value === 'backspace') {
-                        // Backspace button
                         currentEntry = currentEntry.slice(0, -1);
                         updateInputDisplay();
                         return;
                     }
 
-                    // Determine if the button is a fraction, decimal, or operator
                     const isFraction = button.classList.contains('fraction');
                     const isOperator = button.classList.contains('operator');
                     const isDecimal = button.classList.contains('decimal');
 
                     if (!isOperator && !isFraction && !isDecimal) {
-                        // Number button
                         currentEntry += value;
                         updateInputDisplay();
                     } else if (isDecimal) {
-                        // Decimal button
                         if (currentEntry.includes('.')) {
-                            // Prevent multiple decimals in the same number
                             return;
                         }
                         if (currentEntry === '') {
-                            // If starting with a decimal, prepend 0
                             currentEntry = '0.';
                         } else {
                             currentEntry += '.';
                         }
                         updateInputDisplay();
                     } else if (isFraction) {
-                        // Fraction button
                         if (currentEntry === '') {
-                            // If starting with a fraction, assume zero whole part
                             currentEntry = '0 ' + value;
                         } else {
                             if (currentEntry.includes('/')) {
-                                // Prevent multiple fractions in the same number
                                 return;
                             }
                             if (currentEntry.includes('.')) {
-                                // If currentEntry is a decimal, treat it as the whole part of a mixed number
                                 currentEntry += ' ' + value;
                             } else {
-                                // Append fraction to currentEntry as part of mixed number
                                 currentEntry += ' ' + value;
                             }
                         }
                         updateInputDisplay();
                     } else if (isOperator) {
-                        // Operator button
                         if (currentEntry !== '') {
                             tokens.push(currentEntry);
                             currentEntry = '';
                         }
                         if (tokens.length === 0 && value !== '-') {
-                            // Prevent starting expression with an operator except '-'
                             return;
                         }
-                        const lastToken = tokens[tokens.length -1];
+                        const lastToken = tokens[tokens.length - 1];
                         if (isOperatorToken(lastToken)) {
-                            // Replace the last operator with the new one
-                            tokens[tokens.length -1] = value;
+                            tokens[tokens.length - 1] = value;
                         } else {
                             tokens.push(value);
                         }
                         updateInputDisplay();
                     }
 
-                    // Trigger calculation with delay
                     clearTimeout(timeout);
                     timeout = setTimeout(() => {
                         try {
@@ -287,11 +340,8 @@
 
                 if (exprTokens.length === 0) return '';
 
-                // Convert tokens to Reverse Polish Notation (RPN)
                 const rpn = toRPN(exprTokens);
-                // Evaluate RPN
                 const result = evaluateRPN(rpn);
-                // Format the result
                 return formatResult(result);
             }
 
@@ -308,7 +358,7 @@
                 tokens.forEach(token => {
                     if (isOperatorToken(token)) {
                         while (operatorStack.length > 0 &&
-                               precedence[operatorStack[operatorStack.length -1]] >= precedence[token]) {
+                            precedence[operatorStack[operatorStack.length - 1]] >= precedence[token]) {
                             outputQueue.push(operatorStack.pop());
                         }
                         operatorStack.push(token);
@@ -333,7 +383,7 @@
                         const a = stack.pop();
                         if (a === undefined || b === undefined) throw new Error('Invalid Expression');
                         let res;
-                        switch(token) {
+                        switch (token) {
                             case '+':
                                 res = a + b;
                                 break;
@@ -352,7 +402,6 @@
                         }
                         stack.push(res);
                     } else {
-                        // Parse number (handles whole numbers, decimals, fractions, and mixed numbers)
                         stack.push(parseNumber(token));
                     }
                 });
@@ -363,19 +412,15 @@
 
             function parseNumber(token) {
                 if (token.includes(' ')) {
-                    // Mixed number (e.g., '4 1/2' or '4.5 1/2')
                     const [wholePart, fractionPart] = token.split(' ');
                     const wholeNumber = parseFloat(wholePart);
                     const fractionValue = parseFraction(fractionPart);
                     return wholeNumber + fractionValue;
                 } else if (token.includes('/')) {
-                    // Fraction (e.g., '1/2')
                     return parseFraction(token);
                 } else if (token.includes('.')) {
-                    // Decimal number
                     return parseFloat(token);
                 } else {
-                    // Whole number
                     return Number(token);
                 }
             }
@@ -387,30 +432,24 @@
             }
 
             function formatResult(value) {
-                // Round to 4 decimal places to avoid floating point issues
                 value = Math.round(value * 10000) / 10000;
 
-                // Convert to mixed number (inches and fraction)
                 let inches = Math.floor(value);
                 let fraction = value - inches;
 
-                // Handle negative values
                 if (value < 0) {
                     inches = Math.ceil(value);
                     fraction = Math.abs(value - inches);
                 }
 
-                // Convert fractional part to nearest 1/16
                 let fractionNumer = Math.round(fraction * 16);
                 const fractionDenom = 16;
 
-                // Handle cases where fractionNumer == 16
                 if (fractionNumer === 16) {
                     inches += 1;
                     fractionNumer = 0;
                 }
 
-                // Simplify the fraction
                 const simplified = simplifyFraction(fractionNumer, fractionDenom);
 
                 let result = '';
@@ -421,12 +460,10 @@
                     result += `${simplified.numer}/${simplified.denom}"`;
                 }
 
-                // If both inches and fraction are zero
                 if (inches === 0 && simplified.numer === 0) {
                     result = '0"';
                 }
 
-                // Also display decimal inches
                 const decimalInches = `(${value.toFixed(4)}")`;
 
                 return `${result.trim()} ${decimalInches}`;
@@ -442,6 +479,24 @@
                 if (!b) return a;
                 return greatestCommonDivisor(b, a % b);
             }
+
+            // Modal functionality
+            showModalBtn.addEventListener('click', () => {
+                modal.style.display = 'block';
+                closeModalBtn.focus();
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                showModalBtn.focus();
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    showModalBtn.focus();
+                }
+            });
         });
     </script>
 </body>
