@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inch Fraction Calculator with Decimals</title>
+    <title>Inch Fraction Calculator</title>
     <style>
         /* styles.css */
 
@@ -23,7 +21,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 420px; /* Increased width to accommodate additional buttons */
+            width: 420px;
         }
 
         #display {
@@ -47,7 +45,7 @@
 
         .buttons {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 5 columns to accommodate new buttons */
+            grid-template-columns: repeat(5, 1fr);
             grid-gap: 10px;
         }
 
@@ -83,19 +81,10 @@
             background: #42a5f5;
         }
 
-        .decimal {
-            background: #a5d6a7;
-            color: #fff;
-        }
-
-        .decimal:hover {
-            background: #81c784;
-        }
-
         .clear {
             background: #e57373;
             color: #fff;
-            grid-column: span 5; /* Span all columns to align with 5-column grid */
+            grid-column: span 5;
         }
 
         .clear:hover {
@@ -110,53 +99,45 @@
             <div id="result"></div>
         </div>
         <div class="buttons">
+            <!-- Number and Operator Buttons -->
             <button class="btn" data-value="7">7</button>
             <button class="btn" data-value="8">8</button>
             <button class="btn" data-value="9">9</button>
             <button class="btn operator" data-value="+">+</button>
             <button class="btn operator" data-value="÷">÷</button>
-            
+
             <button class="btn" data-value="4">4</button>
             <button class="btn" data-value="5">5</button>
             <button class="btn" data-value="6">6</button>
             <button class="btn operator" data-value="-">−</button>
             <button class="btn operator" data-value="×">×</button>
-            
+
             <button class="btn" data-value="1">1</button>
             <button class="btn" data-value="2">2</button>
             <button class="btn" data-value="3">3</button>
             <button class="btn fraction" data-value="1/16">1/16</button>
             <button class="btn fraction" data-value="1/8">1/8</button>
-            
+
             <button class="btn" data-value="0">0</button>
-            <button class="btn decimal" data-value=".">.</button>
             <button class="btn fraction" data-value="3/16">3/16</button>
             <button class="btn fraction" data-value="1/4">1/4</button>
             <button class="btn fraction" data-value="5/16">5/16</button>
-            
             <button class="btn fraction" data-value="3/8">3/8</button>
-            <button class="btn fraction" data-value="7/16">7/16</button>
-            <button class="btn fraction" data-value="1/2">1/2</button>
-            <button class="btn fraction" data-value="9/16">9/16</button>
-            <button class="btn fraction" data-value="5/8">5/8</button>
-            
-            <button class="btn fraction" data-value="11/16">11/16</button>
-            <button class="btn fraction" data-value="3/4">3/4</button>
-            <button class="btn fraction" data-value="13/16">13/16</button>
-            <button class="btn fraction" data-value="7/8">7/8</button>
-            <button class="btn fraction" data-value="15/16">15/16</button>
-            
+
+            <!-- More fraction buttons as needed -->
+
+            <!-- Clear Button -->
             <button class="btn clear" data-value="C">C</button>
         </div>
     </div>
-    
     <script>
-        // script.js
+        // Updated JavaScript Code
 
         document.addEventListener('DOMContentLoaded', () => {
             const inputDisplay = document.getElementById('input');
             const resultDisplay = document.getElementById('result');
             const buttons = document.querySelectorAll('.btn');
+
             let tokens = []; // Array to hold numbers and operators
             let currentEntry = ''; // Current number being entered
             let timeout = null;
@@ -174,40 +155,28 @@
                         return;
                     }
 
-                    // Determine if the button is a fraction or decimal
+                    // Determine if the button is a fraction or operator
                     const isFraction = button.classList.contains('fraction');
-                    const isDecimal = button.classList.contains('decimal');
                     const isOperator = button.classList.contains('operator');
 
-                    if (!isOperator && !isFraction && !isDecimal) {
+                    if (!isOperator && !isFraction) {
                         // Number button
                         currentEntry += value;
-                        inputDisplay.textContent = tokens.join(' ') + (tokens.length > 0 ? ' ' : '') + currentEntry;
-                    } else if (isDecimal) {
-                        // Decimal button
-                        if (currentEntry.includes('.')) {
-                            // Prevent multiple decimals in the same number
-                            return;
-                        }
-                        if (currentEntry === '') {
-                            // If starting with a decimal, prepend 0
-                            currentEntry = '0.';
-                        } else {
-                            currentEntry += '.';
-                        }
-                        inputDisplay.textContent = tokens.join(' ') + (tokens.length > 0 ? ' ' : '') + currentEntry;
+                        updateInputDisplay();
                     } else if (isFraction) {
                         // Fraction button
                         if (currentEntry === '') {
-                            // If no current entry, assume 0 + fraction
-                            tokens.push('0');
-                        } else if (isNumber(tokens[tokens.length -1])) {
-                            // If last token is a number, insert '+'
-                            tokens.push('+');
+                            // If starting with a fraction, assume zero whole part
+                            currentEntry = '0 ' + value;
+                        } else {
+                            if (currentEntry.includes('/')) {
+                                // Prevent multiple fractions in the same number
+                                return;
+                            }
+                            // Append fraction to currentEntry as part of mixed number
+                            currentEntry += ' ' + value;
                         }
-                        tokens.push(value);
-                        inputDisplay.textContent = tokens.join(' ') + ' ';
-                        currentEntry = '';
+                        updateInputDisplay();
                     } else if (isOperator) {
                         // Operator button
                         if (currentEntry !== '') {
@@ -219,13 +188,13 @@
                             return;
                         }
                         const lastToken = tokens[tokens.length -1];
-                        if (isOperatorClass(lastToken)) {
+                        if (isOperatorToken(lastToken)) {
                             // Replace the last operator with the new one
                             tokens[tokens.length -1] = value;
                         } else {
                             tokens.push(value);
                         }
-                        inputDisplay.textContent = tokens.join(' ');
+                        updateInputDisplay();
                     }
 
                     // Trigger calculation with delay
@@ -241,16 +210,19 @@
                 });
             });
 
-            function isOperatorClass(token) {
+            function updateInputDisplay() {
+                let displayText = tokens.join(' ');
+                if (currentEntry !== '') {
+                    displayText += (tokens.length > 0 ? ' ' : '') + currentEntry;
+                }
+                inputDisplay.textContent = displayText;
+            }
+
+            function isOperatorToken(token) {
                 return ['+', '-', '×', '÷'].includes(token);
             }
 
-            function isNumber(token) {
-                return /^(\d+\.\d+|\d+)$/.test(token);
-            }
-
             function evaluateExpression() {
-                // If there's a currentEntry, push it to tokens
                 let exprTokens = [...tokens];
                 if (currentEntry !== '') {
                     exprTokens.push(currentEntry);
@@ -258,7 +230,7 @@
 
                 if (exprTokens.length === 0) return '';
 
-                // Convert tokens to Reverse Polish Notation (RPN) using Shunting Yard Algorithm
+                // Convert tokens to Reverse Polish Notation (RPN)
                 const rpn = toRPN(exprTokens);
                 // Evaluate RPN
                 const result = evaluateRPN(rpn);
@@ -277,7 +249,7 @@
                 const operatorStack = [];
 
                 tokens.forEach(token => {
-                    if (isOperatorClass(token)) {
+                    if (isOperatorToken(token)) {
                         while (operatorStack.length > 0 &&
                                precedence[operatorStack[operatorStack.length -1]] >= precedence[token]) {
                             outputQueue.push(operatorStack.pop());
@@ -299,7 +271,7 @@
                 const stack = [];
 
                 rpn.forEach(token => {
-                    if (isOperatorClass(token)) {
+                    if (isOperatorToken(token)) {
                         const b = stack.pop();
                         const a = stack.pop();
                         if (a === undefined || b === undefined) throw new Error('Invalid Expression');
@@ -323,25 +295,38 @@
                         }
                         stack.push(res);
                     } else {
-                        // Parse number (handles whole, decimal, and fraction)
+                        // Parse number (handles whole numbers, decimals, fractions, and mixed numbers)
                         stack.push(parseNumber(token));
                     }
                 });
 
                 if (stack.length !== 1) throw new Error('Invalid Expression');
-                return stack[0];
+                return stack.pop();
             }
 
             function parseNumber(token) {
-                if (token.includes('/')) {
-                    const [numer, denom] = token.split('/').map(Number);
-                    if (denom === 0) throw new Error('Division by Zero');
-                    return numer / denom;
+                if (token.includes(' ')) {
+                    // Mixed number (e.g., '4 1/2')
+                    const [wholePart, fractionPart] = token.split(' ');
+                    const wholeNumber = parseFloat(wholePart);
+                    const fractionValue = parseFraction(fractionPart);
+                    return wholeNumber + fractionValue;
+                } else if (token.includes('/')) {
+                    // Fraction (e.g., '1/2')
+                    return parseFraction(token);
                 } else if (token.includes('.')) {
+                    // Decimal number
                     return parseFloat(token);
                 } else {
+                    // Whole number
                     return Number(token);
                 }
+            }
+
+            function parseFraction(fractionStr) {
+                const [numerator, denominator] = fractionStr.split('/').map(Number);
+                if (denominator === 0) throw new Error('Division by Zero');
+                return numerator / denominator;
             }
 
             function formatResult(value) {
@@ -362,14 +347,14 @@
                 let fractionNumer = Math.round(fraction * 16);
                 const fractionDenom = 16;
 
-                // Handle cases where fractionNumer === 16
+                // Handle cases where fractionNumer == 16
                 if (fractionNumer === 16) {
                     inches += 1;
                     fractionNumer = 0;
                 }
 
                 // Simplify the fraction
-                const simplified = simplify({ numer: fractionNumer, denom: fractionDenom });
+                const simplified = simplifyFraction(fractionNumer, fractionDenom);
 
                 let result = '';
                 if (inches !== 0) {
@@ -390,10 +375,10 @@
                 return `${result.trim()} ${decimalInches}`;
             }
 
-            function simplify(frac) {
-                if (frac.numer === 0) return { numer: 0, denom: 1 };
-                const gcd = greatestCommonDivisor(Math.abs(frac.numer), Math.abs(frac.denom));
-                return { numer: frac.numer / gcd, denom: frac.denom / gcd };
+            function simplifyFraction(numer, denom) {
+                if (numer === 0) return { numer: 0, denom: 1 };
+                const gcd = greatestCommonDivisor(numer, denom);
+                return { numer: numer / gcd, denom: denom / gcd };
             }
 
             function greatestCommonDivisor(a, b) {
