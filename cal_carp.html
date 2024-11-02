@@ -10,7 +10,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             background: #f0f0f0;
             margin: 0;
             font-family: Arial, sans-serif;
@@ -119,13 +119,22 @@
             <button class="btn fraction" data-value="1/8">1/8</button>
 
             <button class="btn" data-value="0">0</button>
+            <!-- You can include the decimal button if needed -->
             <button class="btn fraction" data-value="3/16">3/16</button>
             <button class="btn fraction" data-value="1/4">1/4</button>
             <button class="btn fraction" data-value="5/16">5/16</button>
             <button class="btn fraction" data-value="3/8">3/8</button>
 
-            <!-- More fraction buttons as needed -->
+            <button class="btn fraction" data-value="7/16">7/16</button>
+            <button class="btn fraction" data-value="1/2">1/2</button>
+            <button class="btn fraction" data-value="9/16">9/16</button>
+            <button class="btn fraction" data-value="5/8">5/8</button>
+            <button class="btn fraction" data-value="11/16">11/16</button>
 
+            <button class="btn fraction" data-value="3/4">3/4</button>
+            <button class="btn fraction" data-value="13/16">13/16</button>
+            <button class="btn fraction" data-value="7/8">7/8</button>
+            <button class="btn fraction" data-value="15/16">15/16</button>
             <!-- Clear Button -->
             <button class="btn clear" data-value="C">C</button>
         </div>
@@ -137,7 +146,6 @@
             const inputDisplay = document.getElementById('input');
             const resultDisplay = document.getElementById('result');
             const buttons = document.querySelectorAll('.btn');
-
             let tokens = []; // Array to hold numbers and operators
             let currentEntry = ''; // Current number being entered
             let timeout = null;
