@@ -23,7 +23,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 400px; /* Increased width to accommodate additional buttons */
+            width: 420px; /* Increased width to accommodate additional buttons */
         }
 
         #display {
@@ -31,7 +31,7 @@
             color: #0f0;
             padding: 10px;
             border-radius: 5px;
-            min-height: 60px;
+            min-height: 80px;
             margin-bottom: 10px;
             word-wrap: break-word;
         }
@@ -157,7 +157,8 @@
             const inputDisplay = document.getElementById('input');
             const resultDisplay = document.getElementById('result');
             const buttons = document.querySelectorAll('.btn');
-            let expression = '';
+            let tokens = []; // Array to hold numbers and operators
+            let currentEntry = ''; // Current number being entered
             let timeout = null;
 
             buttons.forEach(button => {
@@ -165,71 +166,108 @@
                     const value = button.getAttribute('data-value');
 
                     if (value === 'C') {
-                        expression = '';
+                        tokens = [];
+                        currentEntry = '';
                         inputDisplay.textContent = '';
                         resultDisplay.textContent = '';
                         clearTimeout(timeout);
                         return;
                     }
 
-                    // Determine if the value is a fraction or decimal
+                    // Determine if the button is a fraction or decimal
                     const isFraction = button.classList.contains('fraction');
                     const isDecimal = button.classList.contains('decimal');
 
-                    // Prevent multiple decimals in a single number
-                    if (value === '.') {
-                        const lastToken = getLastToken(expression);
-                        if (lastToken && lastToken.includes('.')) {
-                            return; // Ignore if current number already has a decimal
+                    // Handle number or decimal or fraction
+                    if (!isOperator(value)) {
+                        if (isFraction) {
+                            // Combine currentEntry with fraction
+                            if (currentEntry === '') {
+                                // If no current entry, assume 0 + fraction
+                                currentEntry = '0' + value;
+                            } else {
+                                // Append fraction to currentEntry
+                                currentEntry += value;
+                            }
+                        } else if (isDecimal) {
+                            if (currentEntry.includes('.')) {
+                                // Prevent multiple decimals in the same number
+                                return;
+                            }
+                            if (currentEntry === '') {
+                                // If starting with a decimal, prepend 0
+                                currentEntry = '0.';
+                            } else {
+                                currentEntry += value;
+                            }
+                        } else {
+                            // Append number to currentEntry
+                            currentEntry += value;
                         }
+                        inputDisplay.textContent = tokens.join(' ') + (tokens.length > 0 ? ' ' : '') + currentEntry;
+
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            try {
+                                const evaluated = evaluateExpression();
+                                resultDisplay.textContent = evaluated;
+                            } catch (error) {
+                                resultDisplay.textContent = 'Error';
+                            }
+                        }, 500);
+                    } else {
+                        // Handle operator
+                        if (currentEntry !== '') {
+                            // Push the currentEntry to tokens
+                            tokens.push(currentEntry);
+                            currentEntry = '';
+                        }
+                        if (tokens.length === 0) {
+                            // Prevent starting expression with an operator except '-'
+                            if (value !== '-') {
+                                return;
+                            }
+                        }
+                        const lastToken = tokens[tokens.length -1];
+                        if (isOperator(lastToken)) {
+                            // Replace the last operator with the new one
+                            tokens[tokens.length -1] = value;
+                        } else {
+                            tokens.push(value);
+                        }
+                        inputDisplay.textContent = tokens.join(' ');
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            try {
+                                const evaluated = evaluateExpression();
+                                resultDisplay.textContent = evaluated;
+                            } catch (error) {
+                                resultDisplay.textContent = 'Error';
+                            }
+                        }, 500);
                     }
-
-                    // If the value is fraction or decimal and the previous token is a number, insert '+'
-                    if ((isFraction || isDecimal) && expression !== '') {
-                        const lastToken = getLastToken(expression);
-                        if (lastToken && isNumber(lastToken)) {
-                            expression += '+';
-                            inputDisplay.textContent += '+';
-                        }
-                    }
-
-                    expression += value;
-                    inputDisplay.textContent = expression;
-
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        try {
-                            const evaluated = evaluateExpression(expression);
-                            resultDisplay.textContent = evaluated;
-                        } catch (error) {
-                            resultDisplay.textContent = 'Error';
-                        }
-                    }, 500);
                 });
             });
 
-            function getLastToken(expr) {
-                const tokens = tokenize(expr);
-                return tokens.length ? tokens[tokens.length -1] : null;
+            function isOperator(token) {
+                return ['+', '-', '×', '÷'].includes(token);
             }
 
-            function evaluateExpression(expr) {
-                // Tokenize the expression
-                const tokens = tokenize(expr);
-                if (!tokens) throw new Error('Invalid Expression');
+            function evaluateExpression() {
+                // If there's a currentEntry, push it to tokens
+                let exprTokens = [...tokens];
+                if (currentEntry !== '') {
+                    exprTokens.push(currentEntry);
+                }
 
-                // Convert to Reverse Polish Notation using Shunting Yard Algorithm
-                const rpn = toRPN(tokens);
+                if (exprTokens.length === 0) return '';
+
+                // Convert tokens to Reverse Polish Notation (RPN) using Shunting Yard Algorithm
+                const rpn = toRPN(exprTokens);
                 // Evaluate RPN
                 const result = evaluateRPN(rpn);
-                // Convert result to inches and fraction
+                // Format the result
                 return formatResult(result);
-            }
-
-            function tokenize(expr) {
-                // Match numbers (whole, decimal, or fractions) and operators
-                const regex = /(\d+\.\d+|\d+\/\d+|\d+|[+\-×÷])/g;
-                return expr.match(regex);
             }
 
             function toRPN(tokens) {
@@ -243,14 +281,14 @@
                 const operatorStack = [];
 
                 tokens.forEach(token => {
-                    if (isNumber(token)) {
-                        outputQueue.push(token);
-                    } else if (isOperator(token)) {
+                    if (isOperator(token)) {
                         while (operatorStack.length > 0 &&
                                precedence[operatorStack[operatorStack.length -1]] >= precedence[token]) {
                             outputQueue.push(operatorStack.pop());
                         }
                         operatorStack.push(token);
+                    } else {
+                        outputQueue.push(token);
                     }
                 });
 
@@ -265,9 +303,7 @@
                 const stack = [];
 
                 rpn.forEach(token => {
-                    if (isNumber(token)) {
-                        stack.push(parseNumber(token));
-                    } else if (isOperator(token)) {
+                    if (isOperator(token)) {
                         const b = stack.pop();
                         const a = stack.pop();
                         if (a === undefined || b === undefined) throw new Error('Invalid Expression');
@@ -290,19 +326,14 @@
                                 throw new Error('Unknown Operator');
                         }
                         stack.push(res);
+                    } else {
+                        // Parse number (handles whole, decimal, and fraction)
+                        stack.push(parseNumber(token));
                     }
                 });
 
                 if (stack.length !== 1) throw new Error('Invalid Expression');
-                return stack.pop();
-            }
-
-            function isOperator(token) {
-                return ['+', '-', '×', '÷'].includes(token);
-            }
-
-            function isNumber(token) {
-                return /^(\d+\.\d+|\d+\/\d+|\d+)$/.test(token);
+                return stack[0];
             }
 
             function parseNumber(token) {
@@ -332,8 +363,14 @@
                 }
 
                 // Convert fractional part to nearest 1/16
-                const fractionNumer = Math.round(fraction * 16);
+                let fractionNumer = Math.round(fraction * 16);
                 const fractionDenom = 16;
+
+                // Handle cases where fractionNumer === 16
+                if (fractionNumer === 16) {
+                    inches += 1;
+                    fractionNumer = 0;
+                }
 
                 // Simplify the fraction
                 const simplified = simplify({ numer: fractionNumer, denom: fractionDenom });
@@ -358,6 +395,7 @@
             }
 
             function simplify(frac) {
+                if (frac.numer === 0) return { numer: 0, denom: 1 };
                 const gcd = greatestCommonDivisor(Math.abs(frac.numer), Math.abs(frac.denom));
                 return { numer: frac.numer / gcd, denom: frac.denom / gcd };
             }
