@@ -24,6 +24,9 @@
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #display {
@@ -34,6 +37,8 @@
             min-height: 80px;
             margin-bottom: 10px;
             word-wrap: break-word;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         #input {
@@ -168,6 +173,69 @@
             margin: 6px 0;
             transition: 0.4s;
         }
+
+        /* Tape measure display window */
+        .tape-measure-container {
+            position: relative;
+            width: 100%; /* Make it the same width as the calculator */
+            height: 100px;
+            margin: 20px 0;
+            border: 1px solid #000;
+            overflow: hidden;
+            /* Add gradient background to mimic curvature */
+            background: radial-gradient(ellipse at bottom, #f9d71c 60%, #e5c000 100%);
+        }
+
+        /* Center red tick mark */
+        .center-line {
+            position: absolute;
+            top: 0;
+            left: 50%; /* Center of the container */
+            width: 2px;
+            height: 100%;
+            background-color: red;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* Tape measure */
+        .tape-measure {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            /* Will set width dynamically */
+        }
+
+        /* Common styles for tick marks */
+        .tick {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            background-color: black;
+        }
+
+        /* Tick mark sizes */
+        .tick.small {
+            height: 20px;
+        }
+        .tick.medium {
+            height: 40px;
+        }
+        .tick.large {
+            height: 60px;
+        }
+        .tick.number {
+            height: 80px;
+        }
+
+        /* Styles for inch numbers */
+        .tick-label {
+            position: absolute;
+            bottom: 80px;
+            font-size: 12px;
+            transform: translateX(-50%);
+        }
     </style>
     <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
@@ -182,6 +250,11 @@
         <div id="display">
             <div id="input"></div>
             <div id="result"></div>
+        </div>
+        <!-- Tape Measure Display -->
+        <div class="tape-measure-container">
+            <div class="center-line"></div>
+            <div class="tape-measure" id="tapeMeasure"></div>
         </div>
         <div class="buttons">
             <!-- Number and Operator Buttons -->
@@ -333,8 +406,11 @@
                     clearTimeout(timeout);
                     timeout = setTimeout(() => {
                         try {
-                            const evaluated = evaluateExpression();
-                            resultDisplay.textContent = evaluated;
+                            const evaluation = evaluateExpression();
+                            resultDisplay.textContent = evaluation.formattedResult;
+                            if (evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+                                updateTapePosition(evaluation.numericValue);
+                            }
                         } catch (error) {
                             resultDisplay.textContent = 'Error';
                         }
@@ -364,7 +440,7 @@
 
                 const rpn = toRPN(exprTokens);
                 const result = evaluateRPN(rpn);
-                return formatResult(result);
+                return { numericValue: result, formattedResult: formatResult(result) };
             }
 
             function toRPN(tokens) {
@@ -519,6 +595,70 @@
                     showModalBtn.focus();
                 }
             });
+
+            // Initialize Tape Measure
+            const tapeMeasure = document.getElementById('tapeMeasure');
+            const tapeMeasureContainer = document.querySelector('.tape-measure-container');
+
+            // Configuration variables
+            const totalInches = 100; // Total inches to display on the tape
+            const pixelsPerInch = 100; // Number of pixels per inch
+            const totalMarks = totalInches * 16; // Total number of 1/16th marks
+
+            // Set the width of the tape measure based on total inches
+            tapeMeasure.style.width = (totalInches * pixelsPerInch) + 'px';
+
+            // Loop to create tick marks and labels
+            for (let i = 0; i <= totalMarks; i++) {
+                const tick = document.createElement('div');
+                tick.classList.add('tick');
+
+                // Calculate the position of each tick mark
+                const position = (i / 16) * pixelsPerInch;
+                tick.style.left = position + 'px';
+
+                // Determine the type of tick mark
+                if (i % 16 === 0) {
+                    // Inch mark
+                    tick.classList.add('number');
+                    // Create a label for the inch mark
+                    const label = document.createElement('div');
+                    label.classList.add('tick-label');
+                    label.innerText = i / 16;
+                    label.style.left = position + 'px';
+                    tapeMeasure.appendChild(label);
+                } else if (i % 8 === 0) {
+                    // Half-inch mark
+                    tick.classList.add('large');
+                } else if (i % 4 === 0) {
+                    // Quarter-inch mark
+                    tick.classList.add('medium');
+                } else {
+                    // Smaller marks (1/16th and 1/8th)
+                    tick.classList.add('small');
+                }
+
+                // Add the tick mark to the tape measure
+                tapeMeasure.appendChild(tick);
+            }
+
+            // Function to update the tape position
+            function updateTapePosition(measurementInInches) {
+                // Ensure measurement is within bounds
+                if (measurementInInches < 0) measurementInInches = 0;
+                if (measurementInInches > totalInches) measurementInInches = totalInches;
+
+                // Calculate the position to align the measurement with the center line
+                const position = measurementInInches * pixelsPerInch;
+
+                // Calculate the left position to translate the tape measure
+                const containerWidth = tapeMeasureContainer.offsetWidth;
+                const containerCenter = containerWidth / 2; // Center of the container
+                const translateX = containerCenter - position;
+
+                // Set the transform style to move the tape measure
+                tapeMeasure.style.transform = `translateX(${translateX}px)`;
+            }
         });
     </script>
 </body>
