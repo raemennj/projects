@@ -120,7 +120,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1000; /* Increased z-index to cover the red line */
             left: 0;
             top: 0;
             width: 100%;
@@ -198,6 +198,11 @@
             z-index: 2;
         }
 
+        /* Hide the center-line by default */
+        .hidden {
+            display: none;
+        }
+
         /* Tape measure */
         .tape-measure {
             position: absolute;
@@ -253,7 +258,7 @@
         </div>
         <!-- Tape Measure Display -->
         <div class="tape-measure-container">
-            <div class="center-line"></div>
+            <div class="center-line hidden" id="centerLine"></div>
             <div class="tape-measure" id="tapeMeasure"></div>
         </div>
         <div class="buttons">
@@ -332,6 +337,7 @@
             const modal = document.getElementById('instructionsModal');
             const showModalBtn = document.getElementById('showModalBtn');
             const closeModalBtn = document.getElementById('closeModalBtn');
+            const centerLine = document.getElementById('centerLine'); // Reference to the center-line element
             let tokens = [];
             let currentEntry = '';
             let timeout = null;
@@ -346,6 +352,7 @@
                         inputDisplay.textContent = '';
                         resultDisplay.textContent = '';
                         clearTimeout(timeout);
+                        centerLine.classList.add('hidden'); // Hide the red line
                         return;
                     }
 
@@ -405,14 +412,14 @@
 
                     clearTimeout(timeout);
                     timeout = setTimeout(() => {
-                        try {
-                            const evaluation = evaluateExpression();
+                        const evaluation = evaluateExpression();
+                        if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
                             resultDisplay.textContent = evaluation.formattedResult;
-                            if (evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-                                updateTapePosition(evaluation.numericValue);
-                            }
-                        } catch (error) {
-                            resultDisplay.textContent = 'Error';
+                            updateTapePosition(evaluation.numericValue);
+                            centerLine.classList.remove('hidden'); // Show the red line
+                        } else {
+                            resultDisplay.textContent = '';
+                            centerLine.classList.add('hidden'); // Hide the red line
                         }
                     }, 500);
                 });
@@ -436,11 +443,15 @@
                     exprTokens.push(currentEntry);
                 }
 
-                if (exprTokens.length === 0) return '';
+                if (exprTokens.length === 0) return null; // Return null if no expression to evaluate
 
-                const rpn = toRPN(exprTokens);
-                const result = evaluateRPN(rpn);
-                return { numericValue: result, formattedResult: formatResult(result) };
+                try {
+                    const rpn = toRPN(exprTokens);
+                    const result = evaluateRPN(rpn);
+                    return { numericValue: result, formattedResult: formatResult(result) };
+                } catch (error) {
+                    return null; // Return null if evaluation fails
+                }
             }
 
             function toRPN(tokens) {
@@ -662,4 +673,5 @@
         });
     </script>
 </body>
+
 </html>
