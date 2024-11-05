@@ -48,6 +48,22 @@
         #result {
             font-size: 1.5em;
             margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        #fractionResult {
+            /* Left side styling */
+            text-align: left;
+            font-weight:lighter; /* Optional font styling */
+        }
+
+        #decimalResult {
+            /* Right side styling */
+            text-align: right;
+            font-style: italic; /* Optional font styling */
+            color: gray;        /* Optional font styling */
         }
 
         .buttons {
@@ -190,10 +206,10 @@
             position: absolute;
             top: 30%;
             left: 50%;
-            width: 5px;
-            height: 100%;
+            width: 5px; /* Width of the red line */
+            height: 70%;
             background-color: red;
-            transform: translateX(-10%);
+            transform: translateX(-50%); /* Ensures centering */
             z-index: 2;
         }
 
@@ -213,7 +229,7 @@
         .tick {
             position: absolute;
             bottom: 0;
-            width: 2px;
+            width: 3px; /* Match the tickWidth variable */
             background-color: black;
         }
 
@@ -235,8 +251,10 @@
         .tick-label {
             position: absolute;
             bottom: 70px;
-            font-size: 1.3em; /* Increased font size */
+            font-size: 1.3em;
             transform: translateX(-50%);
+            text-align: center;
+            width: 50px;
         }
     </style>
     <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
@@ -251,7 +269,10 @@
     <div class="calculator">
         <div id="display">
             <div id="input"></div>
-            <div id="result"></div>
+            <div id="result">
+                <div id="fractionResult"></div>
+                <div id="decimalResult"></div>
+            </div>
         </div>
         <!-- Tape Measure Display -->
         <div class="tape-measure-container">
@@ -329,7 +350,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const inputDisplay = document.getElementById('input');
-            const resultDisplay = document.getElementById('result');
+            const fractionResultDisplay = document.getElementById('fractionResult');
+            const decimalResultDisplay = document.getElementById('decimalResult');
             const buttons = document.querySelectorAll('.btn');
             const modal = document.getElementById('instructionsModal');
             const showModalBtn = document.getElementById('showModalBtn');
@@ -347,7 +369,8 @@
                         tokens = [];
                         currentEntry = '';
                         inputDisplay.textContent = '';
-                        resultDisplay.textContent = '';
+                        fractionResultDisplay.textContent = '';
+                        decimalResultDisplay.textContent = '';
                         clearTimeout(timeout);
                         centerLine.classList.add('hidden'); // Hide the red line
                         return;
@@ -411,11 +434,14 @@
                     timeout = setTimeout(() => {
                         const evaluation = evaluateExpression();
                         if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-                            resultDisplay.textContent = evaluation.formattedResult;
+                            // Update to display fraction and decimal separately
+                            fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+                            decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
                             updateTapePosition(evaluation.numericValue);
                             centerLine.classList.remove('hidden'); // Show the red line
                         } else {
-                            resultDisplay.textContent = '';
+                            fractionResultDisplay.textContent = '';
+                            decimalResultDisplay.textContent = '';
                             centerLine.classList.add('hidden'); // Hide the red line
                         }
                     }, 500);
@@ -445,7 +471,8 @@
                 try {
                     const rpn = toRPN(exprTokens);
                     const result = evaluateRPN(rpn);
-                    return { numericValue: result, formattedResult: formatResult(result) };
+                    const formattedResult = formatResult(result); // Get both fraction and decimal
+                    return { numericValue: result, formattedResult };
                 } catch (error) {
                     return null; // Return null if evaluation fails
                 }
@@ -541,6 +568,7 @@
                 value = Math.round(value * 10000) / 10000;
 
                 let inches = Math.floor(value);
+
                 let fraction = value - inches;
 
                 if (value < 0) {
@@ -558,21 +586,24 @@
 
                 const simplified = simplifyFraction(fractionNumer, fractionDenom);
 
-                let result = '';
+                let fractionResult = '';
                 if (inches !== 0) {
-                    result += `${inches}" `;
+                    fractionResult += `${inches}`;
                 }
                 if (simplified.numer !== 0) {
-                    result += `${simplified.numer}/${simplified.denom}"`;
+                    fractionResult += ` ${simplified.numer}/${simplified.denom}`;
                 }
 
                 if (inches === 0 && simplified.numer === 0) {
-                    result = '0"';
+                    fractionResult = '0';
                 }
 
-                const decimalInches = `(${value.toFixed(4)}")`;
+                fractionResult += `"`;
 
-                return `${result.trim()} ${decimalInches}`;
+                const decimalResult = `${value.toFixed(4)}"`; // Removed parentheses
+
+                // Return both results separately
+                return { fractionResult: fractionResult.trim(), decimalResult };
             }
 
             function simplifyFraction(numer, denom) {
@@ -611,6 +642,7 @@
             // Configuration variables
             const displayRangeInches = 3; // Display about 3 inches
             const pixelsPerInch = 200; // Increase pixels per inch to zoom in
+            const tickWidth = 3; // Width of the tick marks in pixels (match CSS)
 
             // Function to generate tick marks dynamically
             function generateTickMarks(centerInches) {
@@ -618,6 +650,8 @@
                 tapeMeasure.innerHTML = '';
 
                 const containerWidth = tapeMeasureContainer.offsetWidth;
+                const centerLinePosition = containerWidth / 2;
+
                 const startInches = Math.max(centerInches - (displayRangeInches / 2), 0);
                 const endInches = centerInches + (displayRangeInches / 2);
                 const startMark = Math.floor(startInches * 16);
@@ -627,9 +661,9 @@
                     const tick = document.createElement('div');
                     tick.classList.add('tick');
 
-                    // Calculate the position of each tick mark relative to the center
+                    // Calculate the position of each tick mark relative to the center line
                     const inches = i / 16;
-                    const position = (inches - centerInches) * pixelsPerInch + (containerWidth / 2);
+                    const position = (inches - centerInches) * pixelsPerInch + centerLinePosition - (tickWidth / 2);
                     tick.style.left = position + 'px';
 
                     // Determine the type of tick mark
@@ -640,7 +674,7 @@
                         const label = document.createElement('div');
                         label.classList.add('tick-label');
                         label.innerText = inches.toFixed(0);
-                        label.style.left = position + 'px';
+                        label.style.left = (position + tickWidth / 2) + 'px';
                         tapeMeasure.appendChild(label);
                     } else if (i % 8 === 0) {
                         // Half-inch mark
