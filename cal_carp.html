@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Inch Fraction Calculator with Tape Measure</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Include math.js from CDN with defer to ensure it's loaded before the main script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
     <style>
         body {
             font-size: 18px;
@@ -14,7 +16,7 @@
             flex-direction: column;
             align-items: center;
             user-select: none;
-            font-family: "dunbar-tall", sans-serif;
+            font-family: "Arial", sans-serif;
             position: relative;
         }
 
@@ -39,10 +41,13 @@
             word-wrap: break-word;
             width: 100%;
             box-sizing: border-box;
+            position: relative;
         }
 
         #input {
             font-size: 1.2em;
+            letter-spacing: 0.2em;
+            font-family: monospace;
         }
 
         #result {
@@ -54,22 +59,21 @@
         }
 
         #fractionResult {
-            /* Left side styling */
             text-align: left;
-            font-weight:lighter; /* Optional font styling */
+            font-weight: lighter;
         }
 
         #decimalResult {
-            /* Right side styling */
             text-align: right;
-            font-style: italic; /* Optional font styling */
-            color: gray;        /* Optional font styling */
+            font-style: italic;
+            color: gray;
         }
 
         .buttons {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             grid-gap: 10px;
+            width: 100%;
         }
 
         .btn {
@@ -136,7 +140,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000; /* Increased z-index to cover the red line */
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
@@ -180,13 +184,16 @@
             background: none;
             border: none;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 24px;
         }
 
         .hamburger-icon {
             width: 30px;
             height: 3px;
             background-color: #fff;
-            margin: 6px 0;
             transition: 0.4s;
         }
 
@@ -206,14 +213,13 @@
             position: absolute;
             top: 30%;
             left: 50%;
-            width: 5px; /* Width of the red line */
+            width: 5px;
             height: 70%;
             background-color: red;
-            transform: translateX(-50%); /* Ensures centering */
+            transform: translateX(-50%);
             z-index: 2;
         }
 
-        /* Hide the center-line by default */
         .hidden {
             display: none;
         }
@@ -229,7 +235,7 @@
         .tick {
             position: absolute;
             bottom: 0;
-            width: 3px; /* Match the tickWidth variable */
+            width: 3px;
             background-color: black;
         }
 
@@ -260,7 +266,7 @@
     <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
-    <button id="showModalBtn" class="instructions-button">
+    <button id="showModalBtn" class="instructions-button" aria-label="Show Instructions">
         <div class="hamburger-icon"></div>
         <div class="hamburger-icon"></div>
         <div class="hamburger-icon"></div>
@@ -268,7 +274,7 @@
 
     <div class="calculator">
         <div id="display">
-            <div id="input"></div>
+            <div id="input" aria-live="polite"></div>
             <div id="result">
                 <div id="fractionResult"></div>
                 <div id="decimalResult"></div>
@@ -276,7 +282,7 @@
         </div>
         <!-- Tape Measure Display -->
         <div class="tape-measure-container">
-            <div class="center-line hidden" id="centerLine"></div>
+            <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
             <div class="tape-measure" id="tapeMeasure"></div>
         </div>
         <div class="buttons">
@@ -326,8 +332,9 @@
     </div>
 
     <!-- Instructions Modal -->
-    <div id="instructionsModal" class="modal">
+    <div id="instructionsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-content">
+            <h2 id="modalTitle">Calculator Instructions</h2>
             <p>
                 Use this calculator to add, subtract, multiply, or divide fractions and decimals easily. You can also work with mixed numbers.
             </p>
@@ -356,29 +363,29 @@
             const modal = document.getElementById('instructionsModal');
             const showModalBtn = document.getElementById('showModalBtn');
             const closeModalBtn = document.getElementById('closeModalBtn');
-            const centerLine = document.getElementById('centerLine'); // Reference to the center-line element
+            const centerLine = document.getElementById('centerLine');
             let tokens = [];
             let currentEntry = '';
             let timeout = null;
 
+            // Ensure math.js is loaded
+            if (typeof math === 'undefined') {
+                console.error('math.js is not loaded. Please check the script tag.');
+                return;
+            }
+
             buttons.forEach(button => {
                 button.addEventListener('click', () => {
                     const value = button.getAttribute('data-value');
+                    console.log(`Button clicked: ${value}`);
 
                     if (value === 'C') {
-                        tokens = [];
-                        currentEntry = '';
-                        inputDisplay.textContent = '';
-                        fractionResultDisplay.textContent = '';
-                        decimalResultDisplay.textContent = '';
-                        clearTimeout(timeout);
-                        centerLine.classList.add('hidden'); // Hide the red line
+                        clearCalculator();
                         return;
                     }
 
                     if (value === 'backspace') {
-                        currentEntry = currentEntry.slice(0, -1);
-                        updateInputDisplay();
+                        handleBackspace();
                         return;
                     }
 
@@ -387,281 +394,367 @@
                     const isDecimal = button.classList.contains('decimal');
 
                     if (!isOperator && !isFraction && !isDecimal) {
-                        currentEntry += value;
-                        updateInputDisplay();
+                        handleNumberInput(value);
                     } else if (isDecimal) {
-                        if (currentEntry.includes('.')) {
-                            return;
-                        }
-                        if (currentEntry === '') {
-                            currentEntry = '0.';
-                        } else {
-                            currentEntry += '.';
-                        }
-                        updateInputDisplay();
+                        handleDecimalInput();
                     } else if (isFraction) {
-                        if (currentEntry === '') {
-                            currentEntry = '0 ' + value;
-                        } else {
-                            if (currentEntry.includes('/')) {
-                                return;
-                            }
-                            if (currentEntry.includes('.')) {
-                                currentEntry += ' ' + value;
-                            } else {
-                                currentEntry += ' ' + value;
-                            }
-                        }
-                        updateInputDisplay();
+                        handleFractionInput(value);
                     } else if (isOperator) {
-                        if (currentEntry !== '') {
-                            tokens.push(currentEntry);
-                            currentEntry = '';
-                        }
-                        if (tokens.length === 0 && value !== '-') {
-                            return;
-                        }
-                        const lastToken = tokens[tokens.length - 1];
-                        if (isOperatorToken(lastToken)) {
-                            tokens[tokens.length - 1] = value;
-                        } else {
-                            tokens.push(value);
-                        }
-                        updateInputDisplay();
+                        handleOperatorInput(value);
                     }
 
+                    // Debounce evaluation to improve performance
                     clearTimeout(timeout);
                     timeout = setTimeout(() => {
                         const evaluation = evaluateExpression();
                         if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-                            // Update to display fraction and decimal separately
                             fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
                             decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
                             updateTapePosition(evaluation.numericValue);
-                            centerLine.classList.remove('hidden'); // Show the red line
+                            centerLine.classList.remove('hidden');
+                            console.log('Calculation successful');
                         } else {
                             fractionResultDisplay.textContent = '';
                             decimalResultDisplay.textContent = '';
-                            centerLine.classList.add('hidden'); // Hide the red line
+                            centerLine.classList.add('hidden');
+                            console.log('Calculation failed or incomplete');
                         }
                     }, 500);
                 });
             });
 
-            function updateInputDisplay() {
-                let displayText = tokens.join(' ');
-                if (currentEntry !== '') {
-                    displayText += (tokens.length > 0 ? ' ' : '') + currentEntry;
-                }
-                inputDisplay.textContent = displayText;
+            /**
+             * Clears the calculator inputs and results.
+             */
+            function clearCalculator() {
+                tokens = [];
+                currentEntry = '';
+                inputDisplay.textContent = '';
+                fractionResultDisplay.textContent = '';
+                decimalResultDisplay.textContent = '';
+                clearTimeout(timeout);
+                centerLine.classList.add('hidden');
+                console.log('Calculator cleared');
             }
 
+            /**
+             * Handles backspace functionality.
+             */
+            function handleBackspace() {
+                currentEntry = currentEntry.slice(0, -1);
+                updateInputDisplay();
+                console.log('Backspace pressed');
+            }
+
+            /**
+             * Handles number button inputs.
+             * @param {string} value - The number value.
+             */
+            function handleNumberInput(value) {
+                currentEntry += value;
+                updateInputDisplay();
+                console.log(`Current entry updated: ${currentEntry}`);
+            }
+
+            /**
+             * Handles decimal point input.
+             */
+            function handleDecimalInput() {
+                if (currentEntry.includes('.')) {
+                    console.log('Decimal point already exists in the current entry');
+                    return;
+                }
+                if (currentEntry === '') {
+                    currentEntry = '0.';
+                } else {
+                    currentEntry += '.';
+                }
+                updateInputDisplay();
+                console.log(`Decimal added: ${currentEntry}`);
+            }
+
+            /**
+             * Handles fraction button inputs.
+             * @param {string} value - The fraction value (e.g., "1/16").
+             */
+            function handleFractionInput(value) {
+                if (currentEntry === '') {
+                    currentEntry = value;
+                } else if (isWholeNumber(currentEntry)) {
+                    const whole = parseInt(currentEntry, 10);
+                    const [numerator, denominator] = value.split('/').map(Number);
+                    if (denominator === 0) {
+                        console.error('Denominator cannot be zero.');
+                        return;
+                    }
+                    const fraction = numerator / denominator;
+                    const combinedValue = whole + fraction;
+                    tokens.push(combinedValue.toString());
+                    currentEntry = '';
+                } else if (isOperatorToken(tokens[tokens.length -1])) {
+                    currentEntry += value;
+                } else {
+                    tokens.push(currentEntry);
+                    tokens.push('+');
+                    currentEntry = value;
+                }
+                updateInputDisplay();
+                console.log(`Fraction input handled: ${value}`);
+            }
+
+            /**
+             * Handles operator button inputs.
+             * @param {string} value - The operator value (e.g., "+", "-", "×", "÷").
+             */
+            function handleOperatorInput(value) {
+                if (currentEntry !== '') {
+                    tokens.push(currentEntry);
+                    currentEntry = '';
+                }
+                if (tokens.length === 0 && value !== '-') {
+                    console.log('Operator pressed without a preceding number');
+                    return;
+                }
+                const lastToken = tokens[tokens.length - 1];
+                if (isOperatorToken(lastToken)) {
+                    tokens[tokens.length - 1] = value;
+                } else {
+                    tokens.push(value);
+                }
+                updateInputDisplay();
+                console.log(`Operator input handled: ${value}`);
+            }
+
+            /**
+             * Updates the input display based on the current tokens and entry.
+             */
+            function updateInputDisplay() {
+                let displayText = '';
+                tokens.forEach(token => {
+                    if (isDecimalToken(token)) {
+                        const [whole, fraction] = splitDecimal(token);
+                        if (fraction > 0) {
+                            displayText += `${whole} ${convertFraction(fraction)} `;
+                        } else {
+                            displayText += `${whole} `;
+                        }
+                    } else {
+                        displayText += `${token} `;
+                    }
+                });
+                if (currentEntry !== '') {
+                    displayText += `${currentEntry} `;
+                }
+                inputDisplay.textContent = displayText.trim();
+                console.log(`Input display updated: ${displayText.trim()}`);
+            }
+
+            /**
+             * Determines if a token is an operator.
+             * @param {string} token - The token to check.
+             * @returns {boolean} - True if the token is an operator, false otherwise.
+             */
             function isOperatorToken(token) {
                 return ['+', '-', '×', '÷'].includes(token);
             }
 
+            /**
+             * Determines if a string represents a whole number.
+             * @param {string} str - The string to check.
+             * @returns {boolean} - True if the string is a whole number, false otherwise.
+             */
+            function isWholeNumber(str) {
+                return /^-?\d+$/.test(str);
+            }
+
+            /**
+             * Determines if a token is a decimal number.
+             * @param {string} token - The token to check.
+             * @returns {boolean} - True if the token is a decimal number, false otherwise.
+             */
+            function isDecimalToken(token) {
+                return /^-?\d+\.\d+$/.test(token);
+            }
+
+            /**
+             * Splits a decimal number into its whole and fractional parts.
+             * @param {string} decimalStr - The decimal number as a string.
+             * @returns {Array} - An array containing the whole number and the fractional part as a decimal.
+             */
+            function splitDecimal(decimalStr) {
+                const parts = decimalStr.split('.');
+                const whole = parseInt(parts[0], 10);
+                const fraction = parseFloat('0.' + parts[1]);
+                return [whole, fraction];
+            }
+
+            /**
+             * Converts a fractional decimal to its simplest fraction string.
+             * @param {number} fractionDecimal - The fractional part as a decimal (e.g., 0.5).
+             * @returns {string} - The fraction string (e.g., "1/2").
+             */
+            function convertFraction(fractionDecimal) {
+                const denominator = 16; // Using 1/16 increments
+                let numerator = Math.round(fractionDecimal * denominator);
+                const gcd = greatestCommonDivisor(numerator, denominator);
+                numerator /= gcd;
+                const simplifiedDenominator = denominator / gcd;
+                return `${numerator}/${simplifiedDenominator}`;
+            }
+
+            /**
+             * Calculates the greatest common divisor of two numbers using the Euclidean algorithm.
+             * @param {number} a - First number.
+             * @param {number} b - Second number.
+             * @returns {number} - The greatest common divisor of a and b.
+             */
+            function greatestCommonDivisor(a, b) {
+                a = Math.abs(a);
+                b = Math.abs(b);
+                if (!b) return a;
+                return greatestCommonDivisor(b, a % b);
+            }
+
+            /**
+             * Evaluates the current expression using math.js.
+             * @returns {Object|null} - An object containing the numeric value and formatted result, or null if evaluation fails.
+             */
             function evaluateExpression() {
                 let exprTokens = [...tokens];
                 if (currentEntry !== '') {
                     exprTokens.push(currentEntry);
                 }
 
-                if (exprTokens.length === 0) return null; // Return null if no expression to evaluate
+                if (exprTokens.length === 0) {
+                    console.log('No expression to evaluate');
+                    return null;
+                }
+
+                // Validate the expression: ensure it doesn't end with an operator
+                const lastToken = exprTokens[exprTokens.length - 1];
+                if (isOperatorToken(lastToken)) {
+                    console.log('Expression ends with an operator. Awaiting more input.');
+                    // Optionally, display a message to the user
+                    // fractionResultDisplay.textContent = 'Incomplete Expression';
+                    // decimalResultDisplay.textContent = '';
+                    return null;
+                }
+
+                const expression = exprTokens.join(' ');
+                console.log(`Evaluating Expression: ${expression}`);
 
                 try {
-                    const rpn = toRPN(exprTokens);
-                    const result = evaluateRPN(rpn);
-                    const formattedResult = formatResult(result); // Get both fraction and decimal
-                    return { numericValue: result, formattedResult };
+                    // Replace '×' and '÷' with '*' and '/' for math.js compatibility
+                    const formattedExpression = expression.replace(/×/g, '*').replace(/÷/g, '/');
+                    console.log(`Formatted Expression for math.js: ${formattedExpression}`);
+
+                    // Use math.js to evaluate the expression
+                    const result = math.evaluate(formattedExpression);
+                    console.log(`Raw Result from math.js: ${result}`);
+
+                    // Convert the result to a number
+                    const numericValue = typeof result === 'number' ? result : result.toNumber();
+                    console.log(`Numeric Value: ${numericValue}`);
+
+                    // Format the result for display with 1/16 increments
+                    const formattedResult = formatResult(numericValue);
+                    console.log(`Formatted Result: ${JSON.stringify(formattedResult)}`);
+
+                    return { numericValue, formattedResult };
                 } catch (error) {
-                    return null; // Return null if evaluation fails
+                    console.error('Evaluation Error:', error);
+                    // Optionally, display an error message to the user
+                    fractionResultDisplay.textContent = '';
+                    decimalResultDisplay.textContent = '';
+                    centerLine.classList.add('hidden');
+                    return null;
                 }
             }
 
-            function toRPN(tokens) {
-                const precedence = {
-                    '÷': 2,
-                    '×': 2,
-                    '+': 1,
-                    '-': 1
-                };
-                const outputQueue = [];
-                const operatorStack = [];
-
-                tokens.forEach(token => {
-                    if (isOperatorToken(token)) {
-                        while (operatorStack.length > 0 &&
-                            precedence[operatorStack[operatorStack.length - 1]] >= precedence[token]) {
-                            outputQueue.push(operatorStack.pop());
-                        }
-                        operatorStack.push(token);
-                    } else {
-                        outputQueue.push(token);
-                    }
-                });
-
-                while (operatorStack.length > 0) {
-                    outputQueue.push(operatorStack.pop());
-                }
-
-                return outputQueue;
-            }
-
-            function evaluateRPN(rpn) {
-                const stack = [];
-
-                rpn.forEach(token => {
-                    if (isOperatorToken(token)) {
-                        const b = stack.pop();
-                        const a = stack.pop();
-                        if (a === undefined || b === undefined) throw new Error('Invalid Expression');
-                        let res;
-                        switch (token) {
-                            case '+':
-                                res = a + b;
-                                break;
-                            case '-':
-                                res = a - b;
-                                break;
-                            case '×':
-                                res = a * b;
-                                break;
-                            case '÷':
-                                if (b === 0) throw new Error('Division by Zero');
-                                res = a / b;
-                                break;
-                            default:
-                                throw new Error('Unknown Operator');
-                        }
-                        stack.push(res);
-                    } else {
-                        stack.push(parseNumber(token));
-                    }
-                });
-
-                if (stack.length !== 1) throw new Error('Invalid Expression');
-                return stack.pop();
-            }
-
-            function parseNumber(token) {
-                if (token.includes(' ')) {
-                    const [wholePart, fractionPart] = token.split(' ');
-                    const wholeNumber = parseFloat(wholePart);
-                    const fractionValue = parseFraction(fractionPart);
-                    return wholeNumber + fractionValue;
-                } else if (token.includes('/')) {
-                    return parseFraction(token);
-                } else if (token.includes('.')) {
-                    return parseFloat(token);
-                } else {
-                    return Number(token);
-                }
-            }
-
-            function parseFraction(fractionStr) {
-                const [numerator, denominator] = fractionStr.split('/').map(Number);
-                if (denominator === 0) throw new Error('Division by Zero');
-                return numerator / denominator;
-            }
-
+            /**
+             * Formats the numeric value into a fraction with 1/16 increments and a decimal.
+             * @param {number} value - The numeric value to format.
+             * @returns {Object} - An object containing the formatted fraction and decimal strings.
+             */
             function formatResult(value) {
-                value = Math.round(value * 10000) / 10000;
+                console.log(`Formatting Value: ${value}`);
 
-                let inches = Math.floor(value);
+                // Round the value to the nearest 1/16
+                const roundedValue = Math.round(value * 16) / 16;
+                console.log(`Rounded Value (1/16 increments): ${roundedValue}`);
 
-                let fraction = value - inches;
+                // Separate the whole number and the fractional part
+                const whole = Math.floor(Math.abs(roundedValue));
+                const fractionalPart = Math.abs(roundedValue) - whole;
+                console.log(`Whole Number: ${whole}, Fractional Part: ${fractionalPart}`);
 
-                if (value < 0) {
-                    inches = Math.ceil(value);
-                    fraction = Math.abs(value - inches);
-                }
+                // Calculate numerator and denominator for the fractional part
+                let numerator = Math.round(fractionalPart * 16);
+                let denominator = 16;
+                console.log(`Numerator before simplification: ${numerator}, Denominator before simplification: ${denominator}`);
 
-                let fractionNumer = Math.round(fraction * 16);
-                const fractionDenom = 16;
-
-                if (fractionNumer === 16) {
-                    inches += 1;
-                    fractionNumer = 0;
-                }
-
-                const simplified = simplifyFraction(fractionNumer, fractionDenom);
+                // Simplify the fraction
+                const gcd = greatestCommonDivisor(numerator, denominator);
+                numerator /= gcd;
+                denominator /= gcd;
+                console.log(`Numerator after simplification: ${numerator}, Denominator after simplification: ${denominator}`);
 
                 let fractionResult = '';
-                if (inches !== 0) {
-                    fractionResult += `${inches}`;
+
+                if (denominator === 1 || numerator === 0) {
+                    // Whole number only
+                    fractionResult = `${whole}"`;
+                } else if (whole !== 0) {
+                    // Mixed number
+                    fractionResult = `${whole} ${numerator}/${denominator}"`;
+                } else {
+                    // Proper fraction only
+                    fractionResult = `${numerator}/${denominator}"`;
                 }
-                if (simplified.numer !== 0) {
-                    fractionResult += ` ${simplified.numer}/${simplified.denom}`;
+
+                // Handle negative values
+                if (roundedValue < 0) {
+                    fractionResult = `-${fractionResult}`;
                 }
 
-                if (inches === 0 && simplified.numer === 0) {
-                    fractionResult = '0';
-                }
+                // Decimal result rounded to 4 decimal places
+                const decimalResult = `${roundedValue.toFixed(4)}"`;
 
-                fractionResult += `"`;
+                console.log(`Final Fraction Result: ${fractionResult}, Final Decimal Result: ${decimalResult}`);
 
-                const decimalResult = `${value.toFixed(4)}"`; // Removed parentheses
-
-                // Return both results separately
-                return { fractionResult: fractionResult.trim(), decimalResult };
+                return { fractionResult, decimalResult };
             }
 
-            function simplifyFraction(numer, denom) {
-                if (numer === 0) return { numer: 0, denom: 1 };
-                const gcd = greatestCommonDivisor(numer, denom);
-                return { numer: numer / gcd, denom: denom / gcd };
-            }
-
-            function greatestCommonDivisor(a, b) {
-                if (!b) return a;
-                return greatestCommonDivisor(b, a % b);
-            }
-
-            // Modal functionality
-            showModalBtn.addEventListener('click', () => {
-                modal.style.display = 'block';
-                closeModalBtn.focus();
-            });
-
-            closeModalBtn.addEventListener('click', () => {
-                modal.style.display = 'none';
-                showModalBtn.focus();
-            });
-
-            window.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                    showModalBtn.focus();
-                }
-            });
-
-            // Initialize Tape Measure
-            const tapeMeasure = document.getElementById('tapeMeasure');
-            const tapeMeasureContainer = document.querySelector('.tape-measure-container');
-
-            // Configuration variables
-            const displayRangeInches = 3; // Display about 3 inches
-            const pixelsPerInch = 200; // Increase pixels per inch to zoom in
-            const tickWidth = 3; // Width of the tick marks in pixels (match CSS)
-
-            // Function to generate tick marks dynamically
+            /**
+             * Generates tick marks on the tape measure based on the center inches.
+             * @param {number} centerInches - The current measurement in inches.
+             */
             function generateTickMarks(centerInches) {
+                console.log(`Generating tick marks centered at: ${centerInches} inches`);
+
                 // Clear existing tick marks and labels
                 tapeMeasure.innerHTML = '';
 
                 const containerWidth = tapeMeasureContainer.offsetWidth;
                 const centerLinePosition = containerWidth / 2;
 
+                const displayRangeInches = 3; // Display about 3 inches
+                const pixelsPerInch = 200; // Increase pixels per inch to zoom in
+                const tickWidth = 3; // Width of the tick marks in pixels
+
                 const startInches = Math.max(centerInches - (displayRangeInches / 2), 0);
                 const endInches = centerInches + (displayRangeInches / 2);
                 const startMark = Math.floor(startInches * 16);
                 const endMark = Math.ceil(endInches * 16);
 
+                console.log(`Start Mark: ${startMark}, End Mark: ${endMark}`);
+
+                const fragment = document.createDocumentFragment();
+
                 for (let i = startMark; i <= endMark; i++) {
                     const tick = document.createElement('div');
                     tick.classList.add('tick');
 
-                    // Calculate the position of each tick mark relative to the center line
                     const inches = i / 16;
                     const position = (inches - centerInches) * pixelsPerInch + centerLinePosition - (tickWidth / 2);
                     tick.style.left = position + 'px';
@@ -675,7 +768,7 @@
                         label.classList.add('tick-label');
                         label.innerText = inches.toFixed(0);
                         label.style.left = (position + tickWidth / 2) + 'px';
-                        tapeMeasure.appendChild(label);
+                        fragment.appendChild(label);
                     } else if (i % 8 === 0) {
                         // Half-inch mark
                         tick.classList.add('large');
@@ -683,23 +776,57 @@
                         // Quarter-inch mark
                         tick.classList.add('medium');
                     } else {
-                        // Smaller marks (1/16th and 1/8th)
+                        // Smaller marks (1/16th)
                         tick.classList.add('small');
                     }
 
-                    // Add the tick mark to the tape measure
-                    tapeMeasure.appendChild(tick);
+                    fragment.appendChild(tick);
                 }
+
+                tapeMeasure.appendChild(fragment);
+                console.log('Tick marks generated');
             }
 
-            // Adjusted updateTapePosition function
+            /**
+             * Updates the tape measure position based on the measurement in inches.
+             * @param {number} measurementInInches - The measurement to display on the tape measure.
+             */
             function updateTapePosition(measurementInInches) {
+                console.log(`Updating tape measure to: ${measurementInInches} inches`);
                 // Ensure measurement is within bounds
                 if (measurementInInches < 0) measurementInInches = 0;
 
                 // Generate tick marks around the current measurement
                 generateTickMarks(measurementInInches);
             }
+
+            // Modal functionality
+            showModalBtn.addEventListener('click', () => {
+                modal.style.display = 'block';
+                closeModalBtn.focus();
+                console.log('Instructions modal opened');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                showModalBtn.focus();
+                console.log('Instructions modal closed');
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    showModalBtn.focus();
+                    console.log('Instructions modal closed by clicking outside');
+                }
+            });
+
+            // Initialize Tape Measure
+            const tapeMeasure = document.getElementById('tapeMeasure');
+            const tapeMeasureContainer = document.querySelector('.tape-measure-container');
+
+            // Initial generation of tick marks
+            generateTickMarks(0);
         });
     </script>
 </body>
