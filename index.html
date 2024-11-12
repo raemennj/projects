@@ -1,82 +1,211 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Light Theme</title>
-<link href="updated_simpleGridTemplate.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>raemenn</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" crossorigin="anonymous"
+    >
+    <!-- Custom CSS -->
+    <style>
+        /* Custom Variables */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #50e3c2;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            padding-top: 70px; /* Adjust based on navbar height if fixed */
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--primary-color) !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            color: white !important;
+            padding: 5px 15px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            text-decoration: none; /* Remove underline */
+        }
+        .nav-link:hover, .nav-link:focus {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+        }
+        .nav-item.active .nav-link {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Hero Section Styling */
+        .hero {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 100px 20px;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        /* Projects Section */
+        #projects {
+            padding: 50px 20px;
+            background-color: #f7f7f7;
+        }
+        #projects h2 {
+            text-align: center;
+            color: var(--dark-color);
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .project-card {
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .project-link {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .project-link:hover {
+            color: var(--secondary-color);
+        }
+
+        /* About Section */
+        #about {
+            padding: 40px;
+            background-color: var(--light-color);
+            text-align: center;
+            max-width: 500px;
+            margin: 40px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #about h2 {
+            color: var(--dark-color);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        #about p {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
-<!-- Main Container -->
-<div class="container"> 
-  <!-- Header -->
-  <header class="header">
-    <h4 class="logo">Convergence of Imagination</h4>
-  </header>
-  <!-- Hero Section -->
-  <section class="intro">
-    <div class="column">
-      <h3>Raemenn Jewall</h3>
-      <img src="images/profile.png" alt="" class="profile"> </div>
-    <div class="column">
-      <p>I have always been known for my unique blend of characteristics, embodying traits that many find appealing. With a background that spans various experiences, I have developed a perspective that resonates with a wide audience. My interests are diverse, reflecting a curiosity about the world around me. </p>
-      <p>Driven by a sense of purpose and guided by values that are universally respected, I navigate life's challenges with grace. Whether in personal relationships or professional endeavors, I always demonstrate a commitment to excellence and a desire to contribute positively to others. My story continues to unfold, marked by growth and discovery.</p>
-    </div>
-  </section>
-  <!-- Stats Gallery Section -->
-  <div class="gallery">
-    <div class="thumbnail"> <a href="#"><img src="images/bee.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Beekeeping</h4>
-      <p class="tag">Nurturing hives, harvesting honey.</p>
-      <p class="text_column">Buzzing opportunity: Bee hive seeks skilled keeper. Hive maintenance, colony care, honey production. Enthusiasm for pollination a must. Join us!</p>
-    </div>
-    <div class="thumbnail"> <a href="#"><img src="images/cloud.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Cloud Watching</h4>
-      <p class="tag">Interpreting sky's tableau.</p>
-      <p class="text_column">Unlocking nebulous narratives, I decipher cloud formations, revealing meteorological secrets and painting stories across azure canvases.</p>
-    </div>
-    <div class="thumbnail"> <a href="#"><img src="images/kite.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Kite Aerial Photography</h4>
-      <p class="tag">Capturing vistas from above.</p>
-      <p class="text_column">Man, kite aerial photography, it's like, takin' it old school, y'know? Drones may buzz, but kites? They abide, man</p>
-    </div>
-    <div class="thumbnail"> <a href="#"><img src="images/urban.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Urban Foraging</h4>
-      <p class="tag">Harvesting edible finds.</p>
-      <p class="text_column">Huntin' nature's treasures amidst the concrete jungle, turnin' overlooked corners into culinary goldmines. <a href="drill_pattern_calc02" target="_self">Flavourtown</a>, baby!</p>
-    </div>
-  </div>
-  <div class="gallery">
-    <div class="thumbnail"> <a href="#"><img src="images/shadow.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Shadow Puppetry</h4>
-      <p class="tag">Narrating tales through light and shade.</p>
-      <p class="text_column">My off-off Broadway shadow puppet <a href="nail_pattern_calc.html" target="_self">extravaganza</a> brings tales to life in mesmerizing silhouette. Immerse yourself in wonder!</p>
-    </div>
-    <div class="thumbnail"> <a href="#"><img src="images/small.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Microsculpting</h4>
-      <p class="tag">Carving intricate miniatures.</p>
-      <p class="text_column"> I make teeny-tiny stuff, like little stories you gotta <a href="btlshp.html">squint to see</a>. Check 'em out in the gallery!</p>
-    </div>
-    <div class="thumbnail"> <a href="#"><img src="images/arcade.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Retro Arcade Restoration</h4>
-      <p class="tag">Reviving vintage gaming machines.</p>
-      <p class="text_column">Fixing and fine-tuning old-school machines for peak gameplay. Repairing circuits, screens, and controls to keep the fun rolling.</p>
-    </div>
-    <div class="thumbnail"> <a href="#"><img src="images/farmer.jpg" alt="" width="400" class="cards"/></a>
-      <h4>Edible Landscaping</h4>
-      <p class="tag">Designing edible gardens.</p>
-      <p class="text_column">Taste the land's richness! Edible gardens offer hearty flavors. Plow, sow, reap and embrace the earth's bounty!</p>
-    </div>
-  </div>
-  <!-- Footer Section -->
-  <footer id="contact">
-    <p class="hero_header">Let's make our worlds collide in a spectacular explosion of confetti!</p>
-    <div class="button">Drop me a line </div>
-  </footer>
-  <!-- Copyrights Section -->
-  <div class="copyright">&copy;2023 - <strong>Convergence of Imagination</strong></div>
-</div>
-<!-- Main Container Ends -->
+
+    <!-- Enhanced Button-Styled Navbar with Flexbox Alignment -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">raemenn</a>
+            <button 
+                class="navbar-toggler" 
+
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#basicNavbar" 
+                aria-controls="basicNavbar" 
+                aria-expanded="false" 
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="basicNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#projects">Projects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to My Projects</h1>
+            <p>Explore my work and get to know more about what I do.</p>
+            <a href="#projects" class="btn btn-primary btn-lg">View Projects</a>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects">
+        <h2>My Projects</h2>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="project-card">
+                        <h5>Garage Doors</h5>
+                        <p>Manufacture, installation and service.</p>
+                        <a href="garage-doors.html" class="project-link">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="project-card">
+                        <h5>Web Design</h5>
+                        <p>Calculators, experiments, and art.</p>
+                        <a href="web-design.html" class="project-link">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="project-card">
+                        <h5>Maker</h5>
+                        <p>Electronics, furniture, and tools.</p>
+                        <a href="maker.html" class="project-link">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <h2>About Me</h2>
+        <p>I have always been known for my unique blend of characteristics, embodying traits that many find appealing. With a background that spans various experiences, I have developed a perspective that resonates with a wide audience.
+      My interests are diverse, reflecting a curiosity about the world around me.</p>
+    </section>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"
+    ></script>
 </body>
 </html>
