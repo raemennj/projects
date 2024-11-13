@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Sight Words Flash Card Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
     <style>
         /* Existing CSS styles */
         body {
@@ -26,6 +27,7 @@
         #word {
             font-size: 5vw;
             margin: 5% 0;
+            transition: transform 0.5s ease;
         }
 
         #result {
@@ -34,7 +36,7 @@
             color: green;
         }
 
-        #startButton, #bossFightButton, #resetButton {
+        #startButton, #resetButton {
             padding: 1em 2em;
             font-size: 2em;
             margin: 10px;
@@ -45,27 +47,18 @@
             color: white;
         }
 
-        #bossFightButton {
-            background-color: red;
-            color: white;
-        }
-
         #resetButton {
             font-size: 1em;
         }
 
-        #difficulty {
-            margin: 20px 0;
-            font-size: 1.2em;
-        }
-
-        #difficulty label {
-            margin-right: 10px;
-        }
-
-        #challengingWordsCount {
-            font-size: 1.2em;
+        #countdown {
+            font-size: 3vw;
             margin-top: 10px;
+        }
+
+        #points {
+            font-size: 2em;
+            margin-top: 20px;
         }
 
         /* Animation for correct answer */
@@ -87,23 +80,6 @@
             animation: bounceIn 0.5s ease;
         }
 
-        /* Animation for almost there */
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            70% {
-                transform: scale(1.1);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .almost-feedback {
-            animation: pulse 1s infinite;
-        }
-
         /* Animation for incorrect answer */
         @keyframes shake {
             0% { transform: translateX(0); }
@@ -117,6 +93,16 @@
         .incorrect-feedback {
             animation: shake 0.5s;
         }
+
+        /* Countdown animation */
+        @keyframes countdown {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .countdown {
+            animation: countdown 3s linear;
+        }
     </style>
 </head>
 <body>
@@ -127,7 +113,6 @@
         <div id="difficulty">
             <label>Select Difficulty:</label>
             <label><input type="radio" name="difficulty" value="easy" checked> Easy</label>
-            <label><input type="radio" name="difficulty" value="normal"> Normal</label>
             <label><input type="radio" name="difficulty" value="hard"> Hard</label>
         </div>
 
@@ -135,16 +120,13 @@
         <button id="startButton">🚀 Start</button>
         <button id="resetButton">Reset Game</button>
         <div id="result"></div>
-        <div id="challengingWordsCount">📚 Challenging Words: 0</div>
+        <div id="countdown"></div>
+        <div id="points">Points: 0</div> <!-- Points display -->
     </div>
 
     <script>
         const sightWords = [
-            'always', 'around', 'because', 'before', 'best', 'both', 'buy', 'call',
-            'cold', 'does', 'don\'t', 'fast', 'first', 'five', 'found', 'gave', 'goes',
-            'green', 'made', 'many', 'off', 'pull', 'read', 'right', 'sing', 'sit',
-            'sleep', 'tell', 'their', 'these', 'those', 'upon', 'use', 'very', 'wash',
-            'which', 'why', 'wish', 'work', 'would', 'write', 'your'
+            'around', 'be', 'five', 'help', 'next', 'or', 'pull', 'take', 'until', 'walked', 'bring', 'children', 'comes', 'family', 'like', 'make', 'those', 'use', 'with', 'city', 'full', 'no', 'think', 'other', 'places', 'put', 'school', 'sing', 'think', 'this', 'mind', 'could', 'today', 'play', 'cheer', 'hello', 'read', 'week', 'by', 'hundred', 'table', 'says', 'little', 'find', 'both', 'cold', 'long', 'green', 'we', 'eat', 'bear', 'work', 'animals', 'know', 'most', 'myself', 'sleep', 'second', 'three', 'she', 'pictures', 'air', 'pretty', 'told', 'window', 'funny', 'try', 'he', 'cried', 'car', 'few', 'people', 'eye', 'high', 'my', 'open', 'yellow', 'happy', 'starts', 'before', 'kept', 'would', 'afraid', 'own', 'show', 'might', 'why', 'many', 'for', 'dark', 'really', 'you', 'because', 'right', 'go', 'they', 'was', 'me', 'old', 'better'
         ];
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -160,17 +142,66 @@
             let startTime;
             let displayedWord;
             let challengingWords = [];
-            let isBossFight = false;
             let wordIndex = 0;
             let isRecognitionActive = false;
+            let points = 0;
 
             const difficultySettings = {
                 easy: 3000,    // 3 seconds
-                normal: 2000,  // 2 seconds
                 hard: 1000     // 1 second
             };
 
             let RESPONSE_THRESHOLD;
+
+            const exceptions = {
+                'bear': ['bare'],
+                'by': ['buy'],
+                'eye': ['i'],
+                'know': ['no'],
+                'too': ['to'],
+                'would': ['wood'],
+                'for': ['four', '4', '4:00'],
+                'right': ['write'],
+                'pull': ['pool'],
+                'there': ['their', "they're"],
+                'their': ['there', "they're"],
+                "they're": ['there', 'their'],
+                'to': ['too', 'two'],
+                'your': ["you're"],
+                "you're": ['your'],
+                'here': ['hear'],
+                'hear': ['here'],
+                'see': ['sea'],
+                'sun': ['son'],
+                'mail': ['male'],
+                'pair': ['pear'],
+                'piece': ['peace'],
+                'stationary': ['stationery'],
+                'allowed': ['aloud'],
+                'weather': ['whether'],
+                'principal': ['principle'],
+                'suite': ['sweet'],
+                'break': ['brake'],
+                'night': ['knight'],
+                'meet': ['meat'],
+                'write': ['right', 'rite', 'wright'],
+                'allowed': ['aloud'],
+                'whether': ['weather'],
+                'principle': ['principal'],
+                'suite': ['sweet'],
+                'sweet': ['suite'],
+				'hundred': ['100'],
+    			'one': ['1', '1:00'],
+    			'two': ['3', '2:00'],
+    			'three': ['3', '3:00'],
+    			'four': ['4', '4:00', 'for'],
+    			'five': ['5', '5:00'],
+    			'six': ['6', '6:00'],
+				'seven': ['7', '7:00'],
+				'eight': ['8', '8:00', 'ate'],
+				'nine': ['9', '9:00'],
+				'ten': ['10', '10:00'],
+            };
 
             function updateThreshold() {
                 const selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value;
@@ -198,17 +229,30 @@
             }
 
             function displayNextWord() {
-                if (isBossFight && challengingWords.length === 0) {
-                    alert('Great job! You cleared all the challenging words!');
-                    stopRecognition();
-                    return;
-                }
-
-                displayedWord = isBossFight ? getNextChallengingWord() : getNextWord();
+                displayedWord = getNextWord();
                 const wordElement = document.getElementById('word');
                 wordElement.textContent = displayedWord;
+                wordElement.style.transform = 'scale(1.2)'; // Animation effect to confirm word change
+                setTimeout(() => wordElement.style.transform = 'scale(1)', 500); // Reset after animation
                 console.log(`Displayed word: ${displayedWord}`);
                 startTime = Date.now();
+            }
+
+            function startCountdown() {
+                const countdownElement = document.getElementById('countdown');
+                countdownElement.textContent = 'Next word in 3...';
+                let counter = 2;
+                const countdownInterval = setInterval(() => {
+                    if (counter === 0) {
+                        clearInterval(countdownInterval);
+                        countdownElement.textContent = '';
+                        displayNextWord();
+                    } else {
+                        countdownElement.textContent = `Next word in ${counter}...`;
+                        counter--;
+                    }
+                }, 1000);
+                countdownElement.className = 'countdown';
             }
 
             function getNextWord() {
@@ -219,14 +263,6 @@
                 return sightWords[wordIndex++];
             }
 
-            function getNextChallengingWord() {
-                if (wordIndex >= challengingWords.length) {
-                    wordIndex = 0;
-                    shuffleArray(challengingWords);
-                }
-                return challengingWords[wordIndex++];
-            }
-
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -234,10 +270,11 @@
                 }
             }
 
-            function startGame(bossFight = false) {
-                isBossFight = bossFight;
+            function startGame() {
                 wordIndex = 0;
-                shuffleArray(isBossFight ? challengingWords : sightWords);
+                points = 0;
+                updatePointsDisplay();
+                shuffleArray(sightWords);
                 displayedWord = '';
                 document.getElementById('result').textContent = '';
                 displayNextWord();
@@ -255,6 +292,10 @@
                 console.log('Recognition stopped.');
             }
 
+            function updatePointsDisplay() {
+                document.getElementById('points').textContent = `Points: ${points}`;
+            }
+
             // Handle speech recognition events
             recognition.onstart = () => {
                 console.log('Speech recognition service has started');
@@ -268,35 +309,52 @@
                 const resultElement = document.getElementById('result');
 
                 // Remove previous feedback classes
-                resultElement.classList.remove('correct-feedback', 'almost-feedback', 'incorrect-feedback');
+                resultElement.classList.remove('correct-feedback', 'incorrect-feedback');
 
-                if (spokenWord === displayedWord.toLowerCase()) {
+                // Check if the spoken word is in the exceptions list for the displayed word
+                if (exceptions[displayedWord] && exceptions[displayedWord].includes(spokenWord)) {
+                    resultElement.style.color = 'green';
+                    resultElement.innerHTML = `🎉 Excellent! You recognized the word in ${(responseTime / 1000).toFixed(2)} seconds.`;
+                    resultElement.classList.add('correct-feedback');
+                    
+                    // Increment points for correct response in time
                     if (responseTime <= RESPONSE_THRESHOLD) {
-                        resultElement.style.color = 'green';
-                        resultElement.innerHTML = `🎉 Excellent! You recognized the word in ${(responseTime / 1000).toFixed(2)} seconds.`;
-                        resultElement.classList.add('correct-feedback');
-                        if (isBossFight) {
-                            challengingWords = challengingWords.filter(word => word !== displayedWord);
-                            updateChallengingWordsCount();
-                            console.log(`Removed "${displayedWord}" from challenging words.`);
-                        }
-                    } else {
-                        resultElement.style.color = 'orange';
-                        resultElement.innerHTML = `😊 Good job! You took ${(responseTime / 1000).toFixed(2)} seconds. Try for ${(RESPONSE_THRESHOLD / 1000).toFixed(1)} seconds next time.`;
-                        resultElement.classList.add('almost-feedback');
-                        addChallengingWord(displayedWord);
+                        points++;
+                        updatePointsDisplay();
                     }
                 } else {
-                    resultElement.style.color = 'red';
-                    resultElement.innerHTML = `🤔 You said "${spokenWord}". Let's try again!`;
-                    resultElement.classList.add('incorrect-feedback');
-                    addChallengingWord(displayedWord);
+                    // Fuzzy matching using Fuse.js
+                    const fuse = new Fuse([displayedWord], {
+                        includeScore: true,
+                        threshold: 0.4 // Adjust threshold for more/less fuzzy matching
+                    });
+                    const fuseResults = fuse.search(spokenWord);
+
+                    if (fuseResults.length > 0 && fuseResults[0].score <= 0.4) {
+                        if (responseTime <= RESPONSE_THRESHOLD) {
+                            resultElement.style.color = 'green';
+                            resultElement.innerHTML = `🎉 Excellent! You recognized the word in ${(responseTime / 1000).toFixed(2)} seconds.`;
+                            resultElement.classList.add('correct-feedback');
+                            
+                            // Increment points for correct response in time
+                            points++;
+                            updatePointsDisplay();
+                        } else {
+                            resultElement.style.color = 'orange';
+                            resultElement.innerHTML = `😊 Good job! You took ${(responseTime / 1000).toFixed(2)} seconds. Try for ${(RESPONSE_THRESHOLD / 1000).toFixed(1)} seconds next time.`;
+                        }
+                    } else {
+                        resultElement.style.color = 'red';
+                        resultElement.innerHTML = `🤔 You said "${spokenWord}". Let's try again!`;
+                        resultElement.classList.add('incorrect-feedback');
+                        addChallengingWord(displayedWord);
+                    }
                 }
 
-                // Move to the next word after a delay
+                // Start countdown for the next word after a delay
                 setTimeout(() => {
-                    displayNextWord();
-                }, 3000); // 3 seconds delay
+                    startCountdown();
+                }, 1000); // 1-second delay before starting the countdown
             };
 
             recognition.onerror = (event) => {
@@ -319,11 +377,28 @@
             });
 
             document.getElementById('resetButton').addEventListener('click', () => {
+                // Stop recognition if it's active
+                if (isRecognitionActive) {
+                    recognition.stop();
+                    isRecognitionActive = false;
+                }
+
+                // Clear the challenging words list and update the count
                 challengingWords = [];
                 updateChallengingWordsCount();
+
+                // Reset word index and other game variables
+                wordIndex = 0;
+                displayedWord = '';
+                points = 0; // Reset points
+                updatePointsDisplay(); // Update points display
+                
+                // Reset the UI elements
                 document.getElementById('result').textContent = '';
                 document.getElementById('word').textContent = 'Press "Start" to begin';
-                stopRecognition();
+                document.getElementById('countdown').textContent = '';
+                
+                // Log for debugging purposes
                 console.log('Game has been reset.');
             });
 
