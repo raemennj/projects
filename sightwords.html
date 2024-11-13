@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sight Words Flash Card Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Existing CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 5%;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 1em;
+        }
+
+        #word {
+            font-size: 5vw;
+            margin: 5% 0;
+        }
+
+        #result {
+            font-size: 4vw;
+            margin: 5% 0;
+            color: green;
+        }
+
+        #startButton, #bossFightButton, #resetButton {
+            padding: 1em 2em;
+            font-size: 2em;
+            margin: 10px;
+        }
+
+        #startButton {
+            background-color: green;
+            color: white;
+        }
+
+        #bossFightButton {
+            background-color: red;
+            color: white;
+        }
+
+        #resetButton {
+            font-size: 1em;
+        }
+
+        #difficulty {
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+
+        #difficulty label {
+            margin-right: 10px;
+        }
+
+        #challengingWordsCount {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        /* Animation for correct answer */
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .correct-feedback {
+            animation: bounceIn 0.5s ease;
+        }
+
+        /* Animation for almost there */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .almost-feedback {
+            animation: pulse 1s infinite;
+        }
+
+        /* Animation for incorrect answer */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+
+        .incorrect-feedback {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sight Words Flash Card Game</h1>
+
+        <div id="difficulty">
+            <label>Select Difficulty:</label>
+            <label><input type="radio" name="difficulty" value="easy" checked> Easy</label>
+            <label><input type="radio" name="difficulty" value="normal"> Normal</label>
+            <label><input type="radio" name="difficulty" value="hard"> Hard</label>
+        </div>
+
+        <div id="word">Press "Start" to begin</div>
+        <button id="startButton">🚀 Start</button>
+        <button id="resetButton">Reset Game</button>
+        <div id="result"></div>
+        <div id="challengingWordsCount">📚 Challenging Words: 0</div>
+    </div>
+
+    <script>
+        const sightWords = [
+            'always', 'around', 'because', 'before', 'best', 'both', 'buy', 'call',
+            'cold', 'does', 'don\'t', 'fast', 'first', 'five', 'found', 'gave', 'goes',
+            'green', 'made', 'many', 'off', 'pull', 'read', 'right', 'sing', 'sit',
+            'sleep', 'tell', 'their', 'these', 'those', 'upon', 'use', 'very', 'wash',
+            'which', 'why', 'wish', 'work', 'would', 'write', 'your'
+        ];
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            alert('Sorry, your browser does not support Speech Recognition.');
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = true; // Keep recognition running
+            recognition.interimResults = false;
+
+            let startTime;
+            let displayedWord;
+            let challengingWords = [];
+            let isBossFight = false;
+            let wordIndex = 0;
+            let isRecognitionActive = false;
+
+            const difficultySettings = {
+                easy: 3000,    // 3 seconds
+                normal: 2000,  // 2 seconds
+                hard: 1000     // 1 second
+            };
+
+            let RESPONSE_THRESHOLD;
+
+            function updateThreshold() {
+                const selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value;
+                RESPONSE_THRESHOLD = difficultySettings[selectedDifficulty];
+                console.log(`Difficulty set to ${selectedDifficulty}, threshold is ${RESPONSE_THRESHOLD} ms`);
+            }
+
+            updateThreshold();
+
+            const difficultyInputs = document.querySelectorAll('input[name="difficulty"]');
+            difficultyInputs.forEach((input) => {
+                input.addEventListener('change', updateThreshold);
+            });
+
+            function addChallengingWord(word) {
+                if (!challengingWords.includes(word)) {
+                    challengingWords.push(word);
+                    updateChallengingWordsCount();
+                    console.log(`Added "${word}" to challenging words.`);
+                }
+            }
+
+            function updateChallengingWordsCount() {
+                document.getElementById('challengingWordsCount').innerHTML = `📚 Challenging Words: ${challengingWords.length}`;
+            }
+
+            function displayNextWord() {
+                if (isBossFight && challengingWords.length === 0) {
+                    alert('Great job! You cleared all the challenging words!');
+                    stopRecognition();
+                    return;
+                }
+
+                displayedWord = isBossFight ? getNextChallengingWord() : getNextWord();
+                const wordElement = document.getElementById('word');
+                wordElement.textContent = displayedWord;
+                console.log(`Displayed word: ${displayedWord}`);
+                startTime = Date.now();
+            }
+
+            function getNextWord() {
+                if (wordIndex >= sightWords.length) {
+                    wordIndex = 0;
+                    shuffleArray(sightWords);
+                }
+                return sightWords[wordIndex++];
+            }
+
+            function getNextChallengingWord() {
+                if (wordIndex >= challengingWords.length) {
+                    wordIndex = 0;
+                    shuffleArray(challengingWords);
+                }
+                return challengingWords[wordIndex++];
+            }
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function startGame(bossFight = false) {
+                isBossFight = bossFight;
+                wordIndex = 0;
+                shuffleArray(isBossFight ? challengingWords : sightWords);
+                displayedWord = '';
+                document.getElementById('result').textContent = '';
+                displayNextWord();
+
+                if (!isRecognitionActive) {
+                    recognition.start();
+                    isRecognitionActive = true;
+                    console.log('Recognition started.');
+                }
+            }
+
+            function stopRecognition() {
+                recognition.stop();
+                isRecognitionActive = false;
+                console.log('Recognition stopped.');
+            }
+
+            // Handle speech recognition events
+            recognition.onstart = () => {
+                console.log('Speech recognition service has started');
+            };
+
+            recognition.onresult = (event) => {
+                const spokenWord = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+                const endTime = Date.now();
+                const responseTime = endTime - startTime; // in milliseconds
+
+                const resultElement = document.getElementById('result');
+
+                // Remove previous feedback classes
+                resultElement.classList.remove('correct-feedback', 'almost-feedback', 'incorrect-feedback');
+
+                if (spokenWord === displayedWord.toLowerCase()) {
+                    if (responseTime <= RESPONSE_THRESHOLD) {
+                        resultElement.style.color = 'green';
+                        resultElement.innerHTML = `🎉 Excellent! You recognized the word in ${(responseTime / 1000).toFixed(2)} seconds.`;
+                        resultElement.classList.add('correct-feedback');
+                        if (isBossFight) {
+                            challengingWords = challengingWords.filter(word => word !== displayedWord);
+                            updateChallengingWordsCount();
+                            console.log(`Removed "${displayedWord}" from challenging words.`);
+                        }
+                    } else {
+                        resultElement.style.color = 'orange';
+                        resultElement.innerHTML = `😊 Good job! You took ${(responseTime / 1000).toFixed(2)} seconds. Try for ${(RESPONSE_THRESHOLD / 1000).toFixed(1)} seconds next time.`;
+                        resultElement.classList.add('almost-feedback');
+                        addChallengingWord(displayedWord);
+                    }
+                } else {
+                    resultElement.style.color = 'red';
+                    resultElement.innerHTML = `🤔 You said "${spokenWord}". Let's try again!`;
+                    resultElement.classList.add('incorrect-feedback');
+                    addChallengingWord(displayedWord);
+                }
+
+                // Move to the next word after a delay
+                setTimeout(() => {
+                    displayNextWord();
+                }, 3000); // 3 seconds delay
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error detected: ' + event.error);
+                const resultElement = document.getElementById('result');
+                resultElement.style.color = 'red';
+                resultElement.innerHTML = `Error occurred in recognition: ${event.error}`;
+            };
+
+            recognition.onend = () => {
+                console.log('Speech recognition service disconnected');
+                if (isRecognitionActive) {
+                    recognition.start(); // Restart recognition if it stopped unexpectedly
+                    console.log('Recognition restarted.');
+                }
+            };
+
+            document.getElementById('startButton').addEventListener('click', () => {
+                startGame();
+            });
+
+            document.getElementById('resetButton').addEventListener('click', () => {
+                challengingWords = [];
+                updateChallengingWordsCount();
+                document.getElementById('result').textContent = '';
+                document.getElementById('word').textContent = 'Press "Start" to begin';
+                stopRecognition();
+                console.log('Game has been reset.');
+            });
+
+            // Request microphone access on page load using getUserMedia
+            window.addEventListener('load', () => {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function(stream) {
+                        console.log('Microphone permissions granted.');
+                        // Stop all tracks to release the microphone
+                        stream.getTracks().forEach(track => track.stop());
+                    })
+                    .catch(function(err) {
+                        console.error('Error during microphone permission request:', err);
+                        alert('Microphone access is required for this game to work.');
+                    });
+            });
+        }
+    </script>
+
+</body>
+</html>
