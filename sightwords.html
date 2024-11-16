@@ -4,30 +4,35 @@
     <meta charset="UTF-8">
     <title>Sight Words Flash Card Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
     <style>
-        /* Existing CSS styles */
+        /* Basic Styles */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 5%;
             margin: 0;
+            background-color: #f0f8ff;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
+            background-color: #ffffff;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         h1 {
             font-size: 2.5em;
             margin-bottom: 1em;
+            color: #333333;
         }
 
         #word {
             font-size: 5vw;
             margin: 5% 0;
-            transition: transform 0.5s ease;
+            color: #333333;
         }
 
         #result {
@@ -40,28 +45,37 @@
             padding: 1em 2em;
             font-size: 2em;
             margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         #startButton {
-            background-color: green;
+            background-color: #28a745;
             color: white;
         }
 
+        #startButton:hover {
+            background-color: #218838;
+        }
+
         #resetButton {
-            font-size: 1em;
+            background-color: #dc3545;
+            color: white;
         }
 
-        #countdown {
-            font-size: 3vw;
+        #resetButton:hover {
+            background-color: #c82333;
+        }
+
+        #challengingWordsCount {
+            font-size: 1.2em;
             margin-top: 10px;
+            color: #555555;
         }
 
-        #points {
-            font-size: 2em;
-            margin-top: 20px;
-        }
-
-        /* Animation for correct answer */
+        /* Animations for Feedback */
         @keyframes bounceIn {
             0% {
                 transform: scale(0.5);
@@ -80,7 +94,22 @@
             animation: bounceIn 0.5s ease;
         }
 
-        /* Animation for incorrect answer */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .almost-feedback {
+            animation: pulse 1s infinite;
+        }
+
         @keyframes shake {
             0% { transform: translateX(0); }
             20% { transform: translateX(-10px); }
@@ -93,16 +122,6 @@
         .incorrect-feedback {
             animation: shake 0.5s;
         }
-
-        /* Countdown animation */
-        @keyframes countdown {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0); opacity: 0; }
-        }
-
-        .countdown {
-            animation: countdown 3s linear;
-        }
     </style>
 </head>
 <body>
@@ -110,24 +129,199 @@
     <div class="container">
         <h1>Sight Words Flash Card Game</h1>
 
-        <div id="difficulty">
-            <label>Select Difficulty:</label>
-            <label><input type="radio" name="difficulty" value="easy" checked> Easy</label>
-            <label><input type="radio" name="difficulty" value="hard"> Hard</label>
-        </div>
-
         <div id="word">Press "Start" to begin</div>
         <button id="startButton">🚀 Start</button>
-        <button id="resetButton">Reset Game</button>
+        <button id="resetButton">🔄 Reset Game</button>
         <div id="result"></div>
-        <div id="countdown"></div>
-        <div id="points">Points: 0</div> <!-- Points display -->
+        <div id="challengingWordsCount">📚 Challenging Words: 0</div>
     </div>
 
     <script>
+        // List of sight words
         const sightWords = [
-            'around', 'be', 'five', 'help', 'next', 'or', 'pull', 'take', 'until', 'walked', 'bring', 'children', 'comes', 'family', 'like', 'make', 'those', 'use', 'with', 'city', 'full', 'no', 'think', 'other', 'places', 'put', 'school', 'sing', 'think', 'this', 'mind', 'could', 'today', 'play', 'cheer', 'hello', 'read', 'week', 'by', 'hundred', 'table', 'says', 'little', 'find', 'both', 'cold', 'long', 'green', 'we', 'eat', 'bear', 'work', 'animals', 'know', 'most', 'myself', 'sleep', 'second', 'three', 'she', 'pictures', 'air', 'pretty', 'told', 'window', 'funny', 'try', 'he', 'cried', 'car', 'few', 'people', 'eye', 'high', 'my', 'open', 'yellow', 'happy', 'starts', 'before', 'kept', 'would', 'afraid', 'own', 'show', 'might', 'why', 'many', 'for', 'dark', 'really', 'you', 'because', 'right', 'go', 'they', 'was', 'me', 'old', 'better'
+            'around', 'be', 'five', 'help', 'next', 'or', 'pull', 'take', 'until', 'walked', 'bring', 'children',
+            'comes', 'family', 'like', 'make', 'those', 'use', 'with', 'city', 'full', 'no', 'think', 'other',
+            'places', 'put', 'school', 'sing', 'mind', 'could', 'today', 'play', 'cheer', 'hello', 'read', 'week',
+            'by', 'hundred', 'table', 'says', 'little', 'find', 'both', 'cold', 'long', 'green', 'we', 'eat',
+            'bear', 'work', 'animals', 'know', 'most', 'myself', 'sleep', 'second', 'three', 'she', 'pictures',
+            'air', 'pretty', 'told', 'window', 'funny', 'try', 'he', 'cried', 'car', 'few', 'people', 'eye',
+            'high', 'my', 'open', 'yellow', 'happy', 'starts', 'before', 'kept', 'would', 'afraid', 'own',
+            'show', 'might', 'why', 'many', 'for', 'dark', 'really', 'you', 'because', 'right', 'go', 'they',
+            'was', 'me', 'old', 'better'
         ];
+
+        // Comprehensive Exceptions List with Bidirectional Mapping
+        const exceptions = {
+            // Simple Homophones
+            'bear': ['bare'],
+            'bare': ['bear'],
+
+            'by': ['buy', 'bye'],
+            'buy': ['by', 'bye'],
+            'bye': ['by', 'buy'],
+
+            'eye': ['i'],
+            'i': ['eye'],
+
+            'know': ['no'],
+            'no': ['know'],
+
+            'too': ['to', 'two'],
+            'to': ['too', 'two'],
+            'two': ['too', 'to'],
+
+            'would': ['wood'],
+            'wood': ['would'],
+
+            'for': ['four', '4', '4:00'],
+            'four': ['for', '4', '4:00'],
+            '4': ['for', 'four', '4:00'],
+            '4:00': ['for', 'four', '4'],
+
+            'right': ['write', 'rite', 'wright'],
+            'write': ['right', 'rite', 'wright'],
+            'rite': ['right', 'write', 'wright'],
+            'wright': ['right', 'write', 'rite'],
+
+            'pull': ['pool'],
+            'pool': ['pull'],
+
+            'there': ['their', "they're"],
+            'their': ['there', "they're"],
+            "they're": ['there', 'their'],
+
+            'your': ["you're"],
+            "you're": ['your'],
+
+            'here': ['hear'],
+            'hear': ['here'],
+
+            'made': ['maid'],
+            'maid': ['made'],
+
+            'see': ['sea'],
+            'sea': ['see'],
+
+            'sun': ['son'],
+            'son': ['sun'],
+
+            'mail': ['male'],
+            'male': ['mail'],
+
+            'pair': ['pear'],
+            'pear': ['pair'],
+
+            'piece': ['peace'],
+            'peace': ['piece'],
+
+            'stationary': ['stationery'],
+            'stationery': ['stationary'],
+
+            'allowed': ['aloud'],
+            'aloud': ['allowed'],
+
+            'weather': ['whether'],
+            'whether': ['weather'],
+
+            'principal': ['principle'],
+            'principle': ['principal'],
+
+            'suite': ['sweet'],
+            'sweet': ['suite'],
+
+            'break': ['brake'],
+            'brake': ['break'],
+
+            'night': ['knight'],
+            'knight': ['night'],
+
+            'meet': ['meat'],
+            'meat': ['meet'],
+
+            'hundred': ['100'],
+            '100': ['hundred'],
+
+            'one': ['1', '1:00'],
+            '1': ['one', '1:00'],
+            '1:00': ['one', '1'],
+
+            'two': ['2', '2:00'],
+            '2': ['two', '2:00'],
+            '2:00': ['two', '2'],
+
+            'three': ['3', '3:00'],
+            '3': ['three', '3:00'],
+            '3:00': ['three', '3'],
+
+            'four': ['for', '4', '4:00'],
+            '5': ['five', '5:00'],
+            'five': ['5', '5:00'],
+            '5:00': ['five', '5'],
+
+            'six': ['6', '6:00'],
+            '6': ['six', '6:00'],
+            '6:00': ['six', '6'],
+
+            'seven': ['7', '7:00'],
+            '7': ['seven', '7:00'],
+            '7:00': ['seven', '7'],
+
+            'eight': ['8', '8:00', 'ate'],
+            '8': ['eight', '8:00', 'ate'],
+            '8:00': ['eight', '8', 'ate'],
+            'ate': ['eight', '8', '8:00'],
+
+            'nine': ['9', '9:00'],
+            '9': ['nine', '9:00'],
+            '9:00': ['nine', '9'],
+
+            'ten': ['10', '10:00'],
+            '10': ['ten', '10:00'],
+            '10:00': ['ten', '10'],
+
+            // Additional Homophones
+            'which': ['witch'],
+            'witch': ['which'],
+
+            'complement': ['compliment'],
+            'compliment': ['complement'],
+
+            'desert': ['dessert'],
+            'dessert': ['desert'],
+
+            'flew': ['flu'],
+            'flu': ['flew'],
+
+            'rain': ['reign', 'rein'],
+            'reign': ['rain', 'rein'],
+            'rein': ['rain', 'reign'],
+
+            'steak': ['stake'],
+            'stake': ['steak'],
+
+            'weak': ['week'],
+            'week': ['weak'],
+
+            'wear': ['where'],
+            'where': ['wear'],
+
+            'cell': ['sell'],
+            'sell': ['cell'],
+
+            'sole': ['soul'],
+            'soul': ['sole'],
+
+            'allow': ['awl'],
+            'awl': ['allow'],
+
+            'cite': ['sight', 'site'],
+            'sight': ['cite', 'site'],
+            'site': ['cite', 'sight'],
+
+            'steer': ['stair', 'stare'],
+            'stair': ['steer', 'stare'],
+            'stare': ['steer', 'stair'],
+        };
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -142,127 +336,105 @@
             let startTime;
             let displayedWord;
             let challengingWords = [];
-            let wordIndex = 0;
+            let currentWords = [];
+            let lastWord = ''; // To track the last word presented
             let isRecognitionActive = false;
-            let points = 0;
+            let isTestPhase = false; // New state variable for test phase
 
-            const difficultySettings = {
-                easy: 3000,    // 3 seconds
-                hard: 1000     // 1 second
-            };
+            // Fixed response threshold in milliseconds (e.g., 2000 ms = 2 seconds)
+            const RESPONSE_THRESHOLD = 3000; // Adjust as needed
 
-            let RESPONSE_THRESHOLD;
+            const TEST_PHRASE = 'reading is fun';
 
-            const exceptions = {
-                'bear': ['bare'],
-                'by': ['buy'],
-                'eye': ['i'],
-                'know': ['no'],
-                'too': ['to'],
-                'would': ['wood'],
-                'for': ['four', '4', '4:00'],
-                'right': ['write'],
-                'pull': ['pool'],
-                'there': ['their', "they're"],
-                'their': ['there', "they're"],
-                "they're": ['there', 'their'],
-                'to': ['too', 'two'],
-                'your': ["you're"],
-                "you're": ['your'],
-                'here': ['hear'],
-                'hear': ['here'],
-                'see': ['sea'],
-                'sun': ['son'],
-                'mail': ['male'],
-                'pair': ['pear'],
-                'piece': ['peace'],
-                'stationary': ['stationery'],
-                'allowed': ['aloud'],
-                'weather': ['whether'],
-                'principal': ['principle'],
-                'suite': ['sweet'],
-                'break': ['brake'],
-                'night': ['knight'],
-                'meet': ['meat'],
-                'write': ['right', 'rite', 'wright'],
-                'allowed': ['aloud'],
-                'whether': ['weather'],
-                'principle': ['principal'],
-                'suite': ['sweet'],
-                'sweet': ['suite'],
-				'hundred': ['100'],
-    			'one': ['1', '1:00'],
-    			'two': ['3', '2:00'],
-    			'three': ['3', '3:00'],
-    			'four': ['4', '4:00', 'for'],
-    			'five': ['5', '5:00'],
-    			'six': ['6', '6:00'],
-				'seven': ['7', '7:00'],
-				'eight': ['8', '8:00', 'ate'],
-				'nine': ['9', '9:00'],
-				'ten': ['10', '10:00'],
-            };
-
-            function updateThreshold() {
-                const selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value;
-                RESPONSE_THRESHOLD = difficultySettings[selectedDifficulty];
-                console.log(`Difficulty set to ${selectedDifficulty}, threshold is ${RESPONSE_THRESHOLD} ms`);
+            // Initialize currentWords by shuffling sightWords
+            function initializeCurrentWords() {
+                currentWords = [...sightWords];
+                shuffleArray(currentWords);
+                console.log('🌀 Current Words Initialized and Shuffled.');
             }
 
-            updateThreshold();
-
-            const difficultyInputs = document.querySelectorAll('input[name="difficulty"]');
-            difficultyInputs.forEach((input) => {
-                input.addEventListener('change', updateThreshold);
-            });
-
+            // Add a word to the challenging words list and reinsert it later
             function addChallengingWord(word) {
                 if (!challengingWords.includes(word)) {
                     challengingWords.push(word);
                     updateChallengingWordsCount();
                     console.log(`Added "${word}" to challenging words.`);
                 }
+
+                // Reinsert the challenging word at a random position later in currentWords
+                const BUFFER = 2; // Number of words to skip before reinserting
+                let insertionIndex = Math.floor(Math.random() * (currentWords.length - BUFFER + 1)) + BUFFER;
+
+                // Ensure insertionIndex does not exceed the array bounds
+                if (insertionIndex > currentWords.length) {
+                    insertionIndex = currentWords.length;
+                }
+
+                currentWords.splice(insertionIndex, 0, word);
+                console.log(`🔄 Reinserted "${word}" at position ${insertionIndex +1} in the queue.`);
             }
 
+            // Remove a word from the challenging words list
+            function removeChallengingWord(word) {
+                challengingWords = challengingWords.filter(w => w !== word);
+                updateChallengingWordsCount();
+                console.log(`Removed "${word}" from challenging words.`);
+            }
+
+            // Update the display count for challenging words
             function updateChallengingWordsCount() {
                 document.getElementById('challengingWordsCount').innerHTML = `📚 Challenging Words: ${challengingWords.length}`;
             }
 
+            // Calculate and log the remaining words
+            function logRemainingWords() {
+                const remainingWords = currentWords.length;
+                console.log(`🔢 Words Remaining: ${remainingWords} (Challenging Words: ${challengingWords.length})`);
+            }
+
+            // Display the next word in the rotation
             function displayNextWord() {
-                displayedWord = getNextWord();
+                if (currentWords.length === 0) {
+                    declareVictory();
+                    return;
+                }
+
+                displayedWord = currentWords.shift(); // Get the first word
+
+                // Prevent immediate repetition of the same word
+                if (displayedWord === lastWord && currentWords.length > 0) {
+                    // Swap with the next word
+                    const temp = displayedWord;
+                    displayedWord = currentWords.shift();
+                    currentWords.push(temp);
+                    console.log(`🔄 Swapped "${temp}" with "${displayedWord}" to prevent immediate repetition.`);
+                }
+
+                lastWord = displayedWord; // Update lastWord
+
                 const wordElement = document.getElementById('word');
                 wordElement.textContent = displayedWord;
-                wordElement.style.transform = 'scale(1.2)'; // Animation effect to confirm word change
-                setTimeout(() => wordElement.style.transform = 'scale(1)', 500); // Reset after animation
-                console.log(`Displayed word: ${displayedWord}`);
+                console.log(`Displayed word: "${displayedWord}"`);
                 startTime = Date.now();
+
+                // Log remaining words after displaying a new word
+                logRemainingWords();
             }
 
-            function startCountdown() {
-                const countdownElement = document.getElementById('countdown');
-                countdownElement.textContent = 'Next word in 3...';
-                let counter = 2;
-                const countdownInterval = setInterval(() => {
-                    if (counter === 0) {
-                        clearInterval(countdownInterval);
-                        countdownElement.textContent = '';
-                        displayNextWord();
-                    } else {
-                        countdownElement.textContent = `Next word in ${counter}...`;
-                        counter--;
-                    }
-                }, 1000);
-                countdownElement.className = 'countdown';
+            // Declare victory when all words are successfully spoken
+            function declareVictory() {
+                const wordElement = document.getElementById('word');
+                wordElement.textContent = '🎉 Congratulations! You won the game!';
+                const resultElement = document.getElementById('result');
+                resultElement.style.color = 'blue';
+                resultElement.innerHTML = '👏 You have successfully spoken all the sight words!';
+                stopRecognition();
+
+                // Log final victory state
+                console.log('🏆 Victory! All words have been successfully spoken.');
             }
 
-            function getNextWord() {
-                if (wordIndex >= sightWords.length) {
-                    wordIndex = 0;
-                    shuffleArray(sightWords);
-                }
-                return sightWords[wordIndex++];
-            }
-
+            // Shuffle an array using Fisher-Yates algorithm
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -270,150 +442,144 @@
                 }
             }
 
+            // Start the game with test phrase
             function startGame() {
-                wordIndex = 0;
-                points = 0;
-                updatePointsDisplay();
-                shuffleArray(sightWords);
-                displayedWord = '';
+                challengingWords = [];
                 document.getElementById('result').textContent = '';
-                displayNextWord();
+                updateChallengingWordsCount();
+                lastWord = ''; // Reset lastWord
+
+                isTestPhase = true;
+                const wordElement = document.getElementById('word');
+                wordElement.textContent = 'Please say "reading is fun" to begin.';
+                console.log('🔄 Test phase initiated. Awaiting test phrase.');
 
                 if (!isRecognitionActive) {
                     recognition.start();
                     isRecognitionActive = true;
-                    console.log('Recognition started.');
+                    console.log('🎤 Speech recognition started for test phase.');
                 }
             }
 
+            // Stop the speech recognition
             function stopRecognition() {
                 recognition.stop();
                 isRecognitionActive = false;
-                console.log('Recognition stopped.');
-            }
-
-            function updatePointsDisplay() {
-                document.getElementById('points').textContent = `Points: ${points}`;
+                console.log('⏹️ Speech recognition stopped.');
             }
 
             // Handle speech recognition events
             recognition.onstart = () => {
-                console.log('Speech recognition service has started');
+                console.log('🎤 Speech recognition service has started');
             };
 
             recognition.onresult = (event) => {
-                const spokenWord = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+                const spokenWordRaw = event.results[event.results.length - 1][0].transcript.trim();
+                const spokenWord = spokenWordRaw.toLowerCase();
                 const endTime = Date.now();
                 const responseTime = endTime - startTime; // in milliseconds
 
                 const resultElement = document.getElementById('result');
 
                 // Remove previous feedback classes
-                resultElement.classList.remove('correct-feedback', 'incorrect-feedback');
+                resultElement.classList.remove('correct-feedback', 'almost-feedback', 'incorrect-feedback');
 
-                // Check if the spoken word is in the exceptions list for the displayed word
-                if (exceptions[displayedWord] && exceptions[displayedWord].includes(spokenWord)) {
-                    resultElement.style.color = 'green';
-                    resultElement.innerHTML = `🎉 Excellent! You recognized the word in ${(responseTime / 1000).toFixed(2)} seconds.`;
-                    resultElement.classList.add('correct-feedback');
-                    
-                    // Increment points for correct response in time
-                    if (responseTime <= RESPONSE_THRESHOLD) {
-                        points++;
-                        updatePointsDisplay();
+                if (isTestPhase) {
+                    // Handle Test Phrase Verification
+                    if (spokenWord === TEST_PHRASE) {
+                        resultElement.style.color = 'green';
+                        resultElement.innerHTML = `🎉 Test phrase recognized successfully! Let's start the game.`;
+                        resultElement.classList.add('correct-feedback');
+                        isTestPhase = false;
+                        console.log(`✅ Test phrase "${spokenWordRaw}" recognized.`);
+                        // Proceed to game
+                        initializeCurrentWords();
+                        displayNextWord();
+                    } else {
+                        resultElement.style.color = 'red';
+                        resultElement.innerHTML = `🤔 You said "${spokenWordRaw}". Please say "reading is fun" to begin.`;
+                        resultElement.classList.add('incorrect-feedback');
+                        console.log(`❌ Incorrect test phrase: "${spokenWordRaw}"`);
                     }
                 } else {
-                    // Fuzzy matching using Fuse.js
-                    const fuse = new Fuse([displayedWord], {
-                        includeScore: true,
-                        threshold: 0.4 // Adjust threshold for more/less fuzzy matching
-                    });
-                    const fuseResults = fuse.search(spokenWord);
+                    // Handle Game Phase
+                    // Determine acceptable answers
+                    let acceptableAnswers = [displayedWord.toLowerCase()];
+                    if (exceptions.hasOwnProperty(displayedWord.toLowerCase())) {
+                        acceptableAnswers = acceptableAnswers.concat(exceptions[displayedWord.toLowerCase()].map(word => word.toLowerCase()));
+                    }
 
-                    if (fuseResults.length > 0 && fuseResults[0].score <= 0.4) {
+                    // Check if the spoken word is acceptable
+                    if (acceptableAnswers.includes(spokenWord)) {
                         if (responseTime <= RESPONSE_THRESHOLD) {
                             resultElement.style.color = 'green';
-                            resultElement.innerHTML = `🎉 Excellent! You recognized the word in ${(responseTime / 1000).toFixed(2)} seconds.`;
+                            resultElement.innerHTML = `🎉 Excellent! You recognized "${displayedWord}" in ${(responseTime / 1000).toFixed(2)} seconds.`;
                             resultElement.classList.add('correct-feedback');
-                            
-                            // Increment points for correct response in time
-                            points++;
-                            updatePointsDisplay();
+                            // If the word was in challenging list, remove it
+                            if (challengingWords.includes(displayedWord)) {
+                                removeChallengingWord(displayedWord);
+                            }
+                            console.log(`✅ Correct: "${spokenWordRaw}"`);
                         } else {
                             resultElement.style.color = 'orange';
-                            resultElement.innerHTML = `😊 Good job! You took ${(responseTime / 1000).toFixed(2)} seconds. Try for ${(RESPONSE_THRESHOLD / 1000).toFixed(1)} seconds next time.`;
+                            resultElement.innerHTML = `😊 Good job! You took ${(responseTime / 1000).toFixed(2)} seconds. Try to respond within ${(RESPONSE_THRESHOLD / 1000).toFixed(1)} seconds next time.`;
+                            resultElement.classList.add('almost-feedback');
+                            addChallengingWord(displayedWord);
+                            console.log(`⚠️ Almost Correct: "${spokenWordRaw}" (Took ${(responseTime / 1000).toFixed(2)}s)`);
                         }
                     } else {
                         resultElement.style.color = 'red';
-                        resultElement.innerHTML = `🤔 You said "${spokenWord}". Let's try again!`;
+                        resultElement.innerHTML = `🤔 You said "${spokenWordRaw}". Let's try "${displayedWord}" again!`;
                         resultElement.classList.add('incorrect-feedback');
                         addChallengingWord(displayedWord);
+                        console.log(`❌ Incorrect: "${spokenWordRaw}"`);
                     }
-                }
 
-                // Start countdown for the next word after a delay
-                setTimeout(() => {
-                    startCountdown();
-                }, 1000); // 1-second delay before starting the countdown
+                    // Log remaining words after processing the response
+                    logRemainingWords();
+
+                    // Automatically display the next word after a short delay
+                    setTimeout(() => {
+                        displayNextWord();
+                    }, 3000); // 3 seconds delay
+                }
             };
 
             recognition.onerror = (event) => {
-                console.error('Speech recognition error detected: ' + event.error);
+                console.error('⚠️ Speech recognition error detected:', event.error);
                 const resultElement = document.getElementById('result');
                 resultElement.style.color = 'red';
-                resultElement.innerHTML = `Error occurred in recognition: ${event.error}`;
+                resultElement.innerHTML = `⚠️ Error occurred in recognition: ${event.error}`;
             };
 
             recognition.onend = () => {
-                console.log('Speech recognition service disconnected');
+                console.log('🔇 Speech recognition service disconnected');
                 if (isRecognitionActive) {
                     recognition.start(); // Restart recognition if it stopped unexpectedly
-                    console.log('Recognition restarted.');
+                    console.log('🔄 Speech recognition restarted.');
                 }
             };
 
+            // Event listener for the Start button
             document.getElementById('startButton').addEventListener('click', () => {
                 startGame();
             });
 
+            // Event listener for the Reset button
             document.getElementById('resetButton').addEventListener('click', () => {
-                // Stop recognition if it's active
-                if (isRecognitionActive) {
-                    recognition.stop();
-                    isRecognitionActive = false;
-                }
-
-                // Clear the challenging words list and update the count
                 challengingWords = [];
+                initializeCurrentWords();
                 updateChallengingWordsCount();
-
-                // Reset word index and other game variables
-                wordIndex = 0;
-                displayedWord = '';
-                points = 0; // Reset points
-                updatePointsDisplay(); // Update points display
-                
-                // Reset the UI elements
                 document.getElementById('result').textContent = '';
                 document.getElementById('word').textContent = 'Press "Start" to begin';
-                document.getElementById('countdown').textContent = '';
-                
-                // Log for debugging purposes
-                console.log('Game has been reset.');
+                stopRecognition();
+                isTestPhase = false;
+                console.log('🔁 Game has been reset.');
             });
 
-            // Request microphone access on page load using getUserMedia
+            // Optionally, inform the user to click Start to begin
             window.addEventListener('load', () => {
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(function(stream) {
-                        console.log('Microphone permissions granted.');
-                        // Stop all tracks to release the microphone
-                        stream.getTracks().forEach(track => track.stop());
-                    })
-                    .catch(function(err) {
-                        console.error('Error during microphone permission request:', err);
-                        alert('Microphone access is required for this game to work.');
-                    });
+                console.log('📄 Page loaded. Awaiting user to press Start.');
             });
         }
     </script>
