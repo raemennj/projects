@@ -1,0 +1,128 @@
+/* styles.css */
+
+/* Basic Styles */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 5%;
+    margin: 0;
+    background-color: #f0f8ff;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 2em;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 1em;
+    color: #333333;
+}
+
+#word {
+    font-size: 5vw;
+    margin: 5% 0;
+    color: #333333;
+}
+
+#result {
+    font-size: 4vw;
+    margin: 5% 0;
+    color: green;
+}
+
+#startButton, #resetButton {
+    padding: 1em 2em;
+    font-size: 2em;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#startButton {
+    background-color: #28a745;
+    color: white;
+}
+
+#startButton:hover {
+    background-color: #218838;
+}
+
+#resetButton {
+    background-color: #dc3545;
+    color: white;
+}
+
+#resetButton:hover {
+    background-color: #c82333;
+}
+
+#challengingWordsCount {
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: #555555;
+}
+
+/* Dropdown Styles */
+#trimesterSelector {
+    padding: 0.5em;
+    font-size: 1em;
+    margin-bottom: 1em;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Animations for Feedback */
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.correct-feedback {
+    animation: bounceIn 0.5s ease;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.almost-feedback {
+    animation: pulse 1s infinite;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    60% { transform: translateX(-10px); }
+    80% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}
+
+.incorrect-feedback {
+    animation: shake 0.5s;
+}
