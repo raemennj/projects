@@ -1,0 +1,912 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculator with Tape Measure</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
+	<link rel="manifest" href="manifest.json">
+	<link rel="icon" href="calcicon.png" type="image/png">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">  
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Inch Calc">
+	
+
+    <style>
+        body {
+            font-size: 18px;
+            margin: 0;
+            padding: env(safe-area-inset-top) 5px 5px env(safe-area-inset-left);
+            background-color: darkslategrey;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            font-family: "Arial", sans-serif;
+            position: relative;
+        }
+
+        .calculator {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #display {
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            min-height: 80px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        #input {
+            font-size: 1.2em;
+            letter-spacing: 0.2em;
+            font-family: monospace;
+        }
+
+        #result {
+            font-size: 1.5em;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        #fractionResult {
+            text-align: left;
+            font-weight: lighter;
+        }
+
+        #decimalResult {
+            text-align: right;
+            font-style: italic;
+            color: gray;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 10px;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            background: lightyellow;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #d0d0d0;
+        }
+
+        .operator {
+            background: #f9a825;
+            color: #fff;
+        }
+
+        .operator:hover {
+            background: #f57f17;
+        }
+
+        .fraction {
+            background: #64b5f6;
+            color: #fff;
+        }
+
+        .fraction:hover {
+            background: #42a5f5;
+        }
+
+        .decimal {
+            background: #a5d6a7;
+            color: #fff;
+        }
+
+        .decimal:hover {
+            background: #81c784;
+        }
+
+        .clear {
+            background: #e57373;
+            color: #fff;
+        }
+
+        .clear:hover {
+            background: #ef5350;
+        }
+
+        .backspace {
+            background: #e57373;
+            color: #fff;
+        }
+
+        .backspace:hover {
+            background: #ffa726;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: lightyellow;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid #888;
+            width: 80%;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        @media screen and (orientation:landscape) {
+            .modal-content {
+                max-height: calc(100vh - 80px);
+            }
+        }
+
+        @media (min-width: 601px) {
+            body {
+                margin: 0 auto;
+                max-width: 600px;
+            }
+        }
+
+        .close-btn {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .instructions-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 24px;
+        }
+
+        .hamburger-icon {
+            width: 30px;
+            height: 3px;
+            background-color: #fff;
+            transition: 0.4s;
+        }
+
+        /* Tape measure display window */
+        .tape-measure-container {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            margin: 20px 0;
+            border: 1px solid #000;
+			border-radius: 5px;
+            overflow: hidden;
+			background: linear-gradient( to bottom,
+        rgba(189, 183, 107, 0.3) 0%,
+        rgba(255, 215, 0, 0.6) 6%,
+        #ffff00 25%,
+        #ffff00 75%,
+        rgba(189, 183, 107, 0.6) 98%,
+        rgba(255, 215, 0, 0.8) 100%
+      );
+        }
+
+        /* Center red tick mark */
+        .center-line {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            width: 5px;
+            height: 70%;
+            background-color: red;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Tape measure */
+        .tape-measure {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Common styles for tick marks */
+        .tick {
+            position: absolute;
+            bottom: 0;
+            width: 3px;
+            background-color: black;
+        }
+
+        /* Tick mark sizes */
+        .tick.small {
+            height: 15px;
+        }
+        .tick.medium {
+            height: 30px;
+        }
+        .tick.large {
+            height: 50px;
+        }
+        .tick.number {
+            height: 70px;
+        }
+
+        /* Styles for inch numbers */
+        .tick-label {
+            position: absolute;
+            bottom: 70px;
+            font-size: 1.3em;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 50px;
+        }
+
+        /* Animation Overlay */
+        .animation-overlay {
+            position: absolute;
+            top: 0;
+            left: 100%; /* Start off-screen to the left */
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                rgba(0, 0, 0, 0.1) 0%,
+                rgba(0, 0, 0, 0.3) 50%,
+                rgba(0, 0, 0, 0.1) 100%
+            );
+            pointer-events: none; /* Allow interactions to pass through */
+            z-index: 1; /* Ensure it sits above the tape measure but below other elements if necessary */
+            transform: skewX(20deg); /* Optional: Skew for better visual effect */
+            opacity: 0; /* Initially invisible */
+        }
+
+        /* Keyframes for Shadow Movement */
+        @keyframes shadowMove {
+            0% {
+                left: 100%;
+                opacity: 0.6;
+            }
+            100% {
+                left: -100%;
+                opacity: 0;
+            }
+        }
+
+        /* Animation Class */
+        .animate-shadow {
+            animation: shadowMove 1s ease-in-out forwards;
+        }
+    </style>
+    <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+</head>
+<body>
+    <button id="showModalBtn" class="instructions-button" aria-label="Show Instructions">
+        <div class="hamburger-icon"></div>
+        <div class="hamburger-icon"></div>
+        <div class="hamburger-icon"></div>
+    </button>
+
+    <div class="calculator">
+        <!-- Tape Measure Display -->
+        <div class="tape-measure-container">
+            <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
+            <div class="tape-measure" id="tapeMeasure"></div>
+            <div class="animation-overlay"></div> <!-- New Overlay Div -->
+        </div>
+        <div id="display">
+            <div id="input" aria-live="polite"></div>
+            <div id="result">
+                <div id="fractionResult"></div>
+                <div id="decimalResult"></div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <!-- Number and Operator Buttons -->
+			<button class="btn clear" data-value="C">C</button>
+            <button class="btn" data-value="7">7</button>
+            <button class="btn" data-value="8">8</button>
+            <button class="btn" data-value="9">9</button>
+            <button class="btn operator" data-value="+">+</button>
+
+            <button class="btn backspace" data-value="backspace">←</button>
+			<button class="btn" data-value="4">4</button>
+            <button class="btn" data-value="5">5</button>
+            <button class="btn" data-value="6">6</button>
+            <button class="btn operator" data-value="-">−</button>
+			
+
+            <button class="btn decimal" data-value=".">.</button>
+            <button class="btn" data-value="1">1</button>
+            <button class="btn" data-value="2">2</button>
+            <button class="btn" data-value="3">3</button>
+            <button class="btn operator" data-value="×">×</button>
+			
+            <button class="btn fraction" data-value="1/16">1/16</button>
+            <button class="btn fraction" data-value="3/16">3/16</button>
+            <button class="btn" data-value="0">0</button>
+            <button class="btn fraction" data-value="5/8">5/8</button>
+            <button class="btn operator" data-value="÷">÷</button>
+			
+            <button class="btn fraction" data-value="1/8">1/8</button>
+            <button class="btn fraction" data-value="3/8">3/8</button>
+            <button class="btn fraction" data-value="7/16">7/16</button>
+            <button class="btn fraction" data-value="1/4">1/4</button>
+            <button class="btn fraction" data-value="5/16">5/16</button>
+
+            <button class="btn fraction" data-value="1/2">1/2</button>
+            <button class="btn fraction" data-value="3/4">3/4</button>
+            <button class="btn fraction" data-value="9/16">9/16</button>
+
+            <button class="btn fraction" data-value="11/16">11/16</button>
+            <button class="btn fraction" data-value="13/16">13/16</button>
+            <button class="btn fraction" data-value="7/8">7/8</button>
+            <button class="btn fraction" data-value="15/16">15/16</button>
+
+        </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructionsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <h2 id="modalTitle">Calculator Instructions</h2>
+            <p>
+                Use this calculator to add, subtract, multiply, or divide fractions and decimals easily. You can also work with mixed numbers.
+            </p>
+            <p>
+                <strong>Instructions:</strong>
+                <ul>
+                    <li>Enter numbers using the number buttons.</li>
+                    <li>Click on fractions to add them to the calculation.</li>
+                    <li>Use the operators (+, −, ×, ÷) to perform operations.</li>
+                    <li>Press the decimal button to add a decimal point.</li>
+                    <li>Click the backspace button to delete the last entry.</li>
+                    <li>Press 'C' to clear all entries.</li>
+                    <li><a href="fff4_4sp.html">Segment Calculator</a></li>
+                </ul>
+            </p>
+            <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputDisplay = document.getElementById('input');
+            const fractionResultDisplay = document.getElementById('fractionResult');
+            const decimalResultDisplay = document.getElementById('decimalResult');
+            const buttons = document.querySelectorAll('.btn');
+            const modal = document.getElementById('instructionsModal');
+            const showModalBtn = document.getElementById('showModalBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const centerLine = document.getElementById('centerLine');
+            let tokens = [];
+            let currentEntry = '';
+            let timeout = null;
+
+            // Ensure math.js is loaded
+            if (typeof math === 'undefined') {
+                console.error('math.js is not loaded. Please check the script tag.');
+                return;
+            }
+
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const value = button.getAttribute('data-value');
+                    console.log(`Button clicked: ${value}`);
+
+                    if (value === 'C') {
+                        clearCalculator();
+                        return;
+                    }
+
+                    if (value === 'backspace') {
+                        handleBackspace();
+                        return;
+                    }
+
+                    const isFraction = button.classList.contains('fraction');
+                    const isOperator = button.classList.contains('operator');
+                    const isDecimal = button.classList.contains('decimal');
+
+                    if (!isOperator && !isFraction && !isDecimal) {
+                        handleNumberInput(value);
+                    } else if (isDecimal) {
+                        handleDecimalInput();
+                    } else if (isFraction) {
+                        handleFractionInput(value);
+                    } else if (isOperator) {
+                        handleOperatorInput(value);
+                    }
+
+                    // Debounce evaluation to improve performance
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        const evaluation = evaluateExpression();
+                        if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+                            fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+                            decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
+                            updateTapePosition(evaluation.numericValue);
+                            centerLine.classList.remove('hidden');
+                            console.log('Calculation successful');
+                        } else {
+                            fractionResultDisplay.textContent = '';
+                            decimalResultDisplay.textContent = '';
+                            centerLine.classList.add('hidden');
+                            console.log('Calculation failed or incomplete');
+                        }
+                    }, 500);
+                });
+            });
+
+            /**
+             * Clears the calculator inputs and results.
+             */
+            function clearCalculator() {
+                tokens = [];
+                currentEntry = '';
+                inputDisplay.textContent = '';
+                fractionResultDisplay.textContent = '';
+                decimalResultDisplay.textContent = '';
+                clearTimeout(timeout);
+                centerLine.classList.add('hidden');
+                console.log('Calculator cleared');
+            }
+
+            /**
+             * Handles backspace functionality.
+             */
+            function handleBackspace() {
+                currentEntry = currentEntry.slice(0, -1);
+                updateInputDisplay();
+                console.log('Backspace pressed');
+            }
+
+            /**
+             * Handles number button inputs.
+             * @param {string} value - The number value.
+             */
+            function handleNumberInput(value) {
+                currentEntry += value;
+                updateInputDisplay();
+                console.log(`Current entry updated: ${currentEntry}`);
+            }
+
+            /**
+             * Handles decimal point input.
+             */
+            function handleDecimalInput() {
+                if (currentEntry.includes('.')) {
+                    console.log('Decimal point already exists in the current entry');
+                    return;
+                }
+                if (currentEntry === '') {
+                    currentEntry = '0.';
+                } else {
+                    currentEntry += '.';
+                }
+                updateInputDisplay();
+                console.log(`Decimal added: ${currentEntry}`);
+            }
+
+            /**
+             * Handles fraction button inputs.
+             * @param {string} value - The fraction value (e.g., "1/16").
+             */
+            function handleFractionInput(value) {
+                if (currentEntry === '') {
+                    currentEntry = value;
+                } else if (isWholeNumber(currentEntry)) {
+                    const whole = parseInt(currentEntry, 10);
+                    const [numerator, denominator] = value.split('/').map(Number);
+                    if (denominator === 0) {
+                        console.error('Denominator cannot be zero.');
+                        return;
+                    }
+                    const fraction = numerator / denominator;
+                    const combinedValue = whole + fraction;
+                    tokens.push(combinedValue.toString());
+                    currentEntry = '';
+                } else if (isOperatorToken(tokens[tokens.length -1])) {
+                    currentEntry += value;
+                } else {
+                    tokens.push(currentEntry);
+                    tokens.push('+');
+                    currentEntry = value;
+                }
+                updateInputDisplay();
+                console.log(`Fraction input handled: ${value}`);
+            }
+
+            /**
+             * Handles operator button inputs.
+             * @param {string} value - The operator value (e.g., "+", "-", "×", "÷").
+             */
+            function handleOperatorInput(value) {
+                if (currentEntry !== '') {
+                    tokens.push(currentEntry);
+                    currentEntry = '';
+                }
+                if (tokens.length === 0 && value !== '-') {
+                    console.log('Operator pressed without a preceding number');
+                    return;
+                }
+                const lastToken = tokens[tokens.length - 1];
+                if (isOperatorToken(lastToken)) {
+                    tokens[tokens.length - 1] = value;
+                } else {
+                    tokens.push(value);
+                }
+                updateInputDisplay();
+                console.log(`Operator input handled: ${value}`);
+            }
+
+            /**
+             * Updates the input display based on the current tokens and entry.
+             */
+            function updateInputDisplay() {
+                let displayText = '';
+                tokens.forEach(token => {
+                    if (isDecimalToken(token)) {
+                        const [whole, fraction] = splitDecimal(token);
+                        if (fraction > 0) {
+                            displayText += `${whole} ${convertFraction(fraction)} `;
+                        } else {
+                            displayText += `${whole} `;
+                        }
+                    } else {
+                        displayText += `${token} `;
+                    }
+                });
+                if (currentEntry !== '') {
+                    displayText += `${currentEntry} `;
+                }
+                inputDisplay.textContent = displayText.trim();
+                console.log(`Input display updated: ${displayText.trim()}`);
+            }
+
+            /**
+             * Determines if a token is an operator.
+             * @param {string} token - The token to check.
+             * @returns {boolean} - True if the token is an operator, false otherwise.
+             */
+            function isOperatorToken(token) {
+                return ['+', '-', '×', '÷'].includes(token);
+            }
+
+            /**
+             * Determines if a string represents a whole number.
+             * @param {string} str - The string to check.
+             * @returns {boolean} - True if the string is a whole number, false otherwise.
+             */
+            function isWholeNumber(str) {
+                return /^-?\d+$/.test(str);
+            }
+
+            /**
+             * Determines if a token is a decimal number.
+             * @param {string} token - The token to check.
+             * @returns {boolean} - True if the token is a decimal number, false otherwise.
+             */
+            function isDecimalToken(token) {
+                return /^-?\d+\.\d+$/.test(token);
+            }
+
+            /**
+             * Splits a decimal number into its whole and fractional parts.
+             * @param {string} decimalStr - The decimal number as a string.
+             * @returns {Array} - An array containing the whole number and the fractional part as a decimal.
+             */
+            function splitDecimal(decimalStr) {
+                const parts = decimalStr.split('.');
+                const whole = parseInt(parts[0], 10);
+                const fraction = parseFloat('0.' + parts[1]);
+                return [whole, fraction];
+            }
+
+            /**
+             * Converts a fractional decimal to its simplest fraction string.
+             * @param {number} fractionDecimal - The fractional part as a decimal (e.g., 0.5).
+             * @returns {string} - The fraction string (e.g., "1/2").
+             */
+            function convertFraction(fractionDecimal) {
+                const denominator = 16; // Using 1/16 increments
+                let numerator = Math.round(fractionDecimal * denominator);
+                const gcd = greatestCommonDivisor(numerator, denominator);
+                numerator /= gcd;
+                const simplifiedDenominator = denominator / gcd;
+                return `${numerator}/${simplifiedDenominator}`;
+            }
+
+            /**
+             * Calculates the greatest common divisor of two numbers using the Euclidean algorithm.
+             * @param {number} a - First number.
+             * @param {number} b - Second number.
+             * @returns {number} - The greatest common divisor of a and b.
+             */
+            function greatestCommonDivisor(a, b) {
+                a = Math.abs(a);
+                b = Math.abs(b);
+                if (!b) return a;
+                return greatestCommonDivisor(b, a % b);
+            }
+
+            /**
+             * Evaluates the current expression using math.js.
+             * @returns {Object|null} - An object containing the numeric value and formatted result, or null if evaluation fails.
+             */
+            function evaluateExpression() {
+                let exprTokens = [...tokens];
+                if (currentEntry !== '') {
+                    exprTokens.push(currentEntry);
+                }
+
+                if (exprTokens.length === 0) {
+                    console.log('No expression to evaluate');
+                    return null;
+                }
+
+                // Validate the expression: ensure it doesn't end with an operator
+                const lastToken = exprTokens[exprTokens.length - 1];
+                if (isOperatorToken(lastToken)) {
+                    console.log('Expression ends with an operator. Awaiting more input.');
+                    // Optionally, display a message to the user
+                    // fractionResultDisplay.textContent = 'Incomplete Expression';
+                    // decimalResultDisplay.textContent = '';
+                    return null;
+                }
+
+                const expression = exprTokens.join(' ');
+                console.log(`Evaluating Expression: ${expression}`);
+
+                try {
+                    // Replace '×' and '÷' with '*' and '/' for math.js compatibility
+                    const formattedExpression = expression.replace(/×/g, '*').replace(/÷/g, '/');
+                    console.log(`Formatted Expression for math.js: ${formattedExpression}`);
+
+                    // Use math.js to evaluate the expression
+                    const result = math.evaluate(formattedExpression);
+                    console.log(`Raw Result from math.js: ${result}`);
+
+                    // Convert the result to a number
+                    const numericValue = typeof result === 'number' ? result : result.toNumber();
+                    console.log(`Numeric Value: ${numericValue}`);
+
+                    // Format the result for display with 1/16 increments
+                    const formattedResult = formatResult(numericValue);
+                    console.log(`Formatted Result: ${JSON.stringify(formattedResult)}`);
+
+                    return { numericValue, formattedResult };
+                } catch (error) {
+                    console.error('Evaluation Error:', error);
+                    // Optionally, display an error message to the user
+                    fractionResultDisplay.textContent = '';
+                    decimalResultDisplay.textContent = '';
+                    centerLine.classList.add('hidden');
+                    return null;
+                }
+            }
+
+            /**
+             * Formats the numeric value into a fraction with 1/16 increments and a decimal.
+             * @param {number} value - The numeric value to format.
+             * @returns {Object} - An object containing the formatted fraction and decimal strings.
+             */
+            function formatResult(value) {
+                console.log(`Formatting Value: ${value}`);
+
+                // Round the value to the nearest 1/16
+                const roundedValue = Math.round(value * 16) / 16;
+                console.log(`Rounded Value (1/16 increments): ${roundedValue}`);
+
+                // Separate the whole number and the fractional part
+                const whole = Math.floor(Math.abs(roundedValue));
+                const fractionalPart = Math.abs(roundedValue) - whole;
+                console.log(`Whole Number: ${whole}, Fractional Part: ${fractionalPart}`);
+
+                // Calculate numerator and denominator for the fractional part
+                let numerator = Math.round(fractionalPart * 16);
+                let denominator = 16;
+                console.log(`Numerator before simplification: ${numerator}, Denominator before simplification: ${denominator}`);
+
+                // Simplify the fraction
+                const gcd = greatestCommonDivisor(numerator, denominator);
+                numerator /= gcd;
+                denominator /= gcd;
+                console.log(`Numerator after simplification: ${numerator}, Denominator after simplification: ${denominator}`);
+
+                let fractionResult = '';
+
+                if (denominator === 1 || numerator === 0) {
+                    // Whole number only
+                    fractionResult = `${whole}"`;
+                } else if (whole !== 0) {
+                    // Mixed number
+                    fractionResult = `${whole} ${numerator}/${denominator}"`;
+                } else {
+                    // Proper fraction only
+                    fractionResult = `${numerator}/${denominator}"`;
+                }
+
+                // Handle negative values
+                if (roundedValue < 0) {
+                    fractionResult = `-${fractionResult}`;
+                }
+
+                // Decimal result rounded to 4 decimal places
+                const decimalResult = `${roundedValue.toFixed(4)}"`;
+
+                console.log(`Final Fraction Result: ${fractionResult}, Final Decimal Result: ${decimalResult}`);
+
+                return { fractionResult, decimalResult };
+            }
+
+            /**
+             * Generates tick marks on the tape measure based on the center inches.
+             * @param {number} centerInches - The current measurement in inches.
+             */
+            function generateTickMarks(centerInches) {
+                console.log(`Generating tick marks centered at: ${centerInches} inches`);
+
+                // Clear existing tick marks and labels
+                tapeMeasure.innerHTML = '';
+
+                const containerWidth = tapeMeasureContainer.offsetWidth;
+                const centerLinePosition = containerWidth / 2;
+
+                const displayRangeInches = 3; // Display about 3 inches
+                const pixelsPerInch = 160; // Adjusted pixels per inch for better visibility
+                const tickWidth = 3; // Width of the tick marks in pixels
+
+                const startInches = Math.max(centerInches - (displayRangeInches / 2), 0);
+                const endInches = centerInches + (displayRangeInches / 2);
+                const startMark = Math.floor(startInches * 16);
+                const endMark = Math.ceil(endInches * 16);
+
+                console.log(`Start Mark: ${startMark}, End Mark: ${endMark}`);
+
+                const fragment = document.createDocumentFragment();
+
+                for (let i = startMark; i <= endMark; i++) {
+                    const tick = document.createElement('div');
+                    tick.classList.add('tick');
+
+                    const inches = i / 16;
+                    const position = (inches - centerInches) * pixelsPerInch + centerLinePosition - (tickWidth / 2);
+                    tick.style.left = position + 'px';
+
+                    // Determine the type of tick mark
+                    if (i % 16 === 0) {
+                        // Inch mark
+                        tick.classList.add('number');
+                        // Create a label for the inch mark
+                        const label = document.createElement('div');
+                        label.classList.add('tick-label');
+                        label.innerText = inches.toFixed(0);
+                        label.style.left = (position + tickWidth / 2) + 'px';
+                        fragment.appendChild(label);
+                    } else if (i % 8 === 0) {
+                        // Half-inch mark
+                        tick.classList.add('large');
+                    } else if (i % 4 === 0) {
+                        // Quarter-inch mark
+                        tick.classList.add('medium');
+                    } else {
+                        // Smaller marks (1/16th)
+                        tick.classList.add('small');
+                    }
+
+                    fragment.appendChild(tick);
+                }
+
+                tapeMeasure.appendChild(fragment);
+                console.log('Tick marks generated');
+            }
+
+            /**
+             * Updates the tape measure position based on the measurement in inches.
+             * @param {number} measurementInInches - The measurement to display on the tape measure.
+             */
+            function updateTapePosition(measurementInInches) {
+                console.log(`Updating tape measure to: ${measurementInInches} inches`);
+                // Ensure measurement is within bounds
+                if (measurementInInches < 0) measurementInInches = 0;
+
+                // Generate tick marks around the current measurement
+                generateTickMarks(measurementInInches);
+
+                // Trigger the shadow animation
+                triggerShadowAnimation();
+            }
+
+            /**
+             * Triggers the shadow animation on the tape measure.
+             */
+            function triggerShadowAnimation() {
+                const overlay = document.querySelector('.animation-overlay');
+                if (!overlay) {
+                    console.error('Animation overlay not found!');
+                    return;
+                }
+
+                // Remove the animation class if it's already applied
+                overlay.classList.remove('animate-shadow');
+
+                // Trigger reflow to restart the animation
+                void overlay.offsetWidth;
+
+                // Add the animation class
+                overlay.classList.add('animate-shadow');
+
+                // Remove the class after animation completes
+                overlay.addEventListener('animationend', () => {
+                    overlay.classList.remove('animate-shadow');
+                }, { once: true });
+            }
+
+            // Modal functionality
+            showModalBtn.addEventListener('click', () => {
+                modal.style.display = 'block';
+                closeModalBtn.focus();
+                console.log('Instructions modal opened');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                showModalBtn.focus();
+                console.log('Instructions modal closed');
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    showModalBtn.focus();
+                    console.log('Instructions modal closed by clicking outside');
+                }
+            });
+
+            // Initialize Tape Measure
+            const tapeMeasure = document.getElementById('tapeMeasure');
+            const tapeMeasureContainer = document.querySelector('.tape-measure-container');
+
+            // Initial generation of tick marks
+            generateTickMarks(0);
+        });
+    </script>
+</body>
+</html>
