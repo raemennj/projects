@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+<!-- 
+         This web page is the sole creation and production of 
+         raemenn jewall. 2023
+    
+         By automating the mathematical process, this segment calculator 
+         eliminates errors due to manual calculation. We can focus on the  
+         physical crafting process with accurate numerical backing. 
+         This allows for projects to be completed with a higher  
+         degree of precision, efficiency, and confidence.
+    
+-->
+    
+  <title>Segment Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-size: 18px;
+      margin: 0;
+      padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left);
+      background-color: darkslategrey;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      font-family: "dunbar-tall", sans-serif;
+    }
+    .tab-container {
+      display: flex;
+      width: 100%;
+    }
+    .tab {      
+      flex: 1;
+      padding: 15px; 
+      font-size: 19px;
+      cursor: pointer;
+      border-left: 1px solid #363636;
+      border-right: 1px solid #363636;
+      border-bottom: 1px solid #363636;
+      text-align: center;
+      background-color: lightyellow;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      margin-top: 5px;
+    }
+    .tab.active {
+      background-color: #ccc;
+      border-bottom: 0PX;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      margin-top: 0px;
+    }
+    #equalTab.active {
+      background-color: lightblue;
+      border-left: 0px;
+    }
+    #nearTab.active {
+      background-color: lightgreen;
+      border-right: 0px;
+    } 
+    .inputLabel {
+      padding-top: 5px;
+      padding-bottom:  5px;
+    }
+    .lightgreen-bg {
+      background-color: lightgreen !important;
+    }
+    .input-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .input-container div {
+      flex: 1;
+      text-align: center;
+    }
+    input {
+      font-size: 18px;
+      max-width: 100%;
+      text-align: center;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: lightyellow;
+      width: 70%;
+      font-family: "dunbar-tall", sans-serif;
+      cursor: pointer;
+    }
+    #marksResult {
+      text-align: center;
+    }
+    #segmentResult {
+      text-align: center;
+    }
+    .length {
+      width:33%;
+      float: left;
+      text-align: center;
+      padding-top: 15px;
+      padding-bottom: 14px;
+      background-color: lightblue;
+      border-bottom: 1px solid #363636;
+    }
+    .burn {
+      width:34%;
+      float: left;
+      text-align: center;
+      padding-top: 15px;
+      padding-bottom: 14px;
+      background-color: lightblue;
+      border-bottom: 1px solid #363636;
+    }
+    .segmentType {
+      width:33%;
+      float: left;
+      text-align: center;
+      padding-top: 15px;
+      padding-bottom: 14px;
+      background-color: lightblue;
+      border-bottom: 1px solid #363636;
+    }
+    .resultsBG {
+      text-align: center;
+      background-color: lightyellow;
+      width: 100%;
+    }
+    .factor sup, .factor sub {
+      font-size: 0.85em;
+    }
+    .readme-container{      
+      display: flex;
+      justify-content: space-between;
+      text-align: center;
+      width: 100%;
+      border: none;
+    }
+    .readme-container button {
+      flex: 1;
+      text-align: center;text-decoration: underline;
+      background-color: lightyellow;
+      border: none;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      font-size: 18px;
+      padding-bottom: 10px;
+      font-family: "dunbar-tall", sans-serif;
+    }
+    .close-btn {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .info{
+      float:right;
+      text-align: center;
+      background-color: lightyellow;
+      width: 100%;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+    .credits {
+      text-align: center;
+      background-color: lightyellow;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      width: 100%;
+    } 
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+    }
+    #showModalBtn {
+      color: black;
+      cursor: pointer;
+    }
+    .modal-content {
+      background-color: lightyellow;
+      margin: 5% auto;
+		text-align: left;
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid #888;
+      width: 80%;
+      max-height: calc(100vh - 40px); 
+      overflow-y: auto; 
+    }
+    @media screen and (orientation:landscape) {
+      .modal-content {
+        max-height: calc(100vh - 80px); 
+      }
+    }
+    @media (min-width: 601px) {
+      body {
+        margin: 0 auto; 
+        max-width: 600px; 
+      }
+    }
+  </style>
+  <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="tab-container">
+    <div id="equalTab" class="tab active" tabindex="0" role="button" onclick="changeTab('equal')">Equal</div>
+    <div id="nearTab" class="tab" tabindex="0" role="button" onclick="changeTab('near')">Near</div>
+  </div>
+  <form class="input-container">
+    <div class="length">
+      <label for="length">Length:</label><br>
+      <input type="text" id="length" placeholder="e.g., 10 or 10/16">
+    </div>
+    <div class="burn">
+      <label for="endDistance">Start:</label><br>
+      <input type="text" id="endDistance" placeholder="e.g., 2 or 2/16">
+    </div>
+    <div class="segmentType">
+      <label id="dynamicLabel" for="valueUsed">Segments:</label><br>
+      <input type="text" id="valueUsed" placeholder="e.g., 4">
+    </div>
+  </form>
+  <div class="resultsBG">
+      <p id="segmentResult" role="text" aria-live="assertive" aria-label="Segment Length Result"></p>
+      <p id="marksResult" role="text" aria-live="assertive" aria-label="Segment Marks Result"></p>
+  </div>
+    <div class="readme-container">
+    <button id="showModalBtn">Instructions</button>
+    <div id="instructionsModal" class="modal">
+       <div class="modal-content">
+              <h2 id="modalTitle">Segment Calculator Instructions</h2>
+              <p>
+                  Use this calculator to determine segment lengths and their corresponding factors. Follow the steps below to perform accurate calculations.
+              </p>
+                <ul>
+                  <li>
+                      <strong>Select Mode:</strong> 
+                      <ul>
+                          <li><strong>Equal:</strong> For segments of equal length.</li>
+                          <li><strong>Near:</strong> For segments close to a specific length.</li>
+                      </ul>
+                  </li>
+                  <li>
+                      <strong>Enter Length:</strong> 
+                      <p>Input the total length of your material in the "Length" field. You can enter whole numbers or fractions (e.g., 10 or 10/16).</p>
+                  </li>
+                  <li>
+                      <strong>Enter Start Distance:</strong> 
+                      <p>Specify the distance to leave at each end of the material in the "Start" field. This can also be a whole number or fraction (e.g., 2 or 2/16).</p>
+                  </li>
+                  <li>
+                      <strong>Enter Segments:</strong> 
+                      <p>Input the number of segments or the approximate size of each segment in the "Segments" field, depending on the selected mode.</p>
+                  </li>
+                  <li>
+                      <strong>View Results:</strong> 
+                      <p>The calculated segment lengths and their factors will be displayed below the input fields.</p>
+                  </li>
+              </ul>
+              <p>
+                  <strong>Note:</strong> Ensure all inputs are valid numbers or fractions to get accurate results.
+              </p>
+		   
+                    <li><a href="tapemeasure.html">Return to Calculator with Tape Measure</a></li>
+              <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
+          </div>
+     </div>
+  </div>
+    
+<script>
+    
+// Helper function to calculate the greatest common divisor
+const gcd = (a, b) => b ? gcd(b, a % b) : a;
+
+// Helper function to convert decimal numbers into readable fractions
+const toReadableFraction = x => {
+  if (isNaN(x)) return '';
+  const whole = Math.floor(x), fraction = x - whole;
+  let [numerator, denominator] = [Math.round(fraction * 16), 16], divisor = gcd(numerator, denominator);
+  [numerator, denominator] = [numerator / divisor, denominator / divisor];
+  return whole ? (numerator ? `${whole} &nbsp;&nbsp;<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : `${whole}`) : (numerator ? `<span class='factor'><sup>${numerator}</sup>/<sub>${denominator}</sub></span>` : '0');
+};
+
+// Helper function to parse input values from the form
+const parseInput = input => {
+  if (!input) return NaN;
+  if (input.includes(' ')) {
+    const [whole, fraction] = input.split(' '), [numerator, denominator] = fraction.split('/').map(Number);
+    return isNaN(numerator) || isNaN(denominator) || denominator === 0 ? NaN : Number(whole) + (numerator / denominator);
+  } else if (input.includes('/')) {
+    const [numerator, denominator] = input.split('/').map(Number);
+    return isNaN(numerator) || isNaN(denominator) || denominator === 0 ? NaN : numerator / denominator;
+  } else {
+    return Number(input);
+  }
+};
+
+// Function to handle tab changes
+const changeTab = choice => {
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  document.getElementById(choice + 'Tab').classList.add('active');
+  document.getElementById('dynamicLabel').innerText = choice === 'equal' ? 'Segments:' : 'Inches:';
+
+  const elementsToChange = document.querySelectorAll('.length, .burn, .segmentType');
+  if (choice === 'near') {
+    elementsToChange.forEach(el => el.classList.add('lightgreen-bg'));
+  } else {
+    elementsToChange.forEach(el => el.classList.remove('lightgreen-bg'));
+  }
+
+  // Trigger the calculation function when tab is changed
+  calculate();
+};
+
+// Main function to calculate segment lengths and factors
+const calculate = () => {
+  const [lengthInput, endDistanceInput, valueUsedInput] = [document.getElementById('length').value, document.getElementById('endDistance').value, document.getElementById('valueUsed').value];
+  const method = document.querySelector('.tab.active').id.startsWith('equal') ? 'equal' : 'near';
+  const [length, endDistance, valueUsed] = [parseInput(lengthInput), parseInput(endDistanceInput), parseInput(valueUsedInput)];
+
+  if (isNaN(length) || isNaN(endDistance) || isNaN(valueUsed)) {
+    document.getElementById('segmentResult').innerText = 'Please enter valid numbers or fractions.';
+    document.getElementById('marksResult').innerText = '';
+    return;
+  }
+  let remainingLength = length - 2 * endDistance, segments = [toReadableFraction(endDistance)], segmentLength;
+  if (method === 'equal') {
+    segmentLength = remainingLength / valueUsed;
+    for (let i = 0; i < valueUsed; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
+  } else if (method === 'near') {
+    const exactNumSegments = remainingLength / valueUsed;
+    const numSegments = Math.round(exactNumSegments); 
+    segmentLength = remainingLength / numSegments; 
+    for (let i = 0; i < numSegments; i++) segments.push(toReadableFraction((i + 1) * segmentLength + endDistance));
+  }
+  document.getElementById('segmentResult').innerHTML = `Segment Length: ${toReadableFraction(segmentLength)}"`;
+  document.getElementById('marksResult').innerHTML = `Factors:<br><br>${segments.join('"<hr><br>')} `;
+};
+
+// Debouncing function
+let debounceTimer;
+const debounceCalculate = () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(calculate, 500);
+};
+    
+// Event listeners for tab focus
+document.getElementById('equalTab').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); 
+        changeTab('equal'); 
+    }
+});
+
+document.getElementById('nearTab').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); 
+        changeTab('near'); 
+    }
+});
+
+
+ // Event listeners for input changes
+document.getElementById('length').addEventListener('input', debounceCalculate);
+document.getElementById('endDistance').addEventListener('input', debounceCalculate);
+document.getElementById('valueUsed').addEventListener('input', debounceCalculate);
+
+// Event listeners for tab changes
+document.getElementById('equalTab').addEventListener('click', () => changeTab('equal'));
+document.getElementById('nearTab').addEventListener('click', () => changeTab('near'));
+
+// Instructions modal handling
+const modal = document.getElementById('instructionsModal');
+const showModalBtn = document.getElementById('showModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+
+// Function to open the modal and set the focus on the close button
+function openModal() {
+  modal.style.display = "block";
+  closeModalBtn.focus();
+}
+
+// Function to close the modal and return the focus to the showModal button
+function closeModal() {
+  modal.style.display = "none";
+  showModalBtn.focus(); 
+}
+showModalBtn.addEventListener('click', openModal);
+closeModalBtn.addEventListener('click', closeModal);
+closeModalBtn.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter' || event.keyCode === 13) {
+    closeModal(); 
+  }
+});
+
+// Event listener to close the modal if a click is detected outside of it
+window.addEventListener('click', function(event) {
+  if (event.target === modal) {
+    closeModal(); 
+  }
+});
+
+// Initial calculation on page load
+calculate();
+    
+</script>
+</body>
+</html>

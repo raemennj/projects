@@ -1,19 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Calculator with Tape Measure</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
-	<link rel="manifest" href="manifest.json">
-	<link rel="icon" href="calcicon.png" type="image/png">
-	<link rel="apple-touch-icon" href="apple-touch-icon.png"> 
-	<meta name="mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="calcicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png"> 
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Inch Calc">
-	
-
+    
     <style>
         body {
             font-size: 18px;
@@ -210,16 +208,16 @@
             height: 100px;
             margin: 20px 0;
             border: 1px solid #000;
-			border-radius: 5px;
+            border-radius: 5px;
             overflow: hidden;
-			background: linear-gradient( to bottom,
-        rgba(189, 183, 107, 0.3) 0%,
-        rgba(255, 215, 0, 0.6) 6%,
-        #ffff00 25%,
-        #ffff00 75%,
-        rgba(189, 183, 107, 0.6) 98%,
-        rgba(255, 215, 0, 0.8) 100%
-      );
+            background: linear-gradient( to bottom,
+                rgba(189, 183, 107, 0.3) 0%,
+                rgba(255, 215, 0, 0.6) 6%,
+                #ffff00 25%,
+                #ffff00 75%,
+                rgba(189, 183, 107, 0.6) 98%,
+                rgba(255, 215, 0, 0.8) 100%
+            );
         }
 
         /* Center red tick mark */
@@ -310,18 +308,36 @@
 
         /* Animation Class */
         .animate-shadow {
+
+
             animation: shadowMove 1s ease-in-out forwards;
+        }
+
+        /* Styles for the Menu Button */
+        .menu-btn {
+            background: #64b5f6; /* Light Blue Background */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-btn:hover {
+            background: #42a5f5; /* Darker Blue on Hover */
+        }
+
+        /* Styles for Hidden Blank Buttons */
+        .empty-btn {
+            visibility: hidden; /* Makes the button invisible */
+            pointer-events: none; /* Disables any interaction */
+            background: transparent; /* Ensures no background is shown */
+            border: none; /* Removes any borders */
         }
     </style>
     <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
-    <button id="showModalBtn" class="instructions-button" aria-label="Show Instructions">
-        <div class="hamburger-icon"></div>
-        <div class="hamburger-icon"></div>
-        <div class="hamburger-icon"></div>
-    </button>
-
     <div class="calculator">
         <!-- Tape Measure Display -->
         <div class="tape-measure-container">
@@ -338,47 +354,52 @@
         </div>
 
         <div class="buttons">
+            <!-- Menu Button -->
+            
+            <!-- Hidden Blank Buttons for Padding -->
+
             <!-- Number and Operator Buttons -->
-			<button class="btn clear" data-value="C">C</button>
+            <button class="btn clear" data-value="C">C</button>
             <button class="btn" data-value="7">7</button>
             <button class="btn" data-value="8">8</button>
             <button class="btn" data-value="9">9</button>
             <button class="btn operator" data-value="+">+</button>
 
             <button class="btn backspace" data-value="backspace">←</button>
-			<button class="btn" data-value="4">4</button>
+            <button class="btn" data-value="4">4</button>
             <button class="btn" data-value="5">5</button>
             <button class="btn" data-value="6">6</button>
-            <button class="btn operator" data-value="-">−</button>
-			
-
-            <button class="btn decimal" data-value=".">.</button>
+            <button class="btn operator" data-value="−">−</button>
+            
+            <button class="btn menu-btn" id="showModalBtn" aria-label="Show Instructions">menu</button>
             <button class="btn" data-value="1">1</button>
             <button class="btn" data-value="2">2</button>
             <button class="btn" data-value="3">3</button>
             <button class="btn operator" data-value="×">×</button>
-			
-            <button class="btn fraction" data-value="1/16">1/16</button>
-            <button class="btn fraction" data-value="3/16">3/16</button>
+            
+            <button class="btn empty-btn" aria-hidden="true"></button>
+            <button class="btn empty-btn" aria-hidden="true"></button>
             <button class="btn" data-value="0">0</button>
-            <button class="btn fraction" data-value="5/8">5/8</button>
+            <button class="btn decimal" data-value=".">.</button>
             <button class="btn operator" data-value="÷">÷</button>
-			
+            
+            <button class="btn fraction" data-value="1/16">1/16</button>
             <button class="btn fraction" data-value="1/8">1/8</button>
-            <button class="btn fraction" data-value="3/8">3/8</button>
-            <button class="btn fraction" data-value="7/16">7/16</button>
+            <button class="btn fraction" data-value="3/16">3/16</button>
             <button class="btn fraction" data-value="1/4">1/4</button>
             <button class="btn fraction" data-value="5/16">5/16</button>
 
+            <button class="btn fraction" data-value="3/8">3/8</button>
+            <button class="btn fraction" data-value="7/16">7/16</button>
             <button class="btn fraction" data-value="1/2">1/2</button>
-            <button class="btn fraction" data-value="3/4">3/4</button>
             <button class="btn fraction" data-value="9/16">9/16</button>
+            <button class="btn fraction" data-value="5/8">5/8</button>
 
             <button class="btn fraction" data-value="11/16">11/16</button>
+            <button class="btn fraction" data-value="3/4">3/4</button>
             <button class="btn fraction" data-value="13/16">13/16</button>
             <button class="btn fraction" data-value="7/8">7/8</button>
             <button class="btn fraction" data-value="15/16">15/16</button>
-
         </div>
     </div>
 
@@ -398,7 +419,7 @@
                     <li>Press the decimal button to add a decimal point.</li>
                     <li>Click the backspace button to delete the last entry.</li>
                     <li>Press 'C' to clear all entries.</li>
-                    <li><a href="fff4_4sp.html">Segment Calculator</a></li>
+                    <li><a href="segmentcalc.html">Segment Calculator</a></li>
                 </ul>
             </p>
             <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
@@ -429,6 +450,11 @@
                 button.addEventListener('click', () => {
                     const value = button.getAttribute('data-value');
                     console.log(`Button clicked: ${value}`);
+
+                    if (button.id === 'showModalBtn') {
+                        // Handle menu button separately
+                        return;
+                    }
 
                     if (value === 'C') {
                         clearCalculator();
