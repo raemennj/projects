@@ -4,14 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Calculator with Tape Measure</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Include math.js from CDN with defer to ensure it's loaded before the main script -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
 	<link rel="manifest" href="manifest.json">
 	<link rel="icon" href="calcicon.png" type="image/png">
 	<link rel="apple-touch-icon" href="apple-touch-icon.png">  
 	<meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Inch Calc">
 	
 
@@ -19,7 +18,7 @@
         body {
             font-size: 18px;
             margin: 0;
-            padding: 5px;
+            padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left);
             background-color: darkslategrey;
             display: flex;
             flex-direction: column;
