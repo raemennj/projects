@@ -26,8 +26,9 @@
       flex-direction: column;
       align-items: center;
       user-select: none;
-	  touch-action: manipulation;
+	  touch-action: none;
       font-family: "dunbar-tall", sans-serif;
+	  overflow: hidden;
     }
     .tab-container {
       display: flex;
@@ -272,7 +273,21 @@
   </div>
     
 <script>
-    
+     document.addEventListener('touchmove', function(event) {
+        event.preventDefault(); /* Prevents scrolling */
+    }, { passive: false });
+
+    document.addEventListener('gesturestart', function(event) {
+        event.preventDefault(); /* Prevents pinch-to-zoom */
+    });
+
+    document.addEventListener('gesturechange', function(event) {
+        event.preventDefault();
+    });
+
+    document.addEventListener('gestureend', function(event) {
+        event.preventDefault();
+    });
 // Helper function to calculate the greatest common divisor
 const gcd = (a, b) => b ? gcd(b, a % b) : a;
 

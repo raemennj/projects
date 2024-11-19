@@ -22,9 +22,10 @@
             flex-direction: column;
             align-items: center;
             user-select: none;
-			touch-action: manipulation;
+			touch-action: none;
             font-family: "Arial", sans-serif;
             position: relative;
+			overflow: hidden;
         }
 
         .calculator {
@@ -501,6 +502,22 @@
                 });
             });
 
+			document.addEventListener('touchmove', function(event) {
+        event.preventDefault(); /* Prevents touch-based scrolling */
+    }, { passive: false });
+
+    document.addEventListener('gesturestart', function(event) {
+        event.preventDefault(); /* Prevents pinch-to-zoom gestures */
+    });
+
+    document.addEventListener('gesturechange', function(event) {
+        event.preventDefault();
+    });
+
+    document.addEventListener('gestureend', function(event) {
+        event.preventDefault();
+    });
+			
             /**
              * Clears the calculator inputs and results.
              */
