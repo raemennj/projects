@@ -1,8 +1,8 @@
 {
-  "name": "Calculator with Tape Measure",
-  "short_name": "Inch Calc",
-  "description": "A tool to convert decimal inches to inch fractions.",
-  "start_url": "/projects/tapemeasure.html",
+  "name": "Segment Calculator",
+  "short_name": "Segment Calc",
+  "description": "A tool to divide a distance into segments.",
+  "start_url": "/projects/segmentcalc.html",
   "display": "standalone",
   "orientation": "portrait",
   "icons": [
