@@ -16,7 +16,7 @@
         body {
             font-size: 18px;
             margin: 0;
-            padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left);
+            padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left)5px;
             background-color: darkslategrey;
             display: flex;
             flex-direction: column;
@@ -38,6 +38,12 @@
             flex-direction: column;
             align-items: center;
         }
+.calculator-wrapper {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center;    /* Centers vertically */
+    height: 100vh;          /* Takes the full height of the viewport */
+}
 
         #display {
             background: #222;
@@ -340,7 +346,8 @@
     <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 </head>
 <body>
-    <div class="calculator">
+    <div class="calculator-wrapper">
+	<div class="calculator">
         <!-- Tape Measure Display -->
         <div class="tape-measure-container">
             <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
@@ -403,6 +410,7 @@
             <button class="btn fraction" data-value="7/8">7/8</button>
             <button class="btn fraction" data-value="15/16">15/16</button>
         </div>
+    </div>
     </div>
 
     <!-- Instructions Modal -->
