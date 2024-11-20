@@ -29,7 +29,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center; /* Keeps items centered */
-  justify-content: center; /* Centers items vertically */
+  justify-content: top; 
   background-color: #f9f9f9;
   padding: 20px;
   text-align: center;
@@ -40,7 +40,7 @@ body {
 }
 
 .badge-image {
-  width: 200px;
+  width: 400px;
   height: auto;
   margin-top: 20px;
 }
@@ -48,7 +48,7 @@ body {
 /* Responsive Design */
 @media (max-width: 600px) {
   .badge-image {
-    width: 150px;
+    width: 300px;
   }
 
   .page h1 {
