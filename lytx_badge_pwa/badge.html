@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lytix Badge PWA</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+
+  <!-- iOS Specific Meta Tags -->
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Lytix Badge">
+
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';">
+
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div id="container">
+    <section id="badgePage" class="page active">
+      <h1>Your Lytix Badge</h1>
+      <img src="lytix-badge.png" alt="Lytix Badge" class="badge-image">
+    </section>
+    <section id="infoPage" class="page">
+      <h1>Badge Information</h1>
+      <p>Here you can find more details about your Lytix Badge.</p>
+    </section>
+  </div>
+</body>
+</html>
