@@ -19,24 +19,10 @@
             overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
-        /* Header Styles */
-        header {
-            background-color: #4caf50;
-            color: white;
-            text-align: center;
-            padding: 20px 10px;
-            position: fixed;
-            top: 0;
-            left: 250px; /* Width of navbar */
-            right: 0;
-            z-index: 1000;
-            transition: left 0.3s ease-in-out;
-        }
-
         /* Navigation Styles */
         .navbar {
             background-color: #e8f5e9;
-            padding: 10px 20px;
+            padding: 20px;
             position: fixed;
             top: 0;
             left: 0;
@@ -44,21 +30,27 @@
             width: 250px;
             overflow-y: auto;
             transition: transform 0.3s ease-in-out;
-            z-index: 1001; /* Above header */
+            z-index: 1001; /* Above overlay */
         }
 
         .navbar.hidden {
             transform: translateX(-100%);
         }
 
+        .navbar.show {
+            transform: translateX(0);
+        }
+
         .navbar h3 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #4caf50;
         }
 
         .navbar button {
             display: block;
             width: 100%;
-            padding: 10px;
+            padding: 10px 15px;
             margin-bottom: 10px;
             background-color: #4caf50;
             color: white;
@@ -97,7 +89,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 999;
+            z-index: 1000; /* Below navbar */
             transition: opacity 0.3s ease-in-out;
         }
 
@@ -109,7 +101,7 @@
         /* Main Content Styles */
         .main-content {
             margin-left: 250px; /* Width of navbar */
-            padding: 100px 20px 20px 20px; /* Top padding accounts for fixed header */
+            padding: 20px;
             min-height: 100vh;
             transition: margin-left 0.3s ease-in-out;
             display: flex;
@@ -127,9 +119,10 @@
         }
 
         .tree-container img.tree {
-            width: 100%;
+            width: 95%; /* Reduced from 100% for better visibility */
             height: auto;
             display: block;
+            margin: 0 auto; /* Centers the image within the container */
         }
 
         .labels-container {
@@ -190,12 +183,11 @@
 
             .main-content {
                 margin-left: 0;
-                padding: 80px 20px 20px 20px; /* Reduced top padding for mobile */
             }
 
-            header {
-                left: 0;
-                width: 100%;
+            /* Center main content on mobile */
+            .main-content {
+                align-items: center;
             }
 
             /* Adjust labels font size */
@@ -207,11 +199,7 @@
             /* Adjust tree container max-width */
             .tree-container {
                 max-width: 100%;
-            }
-
-            /* Center main content */
-            .main-content {
-                align-items: center;
+                margin: 0px 0;
             }
         }
 
@@ -223,7 +211,7 @@
 
             .navbar button {
                 font-size: 0.9em;
-                padding: 8px;
+                padding: 8px 12px;
             }
 
             .hamburger {
@@ -232,15 +220,7 @@
                 left: 10px;
             }
 
-            /* Adjust header padding */
-            header {
-                padding: 15px 10px;
-            }
-
-            /* Adjust main-content padding */
-            .main-content {
-                padding: 80px 10px 10px 10px;
-            }
+            /* Further adjustments for smaller screens */
         }
     </style>
 </head>
@@ -292,10 +272,6 @@
 
     <!-- Main Content Container -->
     <div class="main-content" id="main-content">
-        <header>
-            <h1>The Principles Tree</h1>
-            <p>Explore the roots, trunk, branches, and leaves of each principle.</p>
-        </header>
         <div class="tree-container" id="treeContainer">
             <img src="images/principles_tree-04.jpg" alt="Tree" class="tree" id="tree">
             <div class="labels-container" id="labelsContainer">
@@ -314,7 +290,7 @@
             honesty: {
                 title: "Honesty",
                 roots: "Faith, Acceptance, Courage",
-                trunk: "Honesty",
+                trunk: "Speaking and living in alignment with the truth.",
                 branches: "Integrity, Responsibility, Willingness",
                 leaves: "Trust, Justice, Humility"
             },
@@ -577,9 +553,9 @@
                     {x: 50, y: 60}
                 ],
                 branches: [
-                    {x: 35, y: 35},
-                    {x: 50, y: 43},
-                    {x: 65, y: 35}
+                    {x: 35, y: 37},
+                    {x: 50, y: 45},
+                    {x: 65, y: 33}
                 ],
                 leaves: [
                     {x: 23, y: 20},
@@ -632,10 +608,12 @@
 
             if (isHidden) {
                 navbar.classList.remove('hidden');
+                navbar.classList.add('show'); // Add 'show' class to navbar
                 overlay.classList.add('show');
                 document.body.style.overflow = 'hidden'; // Prevent body scroll
             } else {
                 navbar.classList.add('hidden');
+                navbar.classList.remove('show'); // Remove 'show' class from navbar
                 overlay.classList.remove('show');
                 document.body.style.overflow = 'auto'; // Restore body scroll
             }
@@ -664,6 +642,7 @@
 
             if (window.innerWidth > 768) {
                 navbar.classList.remove('hidden');
+                navbar.classList.remove('show');
                 overlay.classList.remove('show');
                 document.body.style.overflow = 'auto';
             } else {
@@ -675,6 +654,7 @@
         window.addEventListener('load', function() {
             if (window.innerWidth > 768) {
                 document.getElementById('navbar').classList.remove('hidden');
+                document.getElementById('navbar').classList.remove('show');
             } else {
                 document.getElementById('navbar').classList.add('hidden');
             }
