@@ -16,6 +16,7 @@
             font-family: Arial, sans-serif;
             background-color: #f7f7f7;
             color: #333;
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
         /* Header Styles */
@@ -24,50 +25,41 @@
             color: white;
             text-align: center;
             padding: 20px 10px;
+            position: fixed;
+            top: 0;
+            left: 250px; /* Width of navbar */
+            right: 0;
+            z-index: 1000;
+            transition: left 0.3s ease-in-out;
         }
 
         /* Navigation Styles */
         .navbar {
             background-color: #e8f5e9;
             padding: 10px 20px;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1001; /* Above header */
         }
 
-        .navbar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .navbar.hidden {
+            transform: translateX(-100%);
         }
 
-        .navbar-brand {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #4caf50;
+        .navbar h3 {
+            margin-bottom: 15px;
         }
 
-        .navbar-toggle {
-            display: none;
-            font-size: 1.5em;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #4caf50;
-        }
-
-        .nav-menu {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .nav-menu li {
-            /* Remove default list styles */
-        }
-
-        .nav-menu button {
+        .navbar button {
+            display: block;
             width: 100%;
             padding: 10px;
+            margin-bottom: 10px;
             background-color: #4caf50;
             color: white;
             border: none;
@@ -78,51 +70,60 @@
             font-size: 1em;
         }
 
-        .nav-menu button:hover {
+        .navbar button:hover {
             background-color: #388e3c;
         }
 
-        /* Container Styles */
-        .container {
-            display: flex;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        /* Menu Styles */
-        .menu {
-            flex: 1;
-            max-width: 250px;
-            background: #e8f5e9;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-            max-height: 80vh;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        /* Details Styles */
-        .details {
-            flex: 3;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-
-        .details h2 {
+        /* Hamburger Button Styles */
+        .hamburger {
+            display: none; /* Hidden on desktop */
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            font-size: 1.5em;
+            background: none;
+            border: none;
             color: #4caf50;
-            margin-top: 0;
+            cursor: pointer;
+            z-index: 1002; /* Above navbar */
+        }
+
+        /* Overlay Styles */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 250px; /* Width of navbar */
+            padding: 100px 20px 20px 20px; /* Top padding accounts for fixed header */
+            min-height: 100vh;
+            transition: margin-left 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
         }
 
         /* Tree Image and Labels Styles */
         .tree-container {
             position: relative;
             width: 100%;
-            max-width: 600px; /* Adjust as needed */
-            margin: 20px auto;
+            max-width: 600px;
+            margin: 20px 0;
         }
 
         .tree-container img.tree {
@@ -156,50 +157,45 @@
             transform: translate(-50%, -50%);
         }
 
+        /* Details Section Styles */
+        .details {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+
+        .details h2 {
+            color: #4caf50;
+            margin-bottom: 10px;
+        }
+
         /* Responsive Styles */
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            /* Show hamburger menu on mobile */
-            .navbar-toggle {
-                display: block;
-            }
-
-            /* Hide the menu by default on mobile */
-            .menu {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100%;
-                width: 250px;
-                background: #e8f5e9;
-                padding: 20px;
-                box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+            .navbar {
                 transform: translateX(-100%);
-                z-index: 1000;
+                width: 80%; /* Occupy 80% of screen width on mobile */
             }
 
-            /* Show menu when active */
-            .menu.show {
+            .navbar.show {
                 transform: translateX(0);
             }
 
-            /* Overlay when menu is open */
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
+            .hamburger {
+                display: block;
             }
 
-            .overlay.show {
-                display: block;
+            .main-content {
+                margin-left: 0;
+                padding: 80px 20px 20px 20px; /* Reduced top padding for mobile */
+            }
+
+            header {
+                left: 0;
+                width: 100%;
             }
 
             /* Adjust labels font size */
@@ -212,6 +208,11 @@
             .tree-container {
                 max-width: 100%;
             }
+
+            /* Center main content */
+            .main-content {
+                align-items: center;
+            }
         }
 
         @media (max-width: 480px) {
@@ -220,434 +221,465 @@
                 padding: 3px 6px;
             }
 
-            .navbar-brand {
-                font-size: 1em;
+            .navbar button {
+                font-size: 0.9em;
+                padding: 8px;
             }
 
-            .nav-menu button {
-                font-size: 0.9em;
+            .hamburger {
+                font-size: 1.2em;
+                top: 10px;
+                left: 10px;
+            }
+
+            /* Adjust header padding */
+            header {
+                padding: 15px 10px;
+            }
+
+            /* Adjust main-content padding */
+            .main-content {
+                padding: 80px 10px 10px 10px;
             }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>The Principles Tree</h1>
-    <p>Explore the roots, trunk, branches, and leaves of each principle.</p>
-</header>
+    <!-- Hamburger Menu Button (Visible on Mobile) -->
+    <button class="hamburger" id="hamburger">&#9776;</button>
 
-<!-- Navigation Bar -->
-<nav class="navbar">
-    <div class="navbar-header">
-        <span class="navbar-brand">Principles</span>
-        <button type="button" class="navbar-toggle" id="menu-toggle">☰</button>
-    </div>
-    <ul class="nav-menu" id="nav-menu">
+    <!-- Navigation Menu -->
+    <nav class="navbar hidden" id="navbar">
+        <h3>Select a Principle:</h3>
         <!-- Principle Buttons -->
-        <li><button onclick="showDetails('honesty')">Honesty</button></li>
-        <li><button onclick="showDetails('hope')">Hope</button></li>
-        <li><button onclick="showDetails('faith')">Faith</button></li>
-        <li><button onclick="showDetails('courage')">Courage</button></li>
-        <li><button onclick="showDetails('integrity')">Integrity</button></li>
-        <li><button onclick="showDetails('willingness')">Willingness</button></li>
-        <li><button onclick="showDetails('humility')">Humility</button></li>
-        <li><button onclick="showDetails('brotherlyLove')">Brotherly Love</button></li>
-        <li><button onclick="showDetails('justice')">Justice</button></li>
-        <li><button onclick="showDetails('perseverance')">Perseverance</button></li>
-        <li><button onclick="showDetails('spiritualAwareness')">Spiritual Awareness</button></li>
-        <li><button onclick="showDetails('service')">Service</button></li>
-        <li><button onclick="showDetails('unity')">Unity</button></li>
-        <li><button onclick="showDetails('trust')">Trust</button></li>
-        <li><button onclick="showDetails('acceptance')">Acceptance</button></li>
-        <li><button onclick="showDetails('autonomy')">Autonomy</button></li>
-        <li><button onclick="showDetails('purpose')">Purpose</button></li>
-        <li><button onclick="showDetails('responsibility')">Responsibility</button></li>
-        <li><button onclick="showDetails('fellowship')">Fellowship</button></li>
-        <li><button onclick="showDetails('structure')">Structure</button></li>
-        <li><button onclick="showDetails('neutrality')">Neutrality</button></li>
-        <li><button onclick="showDetails('anonymity')">Anonymity</button></li>
-        <li><button onclick="showDetails('gratitude')">Gratitude</button></li>
-        <li><button onclick="showDetails('forgiveness')">Forgiveness</button></li>
-        <li><button onclick="showDetails('love')">Love</button></li>
-        <li><button onclick="showDetails('patience')">Patience</button></li>
-        <li><button onclick="showDetails('openMindedness')">Open-Mindedness</button></li>
-        <li><button onclick="showDetails('selflessness')">Selflessness</button></li>
-        <li><button onclick="showDetails('tolerance')">Tolerance</button></li>
-        <li><button onclick="showDetails('charity')">Charity</button></li>
-        <li><button onclick="showDetails('faithfulness')">Faithfulness</button></li>
-        <li><button onclick="showDetails('spiritualAwakening')">Spiritual Awakening</button></li>
-    </ul>
-</nav>
+        <button onclick="showDetails('honesty')">Honesty</button>
+        <button onclick="showDetails('hope')">Hope</button>
+        <button onclick="showDetails('faith')">Faith</button>
+        <button onclick="showDetails('courage')">Courage</button>
+        <button onclick="showDetails('integrity')">Integrity</button>
+        <button onclick="showDetails('willingness')">Willingness</button>
+        <button onclick="showDetails('humility')">Humility</button>
+        <button onclick="showDetails('brotherlyLove')">Brotherly Love</button>
+        <button onclick="showDetails('justice')">Justice</button>
+        <button onclick="showDetails('perseverance')">Perseverance</button>
+        <button onclick="showDetails('spiritualAwareness')">Spiritual Awareness</button>
+        <button onclick="showDetails('service')">Service</button>
+        <button onclick="showDetails('unity')">Unity</button>
+        <button onclick="showDetails('trust')">Trust</button>
+        <button onclick="showDetails('acceptance')">Acceptance</button>
+        <button onclick="showDetails('autonomy')">Autonomy</button>
+        <button onclick="showDetails('purpose')">Purpose</button>
+        <button onclick="showDetails('responsibility')">Responsibility</button>
+        <button onclick="showDetails('fellowship')">Fellowship</button>
+        <button onclick="showDetails('structure')">Structure</button>
+        <button onclick="showDetails('neutrality')">Neutrality</button>
+        <button onclick="showDetails('anonymity')">Anonymity</button>
+        <button onclick="showDetails('gratitude')">Gratitude</button>
+        <button onclick="showDetails('forgiveness')">Forgiveness</button>
+        <button onclick="showDetails('love')">Love</button>
+        <button onclick="showDetails('patience')">Patience</button>
+        <button onclick="showDetails('openMindedness')">Open-Mindedness</button>
+        <button onclick="showDetails('selflessness')">Selflessness</button>
+        <button onclick="showDetails('tolerance')">Tolerance</button>
+        <button onclick="showDetails('charity')">Charity</button>
+        <button onclick="showDetails('faithfulness')">Faithfulness</button>
+        <button onclick="showDetails('spiritualAwakening')">Spiritual Awakening</button>
+    </nav>
 
-<!-- Overlay for Mobile Menu -->
-<div class="overlay" id="overlay"></div>
+    <!-- Overlay for Mobile Menu -->
+    <div class="overlay" id="overlay"></div>
 
-<!-- Main Content Container -->
-<div class="container">
-    <div class="details" id="details">
-        <h2>Welcome!</h2>
-        <p>Select a principle from the menu to see its labels on the tree.</p>
-        <!-- Tree and Labels will be added here dynamically -->
-    </div>
-</div>
-
-<!-- JavaScript for Interactivity -->
-<script>
-    const principles = {
-        honesty: {
-            title: "Honesty",
-            roots: "Faith, Acceptance, Courage",
-            trunk: "Honesty",
-            branches: "Integrity, Responsibility, Willingness",
-            leaves: "Trust, Justice, Humility"
-        },
-        hope: {
-            title: "Hope",
-            roots: "Faith, Gratitude, Open-Mindedness",
-            trunk: "Believing in a positive outcome.",
-            branches: "Perseverance, Courage, Willingness",
-            leaves: "Spiritual Awareness, Purpose, Responsibility"
-        },
-        faith: {
-            title: "Faith",
-            roots: "Hope, Spiritual Awareness, Love",
-            trunk: "Trusting a Higher Power.",
-            branches: "Humility, Open-Mindedness, Perseverance",
-            leaves: "Gratitude, Spiritual Awakening, Tolerance"
-        },
-        courage: {
-            title: "Courage",
-            roots: "Faith, Hope, Willingness",
-            trunk: "Taking action in the face of fear.",
-            branches: "Perseverance, Integrity, Responsibility",
-            leaves: "Justice, Trust, Tolerance"
-        },
-        integrity: {
-            title: "Integrity",
-            roots: "Honesty, Responsibility, Discipline",
-            trunk: "Acting consistently with moral principles.",
-            branches: "Justice, Courage, Faithfulness",
-            leaves: "Trust, Selflessness, Service"
-        },
-        willingness: {
-            title: "Willingness",
-            roots: "Faith, Hope, Humility",
-            trunk: "Being open to growth and change.",
-            branches: "Responsibility, Perseverance, Courage",
-            leaves: "Gratitude, Unity, Fellowship"
-        },
-        humility: {
-            title: "Humility",
-            roots: "Acceptance, Gratitude, Love",
-            trunk: "Acknowledging limitations and seeking guidance.",
-            branches: "Responsibility, Tolerance, Selflessness",
-            leaves: "Unity, Fellowship, Brotherly Love"
-        },
-        brotherlyLove: {
-            title: "Brotherly Love",
-            roots: "Love, Gratitude, Fellowship",
-            trunk: "Treating others with compassion and kindness.",
-            branches: "Service, Responsibility, Charity",
-            leaves: "Tolerance, Unity, Spiritual Awakening"
-        },
-        justice: {
-            title: "Justice",
-            roots: "Integrity, Responsibility, Neutrality",
-            trunk: "Striving for fairness and balance.",
-            branches: "Courage, Faithfulness, Discipline",
-            leaves: "Trust, Fellowship, Acceptance"
-        },
-        perseverance: {
-            title: "Perseverance",
-            roots: "Faith, Hope, Discipline",
-            trunk: "Continuing despite difficulty.",
-            branches: "Responsibility, Willingness, Courage",
-            leaves: "Gratitude, Integrity, Service"
-        },
-        spiritualAwareness: {
-            title: "Spiritual Awareness",
-            roots: "Faith, Humility, Gratitude",
-            trunk: "Seeking connection to a Higher Power.",
-            branches: "Responsibility, Open-Mindedness, Discipline",
-            leaves: "Tolerance, Spiritual Awakening, Purpose"
-        },
-        service: {
-            title: "Service",
-            roots: "Love, Gratitude, Responsibility",
-            trunk: "Helping others without expecting return.",
-            branches: "Charity, Fellowship, Perseverance",
-            leaves: "Unity, Brotherly Love, Selflessness"
-        },
-        unity: {
-            title: "Unity",
-            roots: "Love, Gratitude, Tolerance",
-            trunk: "Collaborating and working together as one.",
-            branches: "Fellowship, Responsibility, Neutrality",
-            leaves: "Trust, Acceptance, Service"
-        },
-        trust: {
-            title: "Trust",
-            roots: "Faith, Integrity, Love",
-            trunk: "Believing in others or a Higher Power.",
-            branches: "Responsibility, Perseverance, Open-Mindedness",
-            leaves: "Fellowship, Unity, Justice"
-        },
-        acceptance: {
-            title: "Acceptance",
-            roots: "Faith, Love, Humility",
-            trunk: "Embracing reality without resistance.",
-            branches: "Tolerance, Responsibility, Perseverance",
-            leaves: "Unity, Fellowship, Justice"
-        },
-        autonomy: {
-            title: "Autonomy",
-            roots: "Discipline, Responsibility, Courage",
-            trunk: "Acting independently while respecting others.",
-            branches: "Integrity, Faithfulness, Open-Mindedness",
-            leaves: "Trust, Service, Acceptance"
-        },
-        purpose: {
-            title: "Purpose",
-            roots: "Faith, Responsibility, Gratitude",
-            trunk: "Pursuing meaningful goals.",
-            branches: "Discipline, Perseverance, Service",
-            leaves: "Spiritual Awakening, Unity, Fellowship"
-        },
-        responsibility: {
-            title: "Responsibility",
-            roots: "Discipline, Courage, Integrity",
-            trunk: "Fulfilling commitments and obligations.",
-            branches: "Perseverance, Willingness, Justice",
-            leaves: "Trust, Fellowship, Purpose"
-        },
-        fellowship: {
-            title: "Fellowship",
-            roots: "Love, Unity, Tolerance",
-            trunk: "Building connections with others.",
-            branches: "Service, Gratitude, Acceptance",
-            leaves: "Responsibility, Humility, Charity"
-        },
-        structure: {
-            title: "Structure",
-            roots: "Discipline, Responsibility, Integrity",
-            trunk: "Organizing efforts for consistency.",
-            branches: "Perseverance, Purpose, Faithfulness",
-            leaves: "Service, Trust, Unity"
-        },
-        neutrality: {
-            title: "Neutrality",
-            roots: "Tolerance, Humility, Patience",
-            trunk: "Staying impartial during conflict.",
-            branches: "Responsibility, Acceptance, Justice",
-            leaves: "Unity, Trust, Fellowship"
-        },
-        anonymity: {
-            title: "Anonymity",
-            roots: "Humility, Integrity, Love",
-            trunk: "Acting without seeking recognition.",
-            branches: "Responsibility, Selflessness, Discipline",
-            leaves: "Unity, Fellowship, Service"
-        },
-        gratitude: {
-            title: "Gratitude",
-            roots: "Faith, Love, Humility",
-            trunk: "Recognizing and appreciating what you’ve received.",
-            branches: "Acceptance, Responsibility, Fellowship",
-            leaves: "Service, Unity, Brotherly Love"
-        },
-        forgiveness: {
-            title: "Forgiveness",
-            roots: "Love, Humility, Acceptance",
-            trunk: "Letting go of resentment toward someone.",
-            branches: "Justice, Tolerance, Responsibility",
-            leaves: "Unity, Fellowship, Brotherly Love"
-        },
-        love: {
-            title: "Love",
-            roots: "Gratitude, Humility, Faith",
-            trunk: "Showing care and concern for others.",
-            branches: "Tolerance, Charity, Brotherly Love",
-            leaves: "Unity, Fellowship, Service"
-        },
-        patience: {
-            title: "Patience",
-            roots: "Faith, Hope, Discipline",
-            trunk: "Waiting calmly through difficulty without frustration.",
-            branches: "Tolerance, Perseverance, Acceptance",
-            leaves: "Unity, Fellowship, Trust"
-        },
-        openMindedness: {
-            title: "Open-Mindedness",
-            roots: "Humility, Willingness, Faith",
-            trunk: "Considering new ideas and perspectives.",
-            branches: "Acceptance, Tolerance, Spiritual Awareness",
-            leaves: "Growth, Fellowship, Unity"
-        },
-        selflessness: {
-            title: "Selflessness",
-            roots: "Love, Humility, Responsibility",
-            trunk: "Prioritizing others’ needs over your own.",
-            branches: "Service, Charity, Brotherly Love",
-            leaves: "Unity, Fellowship, Gratitude"
-        },
-        tolerance: {
-            title: "Tolerance",
-            roots: "Love, Acceptance, Humility",
-            trunk: "Allowing others to be themselves without judgment.",
-            branches: "Patience, Responsibility, Fellowship",
-            leaves: "Unity, Gratitude, Brotherly Love"
-        },
-        charity: {
-            title: "Charity",
-            roots: "Love, Gratitude, Humility",
-            trunk: "Giving time, money, or effort to help others.",
-            branches: "Service, Responsibility, Selflessness",
-            leaves: "Fellowship, Unity, Brotherly Love"
-        },
-        faithfulness: {
-            title: "Faithfulness",
-            roots: "Faith, Responsibility, Integrity",
-            trunk: "Staying true to commitments or principles.",
-            branches: "Discipline, Justice, Courage",
-            leaves: "Unity, Trust, Fellowship"
-        },
-        spiritualAwakening: {
-            title: "Spiritual Awakening",
-            roots: "Faith, Humility, Gratitude",
-            trunk: "Developing a deeper connection with a Higher Power.",
-            branches: "Spiritual Awareness, Acceptance, Open-Mindedness",
-            leaves: "Unity, Love, Fellowship"
-        }
-    };
-
-    // Function to display the details of a selected principle
-    function showDetails(principleKey) {
-        const principle = principles[principleKey];
-        const detailsDiv = document.getElementById('details');
-
-        // Update the details section with only the tree and labels
-        detailsDiv.innerHTML = `
-            <h2>${principle.title}</h2>
-            <!-- Tree and Labels will be added here -->
-            <div class="tree-container" id="treeContainer">
-                <img src="images/principles_tree-04.jpg" alt="Tree" class="tree" id="tree">
-                <div class="labels-container" id="labelsContainer">
-                    <!-- Labels will be dynamically added here -->
-                </div>
+    <!-- Main Content Container -->
+    <div class="main-content" id="main-content">
+        <header>
+            <h1>The Principles Tree</h1>
+            <p>Explore the roots, trunk, branches, and leaves of each principle.</p>
+        </header>
+        <div class="tree-container" id="treeContainer">
+            <img src="images/principles_tree-04.jpg" alt="Tree" class="tree" id="tree">
+            <div class="labels-container" id="labelsContainer">
+                <!-- Labels will be dynamically added here -->
             </div>
-        `;
+        </div>
+        <div class="details" id="details">
+            <h2>Welcome!</h2>
+            <p>Select a principle from the menu to see its labels on the tree.</p>
+        </div>
+    </div>
 
-        // After setting innerHTML, call a function to add labels
-        displayLabels(principle);
-
-        // If on mobile, close the menu after selection
-        if (window.innerWidth <= 768) {
-            toggleMenu(false);
-        }
-    }
-
-    // Function to display labels on the tree
-    function displayLabels(principle) {
-        const labelsContainer = document.getElementById('labelsContainer');
-        if (!labelsContainer) {
-            console.error('Labels container not found.');
-            return;
-        }
-
-        // Clear existing labels
-        labelsContainer.innerHTML = '';
-
-        // Define positions for each category (percentage-based)
-        const positions = {
-            roots: [
-                {x: 25, y: 75},
-                {x: 50, y: 83},
-                {x: 75, y: 75}
-            ],
-            trunk: [
-                {x: 50, y: 60}
-            ],
-            branches: [
-                {x: 35, y: 35},
-                {x: 50, y: 43},
-                {x: 65, y: 35}
-            ],
-            leaves: [
-                {x: 23, y: 20},
-                {x: 50, y: 15},
-                {x: 75, y: 20}
-            ]
+    <!-- JavaScript for Interactivity -->
+    <script>
+        const principles = {
+            honesty: {
+                title: "Honesty",
+                roots: "Faith, Acceptance, Courage",
+                trunk: "Honesty",
+                branches: "Integrity, Responsibility, Willingness",
+                leaves: "Trust, Justice, Humility"
+            },
+            hope: {
+                title: "Hope",
+                roots: "Faith, Gratitude, Open-Mindedness",
+                trunk: "Believing in a positive outcome.",
+                branches: "Perseverance, Courage, Willingness",
+                leaves: "Spiritual Awareness, Purpose, Responsibility"
+            },
+            faith: {
+                title: "Faith",
+                roots: "Hope, Spiritual Awareness, Love",
+                trunk: "Trusting a Higher Power.",
+                branches: "Humility, Open-Mindedness, Perseverance",
+                leaves: "Gratitude, Spiritual Awakening, Tolerance"
+            },
+            courage: {
+                title: "Courage",
+                roots: "Faith, Hope, Willingness",
+                trunk: "Taking action in the face of fear.",
+                branches: "Perseverance, Integrity, Responsibility",
+                leaves: "Justice, Trust, Tolerance"
+            },
+            integrity: {
+                title: "Integrity",
+                roots: "Honesty, Responsibility, Discipline",
+                trunk: "Acting consistently with moral principles.",
+                branches: "Justice, Courage, Faithfulness",
+                leaves: "Trust, Selflessness, Service"
+            },
+            willingness: {
+                title: "Willingness",
+                roots: "Faith, Hope, Humility",
+                trunk: "Being open to growth and change.",
+                branches: "Responsibility, Perseverance, Courage",
+                leaves: "Gratitude, Unity, Fellowship"
+            },
+            humility: {
+                title: "Humility",
+                roots: "Acceptance, Gratitude, Love",
+                trunk: "Acknowledging limitations and seeking guidance.",
+                branches: "Responsibility, Tolerance, Selflessness",
+                leaves: "Unity, Fellowship, Brotherly Love"
+            },
+            brotherlyLove: {
+                title: "Brotherly Love",
+                roots: "Love, Gratitude, Fellowship",
+                trunk: "Treating others with compassion and kindness.",
+                branches: "Service, Responsibility, Charity",
+                leaves: "Tolerance, Unity, Spiritual Awakening"
+            },
+            justice: {
+                title: "Justice",
+                roots: "Integrity, Responsibility, Neutrality",
+                trunk: "Striving for fairness and balance.",
+                branches: "Courage, Faithfulness, Discipline",
+                leaves: "Trust, Fellowship, Acceptance"
+            },
+            perseverance: {
+                title: "Perseverance",
+                roots: "Faith, Hope, Discipline",
+                trunk: "Continuing despite difficulty.",
+                branches: "Responsibility, Willingness, Courage",
+                leaves: "Gratitude, Integrity, Service"
+            },
+            spiritualAwareness: {
+                title: "Spiritual Awareness",
+                roots: "Faith, Humility, Gratitude",
+                trunk: "Seeking connection to a Higher Power.",
+                branches: "Responsibility, Open-Mindedness, Discipline",
+                leaves: "Tolerance, Spiritual Awakening, Purpose"
+            },
+            service: {
+                title: "Service",
+                roots: "Love, Gratitude, Responsibility",
+                trunk: "Helping others without expecting return.",
+                branches: "Charity, Fellowship, Perseverance",
+                leaves: "Unity, Brotherly Love, Selflessness"
+            },
+            unity: {
+                title: "Unity",
+                roots: "Love, Gratitude, Tolerance",
+                trunk: "Collaborating and working together as one.",
+                branches: "Fellowship, Responsibility, Neutrality",
+                leaves: "Trust, Acceptance, Service"
+            },
+            trust: {
+                title: "Trust",
+                roots: "Faith, Integrity, Love",
+                trunk: "Believing in others or a Higher Power.",
+                branches: "Responsibility, Perseverance, Open-Mindedness",
+                leaves: "Fellowship, Unity, Justice"
+            },
+            acceptance: {
+                title: "Acceptance",
+                roots: "Faith, Love, Humility",
+                trunk: "Embracing reality without resistance.",
+                branches: "Tolerance, Responsibility, Perseverance",
+                leaves: "Unity, Fellowship, Justice"
+            },
+            autonomy: {
+                title: "Autonomy",
+                roots: "Discipline, Responsibility, Courage",
+                trunk: "Acting independently while respecting others.",
+                branches: "Integrity, Faithfulness, Open-Mindedness",
+                leaves: "Trust, Service, Acceptance"
+            },
+            purpose: {
+                title: "Purpose",
+                roots: "Faith, Responsibility, Gratitude",
+                trunk: "Pursuing meaningful goals.",
+                branches: "Discipline, Perseverance, Service",
+                leaves: "Spiritual Awakening, Unity, Fellowship"
+            },
+            responsibility: {
+                title: "Responsibility",
+                roots: "Discipline, Courage, Integrity",
+                trunk: "Fulfilling commitments and obligations.",
+                branches: "Perseverance, Willingness, Justice",
+                leaves: "Trust, Fellowship, Purpose"
+            },
+            fellowship: {
+                title: "Fellowship",
+                roots: "Love, Unity, Tolerance",
+                trunk: "Building connections with others.",
+                branches: "Service, Gratitude, Acceptance",
+                leaves: "Responsibility, Humility, Charity"
+            },
+            structure: {
+                title: "Structure",
+                roots: "Discipline, Responsibility, Integrity",
+                trunk: "Organizing efforts for consistency.",
+                branches: "Perseverance, Purpose, Faithfulness",
+                leaves: "Service, Trust, Unity"
+            },
+            neutrality: {
+                title: "Neutrality",
+                roots: "Tolerance, Humility, Patience",
+                trunk: "Staying impartial during conflict.",
+                branches: "Responsibility, Acceptance, Justice",
+                leaves: "Unity, Trust, Fellowship"
+            },
+            anonymity: {
+                title: "Anonymity",
+                roots: "Humility, Integrity, Love",
+                trunk: "Acting without seeking recognition.",
+                branches: "Responsibility, Selflessness, Discipline",
+                leaves: "Unity, Fellowship, Service"
+            },
+            gratitude: {
+                title: "Gratitude",
+                roots: "Faith, Love, Humility",
+                trunk: "Recognizing and appreciating what you’ve received.",
+                branches: "Acceptance, Responsibility, Fellowship",
+                leaves: "Service, Unity, Brotherly Love"
+            },
+            forgiveness: {
+                title: "Forgiveness",
+                roots: "Love, Humility, Acceptance",
+                trunk: "Letting go of resentment toward someone.",
+                branches: "Justice, Tolerance, Responsibility",
+                leaves: "Unity, Fellowship, Brotherly Love"
+            },
+            love: {
+                title: "Love",
+                roots: "Gratitude, Humility, Faith",
+                trunk: "Showing care and concern for others.",
+                branches: "Tolerance, Charity, Brotherly Love",
+                leaves: "Unity, Fellowship, Service"
+            },
+            patience: {
+                title: "Patience",
+                roots: "Faith, Hope, Discipline",
+                trunk: "Waiting calmly through difficulty without frustration.",
+                branches: "Tolerance, Perseverance, Acceptance",
+                leaves: "Unity, Fellowship, Trust"
+            },
+            openMindedness: {
+                title: "Open-Mindedness",
+                roots: "Humility, Willingness, Faith",
+                trunk: "Considering new ideas and perspectives.",
+                branches: "Acceptance, Tolerance, Spiritual Awareness",
+                leaves: "Growth, Fellowship, Unity"
+            },
+            selflessness: {
+                title: "Selflessness",
+                roots: "Love, Humility, Responsibility",
+                trunk: "Prioritizing others’ needs over your own.",
+                branches: "Service, Charity, Brotherly Love",
+                leaves: "Unity, Fellowship, Gratitude"
+            },
+            tolerance: {
+                title: "Tolerance",
+                roots: "Love, Acceptance, Humility",
+                trunk: "Allowing others to be themselves without judgment.",
+                branches: "Patience, Responsibility, Fellowship",
+                leaves: "Unity, Gratitude, Brotherly Love"
+            },
+            charity: {
+                title: "Charity",
+                roots: "Love, Gratitude, Humility",
+                trunk: "Giving time, money, or effort to help others.",
+                branches: "Service, Responsibility, Selflessness",
+                leaves: "Fellowship, Unity, Brotherly Love"
+            },
+            faithfulness: {
+                title: "Faithfulness",
+                roots: "Faith, Responsibility, Integrity",
+                trunk: "Staying true to commitments or principles.",
+                branches: "Discipline, Justice, Courage",
+                leaves: "Unity, Trust, Fellowship"
+            },
+            spiritualAwakening: {
+                title: "Spiritual Awakening",
+                roots: "Faith, Humility, Gratitude",
+                trunk: "Developing a deeper connection with a Higher Power.",
+                branches: "Spiritual Awareness, Acceptance, Open-Mindedness",
+                leaves: "Unity, Love, Fellowship"
+            }
         };
 
-        // Helper function to create a label
-        function createLabel(text, xPercent, yPercent) {
-            const label = document.createElement('div');
-            label.classList.add('label');
-            label.style.left = `${xPercent}%`;
-            label.style.top = `${yPercent}%`;
-            label.textContent = text;
-            labelsContainer.appendChild(label);
+        // Function to display the details of a selected principle
+        function showDetails(principleKey) {
+            const principle = principles[principleKey];
+            const detailsDiv = document.getElementById('details');
+
+            // Update the details section with the principle information
+            detailsDiv.innerHTML = `
+                <h2>${principle.title}</h2>
+                <p><strong>Roots:</strong> ${principle.roots}</p>
+                <p><strong>Trunk:</strong> ${principle.trunk}</p>
+                <p><strong>Branches:</strong> ${principle.branches}</p>
+                <p><strong>Leaves:</strong> ${principle.leaves}</p>
+            `;
+
+            // Add labels to the tree
+            displayLabels(principle);
         }
 
-        // Add roots labels
-        const roots = principle.roots.split(',').map(item => item.trim());
-        roots.forEach((root, index) => {
-            const pos = positions.roots[index] || {x: 50, y: 80}; // default position
-            createLabel(root, pos.x, pos.y);
-        });
+        // Function to display labels on the tree
+        function displayLabels(principle) {
+            const labelsContainer = document.getElementById('labelsContainer');
+            if (!labelsContainer) {
+                console.error('Labels container not found.');
+                return;
+            }
 
-        // Add trunk label
-        const trunk = principle.trunk;
-        createLabel(trunk, 50, 60);
+            // Clear existing labels
+            labelsContainer.innerHTML = '';
 
-        // Add branches labels
-        const branches = principle.branches.split(',').map(item => item.trim());
-        branches.forEach((branch, index) => {
-            const pos = positions.branches[index] || {x: 50, y: 40}; // default position
-            createLabel(branch, pos.x, pos.y);
-        });
+            // Define positions for each category (percentage-based)
+            const positions = {
+                roots: [
+                    {x: 25, y: 75},
+                    {x: 50, y: 83},
+                    {x: 75, y: 75}
+                ],
+                trunk: [
+                    {x: 50, y: 60}
+                ],
+                branches: [
+                    {x: 35, y: 35},
+                    {x: 50, y: 43},
+                    {x: 65, y: 35}
+                ],
+                leaves: [
+                    {x: 23, y: 20},
+                    {x: 50, y: 15},
+                    {x: 75, y: 20}
+                ]
+            };
 
-        // Add leaves labels
-        const leaves = principle.leaves.split(',').map(item => item.trim());
-        leaves.forEach((leaf, index) => {
-            const pos = positions.leaves[index] || {x: 50, y: 20}; // default position
-            createLabel(leaf, pos.x, pos.y);
-        });
-    }
+            // Helper function to create a label
+            function createLabel(text, xPercent, yPercent) {
+                const label = document.createElement('div');
+                label.classList.add('label');
+                label.style.left = `${xPercent}%`;
+                label.style.top = `${yPercent}%`;
+                label.textContent = text;
+                labelsContainer.appendChild(label);
+            }
 
-    // Function to toggle the mobile menu
-    function toggleMenu(show) {
-        const menu = document.getElementById('nav-menu');
-        const overlay = document.getElementById('overlay');
-        if (show) {
-            menu.classList.add('show');
-            overlay.classList.add('show');
-        } else {
-            menu.classList.remove('show');
-            overlay.classList.remove('show');
+            // Add roots labels
+            const roots = principle.roots.split(',').map(item => item.trim());
+            roots.forEach((root, index) => {
+                const pos = positions.roots[index] || {x: 50, y: 80}; // default position
+                createLabel(root, pos.x, pos.y);
+            });
+
+            // Add trunk label
+            const trunk = principle.trunk;
+            createLabel(trunk, 50, 60);
+
+            // Add branches labels
+            const branches = principle.branches.split(',').map(item => item.trim());
+            branches.forEach((branch, index) => {
+                const pos = positions.branches[index] || {x: 50, y: 40}; // default position
+                createLabel(branch, pos.x, pos.y);
+            });
+
+            // Add leaves labels
+            const leaves = principle.leaves.split(',').map(item => item.trim());
+            leaves.forEach((leaf, index) => {
+                const pos = positions.leaves[index] || {x: 50, y: 20}; // default position
+                createLabel(leaf, pos.x, pos.y);
+            });
         }
-    }
 
-    // Event listener for the hamburger menu toggle
-    document.getElementById('menu-toggle').addEventListener('click', function() {
-        const menu = document.getElementById('nav-menu');
-        const isShown = menu.classList.contains('show');
-        toggleMenu(!isShown);
-    });
+        // Function to toggle the mobile menu
+        function toggleMenu() {
+            const navbar = document.getElementById('navbar');
+            const overlay = document.getElementById('overlay');
+            const isHidden = navbar.classList.contains('hidden');
 
-    // Event listener for clicking on the overlay to close the menu
-    document.getElementById('overlay').addEventListener('click', function() {
-        toggleMenu(false);
-    });
-
-    // Optional: Close the menu when resizing from mobile to desktop
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            toggleMenu(false);
+            if (isHidden) {
+                navbar.classList.remove('hidden');
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden'; // Prevent body scroll
+            } else {
+                navbar.classList.add('hidden');
+                overlay.classList.remove('show');
+                document.body.style.overflow = 'auto'; // Restore body scroll
+            }
         }
-    });
-</script>
+
+        // Event listener for the hamburger menu toggle
+        document.getElementById('hamburger').addEventListener('click', toggleMenu);
+
+        // Event listener for clicking on the overlay to close the menu
+        document.getElementById('overlay').addEventListener('click', toggleMenu);
+
+        // Close the menu when a principle is selected (on mobile)
+        const menuButtons = document.querySelectorAll('.navbar button');
+        menuButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Optional: Close the menu when resizing from mobile to desktop
+        window.addEventListener('resize', function() {
+            const navbar = document.getElementById('navbar');
+            const overlay = document.getElementById('overlay');
+
+            if (window.innerWidth > 768) {
+                navbar.classList.remove('hidden');
+                overlay.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            } else {
+                navbar.classList.add('hidden');
+            }
+        });
+
+        // Initialize the menu based on screen size
+        window.addEventListener('load', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('navbar').classList.remove('hidden');
+            } else {
+                document.getElementById('navbar').classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 </html>
