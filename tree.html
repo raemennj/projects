@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Principles Tree</title>
     <style>
+        /* [Include all your existing CSS here] */
+        
         /* Reset and Base Styles */
         * {
             box-sizing: border-box;
@@ -159,11 +161,34 @@
             width: 100%;
             max-width: 800px;
             margin-top: 20px;
+            overflow-y: auto;
+            max-height: auto;
         }
 
         .details h2 {
             color: #4caf50;
             margin-bottom: 10px;
+        }
+
+        .details h3 {
+            color: #388e3c;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .details p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .details ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .details strong {
+            color: #555;
         }
 
         /* Responsive Styles */
@@ -280,7 +305,7 @@
         </div>
         <div class="details" id="details">
             <h2>Welcome!</h2>
-            <p>Select a principle from the menu to see its labels on the tree.</p>
+            <p>Select a principle from the menu to see its details here.</p>
         </div>
     </div>
 
@@ -289,6 +314,18 @@
         const principles = {
             honesty: {
                 title: "Honesty",
+                aaDefinition: "The willingness to see and admit the truth about oneself, including one’s powerlessness over alcohol, as a foundation for recovery (Step 1).",
+                prayer: "God, help me to face the truth about myself today. Grant me the courage to be honest with You, myself, and others, so I may continue to grow in my recovery.",
+                reflection: {
+                    date: "June 1 – BEING HONEST",
+                    quote: "Who wishes to be rigorously honest and tolerant? Who wants to confess his faults to another and make restitution for harm done? Who cares anything about a Higher Power, let alone meditation and prayer? Who wants to sacrifice time and energy in trying to carry A.A.’s message to the next sufferer? No, the average alcoholic, self-centered in the extreme, doesn’t care for this prospect—unless he has to do these things in order to stay alive himself. <p>— Twelve Steps and Twelve Traditions, p. 24",
+                    reflectionText: "I am an alcoholic. If I drink, I will die. My, what power, energy, and emotion this simple statement generates in me! But it’s really all I need to know for today. Am I willing to stay alive today? Am I willing to stay sober today? Am I willing to ask for help and am I willing to be a help to another suffering alcoholic today? Have I discovered the fatal nature of my situation? What must I do today to stay sober?"
+                },
+                oxfordDefinition: "The quality of being honest; uprightness, integrity, truthfulness, sincerity.",
+                pronunciation: "AHN-uh-stee",
+                etymology: "Middle English, from Old French honesté, from Latin honestas ‘honor, respectability’.",
+                origin: "14th century.",
+                // **Label Properties**
                 roots: "Faith, Acceptance, Courage",
                 trunk: "Speaking and living in alignment with the truth.",
                 branches: "Integrity, Responsibility, Willingness",
@@ -296,6 +333,18 @@
             },
             hope: {
                 title: "Hope",
+                aaDefinition: "A belief that recovery is possible through a Power greater than oneself, providing motivation to work the program (Step 2).",
+                prayer: "God, restore in me the hope that through Your guidance, I can find peace and purpose. Help me trust in the journey You have set before me.",
+                reflection: {
+                    date: "June 9 – LIVING IN THE NOW",
+                    quote: "Do not be discouraged.",
+                    reflectionText: "Few experiences are of less value to me than fast sobriety. Too many times discouragement has been the bonus for unrealistic expectations—not to mention self-pity or fatigue from my wanting to change the world by the weekend. Discouragement is a warning signal that I may have wandered across the God line.\n\nThe secret of fulfilling my potential is in acknowledging my limitations and believing that time is a gift, not a threat. Hope is the key that unlocks the door of discouragement. The program promises me that if I do not pick up the first drink today, I will always have hope. Having come to believe that I keep what I share; every time I encourage, I receive courage. It is with others that, with the grace of God and the Fellowship of A.A., I trudge the road of happy destiny. May I always remember that the power within me is far greater than any fear before me. May I always have patience, for I am on the right road."
+                },
+                oxfordDefinition: "Expectation of something desired; confidence in a future event or possibility; trust in something that will bring good.",
+                pronunciation: "HOPE",
+                etymology: "Old English hopian, of Germanic origin; related to Dutch hoop and German Hoffnung.",
+                origin: "9th century.",
+                // **Label Properties**
                 roots: "Faith, Gratitude, Open-Mindedness",
                 trunk: "Believing in a positive outcome.",
                 branches: "Perseverance, Courage, Willingness",
@@ -303,6 +352,18 @@
             },
             faith: {
                 title: "Faith",
+                aaDefinition: "Trust in a Higher Power and the program of AA to guide recovery and bring freedom from addiction (Step 3).",
+                prayer: "God, I offer myself to You—to build with me and to do with me as You will. Relieve me of the bondage of self, that I may better do Your will.",
+                reflection: {
+                    date: "June 15 – TRUSTING THE POWER",
+                    quote: "It works—it really does.",
+                    reflectionText: "When I got sober, I initially had faith only in the program of Alcoholics Anonymous. Desperation and fear kept me sober (and maybe a caring and/or tough sponsor helped!). Faith in a Higher Power came much later. This faith came slowly at first after I began listening to others share at meetings about their experiences—experiences that I had never faced sober, but that they were facing with strength from a Higher Power. Out of their sharing came hope that I too would—and could—’get’ a Higher Power. In time I learned that a Higher Power—a faith that works under all conditions—is possible. Today, this faith plus the honesty, open-mindedness, and willingness to work the Steps of the program gives me the serenity that I seek. It works—it really does."
+                },
+                oxfordDefinition: "Confidence, reliance, or trust in the ability, goodness, etc., of a person; belief in religious doctrines.",
+                pronunciation: "FAYTH",
+                etymology: "Middle English, from Old French feid, from Latin fides ‘trust, faith’.",
+                origin: "13th century.",
+                // **Label Properties**
                 roots: "Hope, Spiritual Awareness, Love",
                 trunk: "Trusting in a Higher Power.",
                 branches: "Humility, Open-Mindedness, Perseverance",
@@ -310,6 +371,18 @@
             },
             courage: {
                 title: "Courage",
+                aaDefinition: "The strength to face and take responsibility for one’s past actions, as exemplified in making a moral inventory and amends (Steps 4 and 9).",
+                prayer: "God, grant me the courage to face the things I fear today. Help me to act with integrity and strength, trusting in Your power to guide me.",
+                reflection: {
+                    date: "June 20 – EMBRACING FEAR",
+                    quote: "Such is the paradox of A.A. regeneration: strength arising out of complete defeat and weakness; the loss of one’s old life as a condition for finding a new one.",
+                    reflectionText: "What glorious mysteries paradoxes are! They do not compute, yet when recognized and accepted, they reaffirm something in the universe beyond human logic. When I face a fear, I am given courage; when I support a brother or sister, my capacity to love myself is increased; when I accept pain as part of the growing experience of life, I realize a greater happiness; when I look at my dark side, I am brought into new light; when I accept my vulnerabilities and surrender to a Higher Power, I am graced with unforeseen strength. I stumbled through the doors of A.A. in disgrace, expecting nothing from life, and I have been given hope and dignity. Miraculously, the only way to keep the gifts of the program is to pass them on."
+                },
+                oxfordDefinition: "The ability to face danger or hardship without giving way to fear; bravery.",
+                pronunciation: "KUR-ij",
+                etymology: "Middle English, from Old French corage, from Latin cor ‘heart’.",
+                origin: "14th century.",
+                // **Label Properties**
                 roots: "Faith, Hope, Willingness",
                 trunk: "Taking action in the face of fear.",
                 branches: "Perseverance, Integrity, Responsibility",
@@ -317,218 +390,588 @@
             },
             integrity: {
                 title: "Integrity",
+                aaDefinition: "Consistently living according to spiritual and ethical principles, including admitting wrongs and striving to improve (Step 5).",
+                prayer: "God, guide my thoughts and actions so they align with Your will. Help me to live with integrity, taking responsibility for my words and deeds.",
+                reflection: {
+                    date: "June 25 – CONSISTENCY IN ACTION",
+                    quote: "Selfishness—self-centeredness! That, we think, is the root of our troubles.",
+                    reflectionText: "How amazing the revelation that the world and everyone in it can get along just fine with or without me. What a relief to know that people, places, and things will be perfectly okay without my control and direction. And how wordlessly wonderful to come to believe that a power greater than me exists, separate and apart from myself. I believe that the feeling of separation I experience between me and God will one day vanish. In the meantime, faith must serve as the pathway to the center of my life."
+                },
+                oxfordDefinition: "The quality of being honest; uprightness, integrity, truthfulness, sincerity.",
+                pronunciation: "in-TEG-rih-tee",
+                etymology: "Late Middle English, from French intégrité or Latin integritas ‘wholeness, completeness’.",
+                origin: "15th century.",
+                // **Label Properties**
                 roots: "Honesty, Responsibility, Discipline",
                 trunk: "Acting consistently with moral principles.",
                 branches: "Justice, Courage, Faithfulness",
                 leaves: "Trust, Selflessness, Service"
             },
-            willingness: {
-                title: "Willingness",
-                roots: "Faith, Hope, Humility",
-                trunk: "Being open to growth and change.",
-                branches: "Responsibility, Perseverance, Courage",
-                leaves: "Gratitude, Unity, Fellowship"
-            },
-            humility: {
-                title: "Humility",
-                roots: "Acceptance, Gratitude, Love",
-                trunk: "Acknowledging limitations and seeking guidance.",
-                branches: "Responsibility, Tolerance, Selflessness",
-                leaves: "Unity, Fellowship, Brotherly Love"
-            },
-            brotherlyLove: {
-                title: "Brotherly Love",
-                roots: "Love, Gratitude, Fellowship",
-                trunk: "Treating others with compassion and kindness.",
-                branches: "Service, Responsibility, Charity",
-                leaves: "Tolerance, Unity, Spiritual Awakening"
-            },
-            justice: {
-                title: "Justice",
-                roots: "Integrity, Responsibility, Neutrality",
-                trunk: "Striving for fairness and balance.",
-                branches: "Courage, Faithfulness, Discipline",
-                leaves: "Trust, Fellowship, Acceptance"
-            },
-            perseverance: {
-                title: "Perseverance",
-                roots: "Faith, Hope, Discipline",
-                trunk: "Continuing despite difficulty.",
-                branches: "Responsibility, Willingness, Courage",
-                leaves: "Gratitude, Integrity, Service"
-            },
-            spiritualAwareness: {
-                title: "Spiritual Awareness",
-                roots: "Faith, Humility, Gratitude",
-                trunk: "Seeking connection to a Higher Power.",
-                branches: "Responsibility, Open-Mindedness, Discipline",
-                leaves: "Tolerance, Spiritual Awakening, Purpose"
-            },
-            service: {
-                title: "Service",
-                roots: "Love, Gratitude, Responsibility",
-                trunk: "Helping others without expecting anything in return.",
-                branches: "Charity, Fellowship, Perseverance",
-                leaves: "Unity, Brotherly Love, Selflessness"
-            },
-            unity: {
-                title: "Unity",
-                roots: "Love, Gratitude, Tolerance",
-                trunk: "Collaborating and working together as one.",
-                branches: "Fellowship, Responsibility, Neutrality",
-                leaves: "Trust, Acceptance, Service"
-            },
-            trust: {
-                title: "Trust",
-                roots: "Faith, Integrity, Love",
-                trunk: "Believing in others or a Higher Power.",
-                branches: "Responsibility, Perseverance, Open-Mindedness",
-                leaves: "Fellowship, Unity, Justice"
-            },
-            acceptance: {
-                title: "Acceptance",
-                roots: "Faith, Love, Humility",
-                trunk: "Embracing reality without resistance.",
-                branches: "Tolerance, Responsibility, Perseverance",
-                leaves: "Unity, Fellowship, Justice"
-            },
-            autonomy: {
-                title: "Autonomy",
-                roots: "Discipline, Responsibility, Courage",
-                trunk: "Acting independently while respecting others.",
-                branches: "Integrity, Faithfulness, Open-Mindedness",
-                leaves: "Trust, Service, Acceptance"
-            },
-            purpose: {
-                title: "Purpose",
-                roots: "Faith, Responsibility, Gratitude",
-                trunk: "Pursuing meaningful goals.",
-                branches: "Discipline, Perseverance, Service",
-                leaves: "Spiritual Awakening, Unity, Fellowship"
-            },
-            responsibility: {
-                title: "Responsibility",
-                roots: "Discipline, Courage, Integrity",
-                trunk: "Fulfilling commitments and obligations.",
-                branches: "Perseverance, Willingness, Justice",
-                leaves: "Trust, Fellowship, Purpose"
-            },
-            fellowship: {
-                title: "Fellowship",
-                roots: "Love, Unity, Tolerance",
-                trunk: "Building connections with others.",
-                branches: "Service, Gratitude, Acceptance",
-                leaves: "Responsibility, Humility, Charity"
-            },
-            structure: {
-                title: "Structure",
-                roots: "Discipline, Responsibility, Integrity",
-                trunk: "Organizing efforts for consistency.",
-                branches: "Perseverance, Purpose, Faithfulness",
-                leaves: "Service, Trust, Unity"
-            },
-            neutrality: {
-                title: "Neutrality",
-                roots: "Tolerance, Humility, Patience",
-                trunk: "Staying impartial during conflict.",
-                branches: "Responsibility, Acceptance, Justice",
-                leaves: "Unity, Trust, Fellowship"
-            },
-            anonymity: {
-                title: "Anonymity",
-                roots: "Humility, Integrity, Love",
-                trunk: "Acting without seeking recognition.",
-                branches: "Responsibility, Selflessness, Discipline",
-                leaves: "Unity, Fellowship, Service"
-            },
-            gratitude: {
-                title: "Gratitude",
-                roots: "Faith, Love, Humility",
-                trunk: "Recognizing and appreciating what you’ve received.",
-                branches: "Acceptance, Responsibility, Fellowship",
-                leaves: "Service, Unity, Brotherly Love"
-            },
-            forgiveness: {
-                title: "Forgiveness",
-                roots: "Love, Humility, Acceptance",
-                trunk: "Letting go of resentment toward someone.",
-                branches: "Justice, Tolerance, Responsibility",
-                leaves: "Unity, Fellowship, Brotherly Love"
-            },
-            love: {
-                title: "Love",
-                roots: "Gratitude, Humility, Faith",
-                trunk: "Showing care and concern for others.",
-                branches: "Tolerance, Charity, Brotherly Love",
-                leaves: "Unity, Fellowship, Service"
-            },
-            patience: {
-                title: "Patience",
-                roots: "Faith, Hope, Discipline",
-                trunk: "Waiting calmly through difficulty without frustration.",
-                branches: "Tolerance, Perseverance, Acceptance",
-                leaves: "Unity, Fellowship, Trust"
-            },
-            openMindedness: {
-                title: "Open-Mindedness",
-                roots: "Humility, Willingness, Faith",
-                trunk: "Considering new ideas and perspectives.",
-                branches: "Acceptance, Tolerance, Spiritual Awareness",
-                leaves: "Growth, Fellowship, Unity"
-            },
-            selflessness: {
-                title: "Selflessness",
-                roots: "Love, Humility, Responsibility",
-                trunk: "Prioritizing others’ needs over your own.",
-                branches: "Service, Charity, Brotherly Love",
-                leaves: "Unity, Fellowship, Gratitude"
-            },
-            tolerance: {
-                title: "Tolerance",
-                roots: "Love, Acceptance, Humility",
-                trunk: "Allowing others to be themselves without judgment.",
-                branches: "Patience, Responsibility, Fellowship",
-                leaves: "Unity, Gratitude, Brotherly Love"
-            },
-            charity: {
-                title: "Charity",
-                roots: "Love, Gratitude, Humility",
-                trunk: "Giving time, money, or effort to help others.",
-                branches: "Service, Responsibility, Selflessness",
-                leaves: "Fellowship, Unity, Brotherly Love"
-            },
-            faithfulness: {
-                title: "Faithfulness",
-                roots: "Faith, Responsibility, Integrity",
-                trunk: "Staying true to commitments or principles.",
-                branches: "Discipline, Justice, Courage",
-                leaves: "Unity, Trust, Fellowship"
-            },
-            spiritualAwakening: {
-                title: "Spiritual Awakening",
-                roots: "Faith, Humility, Gratitude",
-                trunk: "Developing a deeper connection with a Higher Power.",
-                branches: "Spiritual Awareness, Acceptance, Open-Mindedness",
-                leaves: "Unity, Love, Fellowship"
-            }
-        };
+            
+    willingness: {
+        title: "Willingness",
+        aaDefinition: "An open heart and mind to embrace change, take action, and trust the process of recovery (Step 6).",
+        prayer: "God, grant me the willingness to grow in understanding and effectiveness. Open my heart to accept Your guidance, and let me humbly follow Your will.",
+        reflection: {
+            date: "July 10 – EMBRACING CHANGE",
+            quote: "Once we have placed the key of willingness in the lock and have the door ever so slightly open we find that we can always open it some more.",
+            reflectionText: "The willingness to give up my pride and self-will to a Power greater than myself has proved to be the only ingredient absolutely necessary to solve all of my problems today. Even the smallest amount of willingness, if sincere, is sufficient to allow God to enter and take control over any problem, pain, or obsession. My level of comfort is in direct relation to the degree of willingness I possess at any given moment to give up my self-will and allow God’s will to be manifested in my life. With the key of willingness, my worries and fears are powerfully transformed into serenity."
+        },
+        oxfordDefinition: "The state of being inclined or ready to do something without hesitation or reluctance.",
+        pronunciation: "WILL-ing-ness",
+        etymology: "Old English willan (verb) + suffix -ness to denote a state or condition.",
+        origin: "12th century.",
+        // **Label Properties**
+        roots: "Faith, Hope, Humility",
+        trunk: "Being open to growth and change.",
+        branches: "Responsibility, Perseverance, Courage",
+        leaves: "Gratitude, Unity, Fellowship"
+    },
+    humility: {
+        title: "Humility",
+        aaDefinition: "The ability to see oneself objectively, without pride or arrogance, and to recognize one’s limitations (Step 8).",
+        prayer: "God, teach me humility. Help me to see my true self and to accept Your guidance without pride or resistance.",
+        reflection: {
+            date: "July 15 – SELF-REFLECTION",
+            quote: "Humility is not thinking less of yourself, it's thinking of yourself less.",
+            reflectionText: "Humility allows me to acknowledge my weaknesses and accept help from others. By letting go of pride, I open myself to growth and deeper connections within the fellowship. Embracing humility has freed me from the burden of self-importance and has enabled me to serve others with genuine compassion."
+        },
+        oxfordDefinition: "A modest or low view of one's own importance; humbleness.",
+        pronunciation: "HYOO-muh-li-tee",
+        etymology: "Middle English, from Old French humilité, from Latin humilitas, from humilis ‘lowly’.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Acceptance, Responsibility, Trust",
+        trunk: "Acknowledging one's limitations.",
+        branches: "Self-awareness, Service, Compassion",
+        leaves: "Fellowship, Gratitude, Patience"
+    },
+    brotherlyLove: {
+        title: "Brotherly Love",
+        aaDefinition: "A spirit of friendship and mutual support among members, fostering a sense of community and belonging (Step 7).",
+        prayer: "God, bless me with the spirit of brotherly love. Help me to reach out to others with kindness and support, building meaningful connections.",
+        reflection: {
+            date: "July 20 – COMMUNITY AND SUPPORT",
+            quote: "Brotherly love is the foundation upon which the fellowship stands.",
+            reflectionText: "Embracing brotherly love means actively supporting my fellow members. It involves listening, understanding, and offering help without judgment. Through brotherly love, I find strength in unity and realize that I am not alone on this journey. This principle teaches me the importance of compassion and the power of collective recovery."
+        },
+        oxfordDefinition: "The love between brothers; affectionate regard for others.",
+        pronunciation: "BRUHTH-er-lee luhv",
+        etymology: "Middle English, from Old English brōðor ‘brother’ + love.",
+        origin: "11th century.",
+        // **Label Properties**
+        roots: "Faith, Hope, Humility",
+        trunk: "Building supportive relationships.",
+        branches: "Compassion, Empathy, Generosity",
+        leaves: "Unity, Fellowship, Trust"
+    },
+    justice: {
+        title: "Justice",
+        aaDefinition: "The fair treatment of all individuals within the fellowship, ensuring equality and respect for each member’s journey (Step 10).",
+        prayer: "God, guide me to act with fairness and integrity. Help me to treat others with respect and uphold justice within the fellowship.",
+        reflection: {
+            date: "July 25 – FAIRNESS AND EQUALITY",
+            quote: "Justice is the constant and perpetual will to allot to everyone his due.",
+            reflectionText: "Justice within the fellowship means respecting each person's path to recovery. It involves listening without prejudice, valuing diverse experiences, and ensuring that all members feel heard and respected. By practicing justice, I contribute to a harmonious and equitable community where everyone can thrive."
+        },
+        oxfordDefinition: "Just behavior or treatment; the quality of being fair and reasonable.",
+        pronunciation: "JUS-tis",
+        etymology: "Middle English, from Old French justise, from Latin justitia, from justus ‘just’.",
+        origin: "13th century.",
+        // **Label Properties**
+        roots: "Integrity, Responsibility, Humility",
+        trunk: "Ensuring fairness and respect.",
+        branches: "Equality, Accountability, Compassion",
+        leaves: "Trust, Unity, Respect"
+    },
+    perseverance: {
+        title: "Perseverance",
+        aaDefinition: "The steadfastness to continue the recovery journey despite challenges and setbacks (Step 11).",
+        prayer: "God, grant me the strength to persevere. Help me to stay committed to my recovery, even when faced with obstacles.",
+        reflection: {
+            date: "August 1 – STAYING COMMITTED",
+            quote: "Perseverance is not a long race; it is many short races one after the other.",
+            reflectionText: "Perseverance keeps me moving forward when the path becomes difficult. It reminds me that each step, no matter how small, brings me closer to recovery. By maintaining perseverance, I build resilience and reinforce my commitment to a sober and fulfilling life."
+        },
+        oxfordDefinition: "Persistence in doing something despite difficulty or delay in achieving success.",
+        pronunciation: "per-suh-VEER-ans",
+        etymology: "Middle English, from Old French persevere, from Latin perseverare, from per- ‘thoroughly’ + servare ‘to keep’.",
+        origin: "15th century.",
+        // **Label Properties**
+        roots: "Hope, Courage, Willingness",
+        trunk: "Maintaining commitment.",
+        branches: "Resilience, Determination, Patience",
+        leaves: "Strength, Unity, Trust"
+    },
+    spiritualAwareness: {
+        title: "Spiritual Awareness",
+        aaDefinition: "Recognition and understanding of a Higher Power and the role of spirituality in recovery (Step 2).",
+        prayer: "God, open my eyes to Your presence. Help me cultivate spiritual awareness and trust in Your guidance.",
+        reflection: {
+            date: "August 5 – CONNECTING SPIRITUALLY",
+            quote: "Spiritual awareness is the light that guides us through the darkness.",
+            reflectionText: "Developing spiritual awareness allows me to connect with a Higher Power and find deeper meaning in my recovery journey. It encourages me to seek guidance beyond myself and to embrace practices that nurture my soul. This awareness fosters inner peace and strengthens my resolve to stay committed to sobriety."
+        },
+        oxfordDefinition: "Conscious knowledge of something; especially the awareness of spiritual matters.",
+        pronunciation: "SPIR-i-choo-uhl uh-WARE-ness",
+        etymology: "Early 19th century, from spiritual + awareness.",
+        origin: "19th century.",
+        // **Label Properties**
+        roots: "Faith, Hope, Trust",
+        trunk: "Recognizing a Higher Power.",
+        branches: "Meditation, Prayer, Reflection",
+        leaves: "Peace, Purpose, Connection"
+    },
+    service: {
+        title: "Service",
+        aaDefinition: "Actively helping others in their recovery, embodying the principle of giving back to the fellowship (Step 12).",
+        prayer: "God, inspire me to serve others with love and compassion. Help me to give back to the fellowship in meaningful ways.",
+        reflection: {
+            date: "August 10 – GIVING BACK",
+            quote: "Service to others is the rent you pay for your room here on earth.",
+            reflectionText: "Engaging in service reinforces my commitment to recovery and fosters a sense of purpose. By helping others, I not only support their journey but also strengthen my own resolve. Service creates a reciprocal relationship where giving and receiving benefits the entire fellowship."
+        },
+        oxfordDefinition: "The action of helping or doing work for someone.",
+        pronunciation: "SUR-vis",
+        etymology: "Middle English, from Old French servir, from Latin servire ‘to serve’.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Compassion, Responsibility, Humility",
+        trunk: "Helping others in recovery.",
+        branches: "Support, Empathy, Generosity",
+        leaves: "Fellowship, Unity, Purpose"
+    },
+    unity: {
+        title: "Unity",
+        aaDefinition: "A sense of oneness and solidarity among members, fostering a supportive and cohesive fellowship.",
+        prayer: "God, bind us together in unity. Help us to support one another and build a strong, cohesive fellowship.",
+        reflection: {
+            date: "August 15 – TOGETHERNESS",
+            quote: "Unity is strength... when there is teamwork and collaboration, wonderful things can be achieved.",
+            reflectionText: "Unity within the fellowship creates a powerful support system. It allows us to share our experiences, offer mutual encouragement, and collectively overcome challenges. By fostering unity, we build a resilient community where everyone can thrive in their recovery journey."
+        },
+        oxfordDefinition: "The state of being united or joined as a whole.",
+        pronunciation: "YOO-ni-tee",
+        etymology: "Middle English, from Old French unité, from Latin unitas, from unus ‘one’.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Fellowship, Trust, Compassion",
+        trunk: "Building a cohesive community.",
+        branches: "Collaboration, Support, Mutual Respect",
+        leaves: "Strength, Resilience, Belonging"
+    },
+    trust: {
+        title: "Trust",
+        aaDefinition: "Confidence in the fellowship, the program, and a Higher Power to guide and support recovery.",
+        prayer: "God, help me to trust in Your plan and in the fellowship. Grant me the confidence to rely on Your guidance.",
+        reflection: {
+            date: "August 20 – CONFIDENCE IN RECOVERY",
+            quote: "Trust is the glue of life. It's the most essential ingredient in effective communication. It's the foundational principle that holds all relationships.",
+            reflectionText: "Trusting in the fellowship and a Higher Power provides the foundation for my recovery. It allows me to let go of fear and uncertainty, replacing them with confidence and hope. By building trust, I create a secure environment where healing and growth can flourish."
+        },
+        oxfordDefinition: "Firm belief in the reliability, truth, ability, or strength of someone or something.",
+        pronunciation: "TRUHS",
+        etymology: "Middle English, from Old Norse treysta.",
+        origin: "11th century.",
+        // **Label Properties**
+        roots: "Faith, Hope, Unity",
+        trunk: "Believing in the process and community.",
+        branches: "Reliability, Confidence, Security",
+        leaves: "Peace, Stability, Support"
+    },
+    acceptance: {
+        title: "Acceptance",
+        aaDefinition: "Acknowledging and embracing reality as it is, without resistance or denial.",
+        prayer: "God, help me to accept the things I cannot change and to embrace the reality of my situation.",
+        reflection: {
+            date: "August 25 – EMBRACING REALITY",
+            quote: "Acceptance is the first step to change.",
+            reflectionText: "By accepting my current circumstances, I free myself from the burden of denial and resistance. Acceptance allows me to focus on what I can change and empowers me to take proactive steps in my recovery. It fosters inner peace and lays the groundwork for meaningful transformation."
+        },
+        oxfordDefinition: "Consent to receive or undertake something offered.",
+        pronunciation: "ak-SEP-tuhns",
+        etymology: "Middle English, from Old French accepter, from Latin acceptus, past participle of accipere.",
+        origin: "13th century.",
+        // **Label Properties**
+        roots: "Humility, Trust, Responsibility",
+        trunk: "Embracing reality without resistance.",
+        branches: "Peace, Clarity, Focus",
+        leaves: "Growth, Transformation, Resilience"
+    },
+    autonomy: {
+        title: "Autonomy",
+        aaDefinition: "The ability to make independent choices and take responsibility for one’s own recovery journey.",
+        prayer: "God, grant me the autonomy to make decisions that align with my recovery. Help me to take responsibility for my actions.",
+        reflection: {
+            date: "September 1 – INDEPENDENT RECOVERY",
+            quote: "Autonomy is the capacity to make an informed, uncoerced decision.",
+            reflectionText: "Embracing autonomy empowers me to take control of my recovery. It encourages self-reliance and personal responsibility, enabling me to make choices that support my well-being. By fostering autonomy, I cultivate a sense of ownership over my journey, enhancing my commitment to lasting sobriety."
+        },
+        oxfordDefinition: "The right or condition of self-government, especially in a particular sphere.",
+        pronunciation: "aw-TAW-nuh-mee",
+        etymology: "Late Middle English, from Greek autonomos, from auto- ‘self’ + nomos ‘law’.",
+        origin: "16th century.",
+        // **Label Properties**
+        roots: "Acceptance, Trust, Responsibility",
+        trunk: "Taking control of one's recovery.",
+        branches: "Self-reliance, Decision-making, Accountability",
+        leaves: "Empowerment, Independence, Commitment"
+    },
+    purpose: {
+        title: "Purpose",
+        aaDefinition: "A sense of direction and meaning in life, guiding one’s actions towards meaningful goals.",
+        prayer: "God, help me discover my purpose. Guide my actions so that they align with my path to recovery and fulfillment.",
+        reflection: {
+            date: "September 5 – FINDING MEANING",
+            quote: "Having a purpose is what drives us to keep going when things get tough.",
+            reflectionText: "Identifying my purpose provides motivation and clarity in my recovery journey. It gives my actions meaning and helps me set goals that contribute to my growth and well-being. With a clear purpose, I navigate challenges with resilience and stay focused on what truly matters."
+        },
+        oxfordDefinition: "The reason for which something is done or created or for which something exists.",
+        pronunciation: "PUR-puhs",
+        etymology: "Late Middle English, from Old French purpose, from Latin propositus, past participle of proponere ‘to put forth’.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Hope, Trust, Responsibility",
+        trunk: "Defining personal goals and meaning.",
+        branches: "Motivation, Clarity, Direction",
+        leaves: "Achievement, Fulfillment, Growth"
+    },
+    responsibility: {
+        title: "Responsibility",
+        aaDefinition: "Acknowledging and accepting accountability for one’s actions and their impact on oneself and others.",
+        prayer: "God, help me to take responsibility for my actions. Guide me to make amends and uphold my commitments.",
+        reflection: {
+            date: "September 10 – ACCOUNTABILITY",
+            quote: "Responsibility is the price of greatness.",
+            reflectionText: "Taking responsibility means owning my actions and their consequences. It involves making amends when necessary and striving to act with integrity. By embracing responsibility, I cultivate trust within the fellowship and reinforce my commitment to personal growth and recovery."
+        },
+        oxfordDefinition: "The state or fact of having a duty to deal with something or of having control over someone.",
+        pronunciation: "ri-SPON-suh-bil-i-tee",
+        etymology: "Late Middle English, from Old French responsibilite, from responsus ‘responded’.",
+        origin: "15th century.",
+        // **Label Properties**
+        roots: "Integrity, Trust, Accountability",
+        trunk: "Owning one's actions.",
+        branches: "Amends, Accountability, Integrity",
+        leaves: "Trust, Growth, Respect"
+    },
+    fellowship: {
+        title: "Fellowship",
+        aaDefinition: "A sense of camaraderie and mutual support among members, fostering a strong and compassionate community.",
+        prayer: "God, bless our fellowship. Unite us in support and understanding, strengthening our bonds of friendship.",
+        reflection: {
+            date: "September 15 – COMMUNITY SUPPORT",
+            quote: "Fellowship is the foundation of our recovery.",
+            reflectionText: "The fellowship provides a safe space for sharing and support. It embodies the principles of mutual aid and compassion, allowing us to learn from each other's experiences. Through fellowship, I find encouragement and strength to continue my journey towards sobriety."
+        },
+        oxfordDefinition: "Friendly association, especially with people who share one's interests.",
+        pronunciation: "FEL-oh-ship",
+        etymology: "Middle English, from Old English fæġer- ‘beautiful’ + ship.",
+        origin: "12th century.",
+        // **Label Properties**
+        roots: "Unity, Trust, Compassion",
+        trunk: "Building strong, supportive relationships.",
+        branches: "Mutual Aid, Compassion, Understanding",
+        leaves: "Support, Strength, Encouragement"
+    },
+    structure: {
+        title: "Structure",
+        aaDefinition: "The organized framework of the program, providing guidelines and support for effective recovery.",
+        prayer: "God, guide me to respect the structure of the program. Help me to follow its principles for a successful recovery.",
+        reflection: {
+            date: "September 20 – ORGANIZING RECOVERY",
+            quote: "Structure provides the foundation upon which we build our recovery.",
+            reflectionText: "Embracing the program's structure offers clarity and direction. It helps me stay focused on my goals and provides the tools necessary to navigate challenges. By adhering to the structured principles, I create a stable environment conducive to healing and growth."
+        },
+        oxfordDefinition: "The arrangement of and relations between the parts or elements of something complex.",
+        pronunciation: "STRUHK-chur",
+        etymology: "Middle English, from Old French structura, from Latin structura, from struere ‘to build’.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Responsibility, Trust, Integrity",
+        trunk: "Following program guidelines.",
+        branches: "Guidelines, Support, Consistency",
+        leaves: "Stability, Clarity, Focus"
+    },
+    neutrality: {
+        title: "Neutrality",
+        aaDefinition: "Maintaining impartiality and avoiding taking sides, ensuring a safe and inclusive environment for all members.",
+        prayer: "God, help me to practice neutrality. Guide me to remain impartial and create a welcoming space for everyone.",
+        reflection: {
+            date: "September 25 – IMPARTIAL SUPPORT",
+            quote: "Neutrality ensures that all voices are heard and respected.",
+            reflectionText: "By maintaining neutrality, I provide a safe space for everyone to share without fear of judgment. It fosters an inclusive environment where diverse perspectives are valued. Neutrality strengthens the fellowship by promoting fairness and mutual respect among all members."
+        },
+        oxfordDefinition: "Not supporting or helping either side in a conflict or disagreement.",
+        pronunciation: "NOO-truh-li-tee",
+        etymology: "Early 17th century, from French neutral, from Latin neutrālis, from neuter ‘neither’.",
+        origin: "17th century.",
+        // **Label Properties**
+        roots: "Respect, Fairness, Compassion",
+        trunk: "Maintaining impartiality.",
+        branches: "Inclusivity, Fairness, Mutual Respect",
+        leaves: "Safety, Trust, Harmony"
+    },
+    anonymity: {
+        title: "Anonymity",
+        aaDefinition: "Protecting the privacy of members by keeping identities confidential, fostering a safe space for sharing.",
+        prayer: "God, help me to respect the anonymity of others. Guide me to create a safe and private environment for all members.",
+        reflection: {
+            date: "October 1 – PRIVACY AND SAFETY",
+            quote: "Anonymity is the cornerstone of trust within the fellowship.",
+            reflectionText: "Respecting anonymity allows members to share openly without fear of exposure or judgment. It builds trust and encourages honest communication, essential for effective recovery. By upholding anonymity, I contribute to a secure and supportive community."
+        },
+        oxfordDefinition: "The condition of being anonymous.",
+        pronunciation: "uh-NON-uh-muh-tee",
+        etymology: "Late Middle English, from anonymous, via Latin from Greek anonymos, from a- ‘not’ + onoma ‘name’.",
+        origin: "Late Middle English.",
+        // **Label Properties**
+        roots: "Trust, Respect, Safety",
+        trunk: "Protecting members' privacy.",
+        branches: "Confidentiality, Trust, Security",
+        leaves: "Openness, Honesty, Support"
+    },
+    gratitude: {
+        title: "Gratitude",
+        aaDefinition: "Appreciating and acknowledging the positive aspects of life and the support received during recovery.",
+        prayer: "God, fill my heart with gratitude. Help me to recognize and appreciate the blessings in my life.",
+        reflection: {
+            date: "October 5 – APPRECIATION AND THANKSGIVING",
+            quote: "Gratitude turns what we have into enough.",
+            reflectionText: "Cultivating gratitude shifts my focus from what is lacking to what is abundant in my life. It enhances my appreciation for the support I receive and reinforces positive emotions. By practicing gratitude, I foster a mindset of abundance and contentment, vital for sustained recovery."
+        },
+        oxfordDefinition: "The quality of being thankful; readiness to show appreciation for and to return kindness.",
+        pronunciation: "GRAT-i-tood",
+        etymology: "Middle English, from Old French gratitude, from Latin gratitudo, from gratus ‘pleasing’.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Hope, Trust, Responsibility",
+        trunk: "Acknowledging blessings and support.",
+        branches: "Appreciation, Thankfulness, Positivity",
+        leaves: "Contentment, Joy, Fulfillment"
+    },
+    forgiveness: {
+        title: "Forgiveness",
+        aaDefinition: "Letting go of resentment and anger towards oneself and others, promoting healing and inner peace.",
+        prayer: "God, grant me the strength to forgive myself and others. Help me to release anger and embrace peace.",
+        reflection: {
+            date: "October 10 – LETTING GO",
+            quote: "Forgiveness is the fragrance that the violet sheds on the heel that has crushed it.",
+            reflectionText: "Forgiveness frees me from the burden of past grievances. It allows me to move forward without the weight of resentment, fostering emotional healing and personal growth. By practicing forgiveness, I cultivate inner peace and strengthen my relationships within the fellowship."
+        },
+        oxfordDefinition: "The action or process of forgiving or being forgiven.",
+        pronunciation: "FOR-giv-ness",
+        etymology: "Middle English, from Old English forgiefan, from for- ‘completely’ + giefan ‘to give’.",
+        origin: "Old English.",
+        // **Label Properties**
+        roots: "Compassion, Humility, Trust",
+        trunk: "Releasing resentment and anger.",
+        branches: "Healing, Letting Go, Compassion",
+        leaves: "Peace, Growth, Reconciliation"
+    },
+    love: {
+        title: "Love",
+        aaDefinition: "A profound affection and care for oneself and others, fostering supportive and nurturing relationships.",
+        prayer: "God, fill my heart with love. Help me to extend compassion and care to myself and those around me.",
+        reflection: {
+            date: "October 15 – COMPASSION AND CARE",
+            quote: "Love is the bridge between you and everything.",
+            reflectionText: "Embracing love strengthens my connections with others and enhances my self-worth. It encourages me to act with kindness and empathy, essential for a supportive recovery environment. By nurturing love, I create meaningful and enduring relationships that sustain my journey towards sobriety."
+        },
+        oxfordDefinition: "An intense feeling of deep affection.",
+        pronunciation: "LUHV",
+        etymology: "Middle English, from Old English lufu, from Proto-Germanic *lubō.",
+        origin: "Old English.",
+        // **Label Properties**
+        roots: "Compassion, Trust, Unity",
+        trunk: "Fostering affectionate relationships.",
+        branches: "Compassion, Empathy, Kindness",
+        leaves: "Support, Care, Connection"
+    },
+    patience: {
+        title: "Patience",
+        aaDefinition: "The capacity to accept or tolerate delay, problems, or suffering without becoming angry or upset.",
+        prayer: "God, grant me the patience to endure challenges in my recovery. Help me to remain calm and steadfast.",
+        reflection: {
+            date: "October 20 – ENDURANCE AND CALM",
+            quote: "Patience is not the ability to wait, but the ability to keep a good attitude while waiting.",
+            reflectionText: "Patience allows me to navigate the ups and downs of recovery with grace. It helps me maintain a positive outlook even when progress seems slow. By cultivating patience, I reduce stress and create a more peaceful and productive recovery journey."
+        },
+        oxfordDefinition: "The capacity to accept or tolerate delay, trouble, or suffering without getting angry or upset.",
+        pronunciation: "PAY-shuhns",
+        etymology: "Middle English, from Old French patience, from Latin patientia, from patior ‘to suffer’.",
+        origin: "Middle English.",
+        // **Label Properties**
+        roots: "Hope, Trust, Responsibility",
+        trunk: "Enduring challenges with grace.",
+        branches: "Calmness, Resilience, Perseverance",
+        leaves: "Peace, Stability, Growth"
+    },
+    openMindedness: {
+        title: "Open-Mindedness",
+        aaDefinition: "Willingness to consider new ideas, perspectives, and experiences without prejudice.",
+        prayer: "God, open my mind to new possibilities. Help me to embrace diverse perspectives and grow through understanding.",
+        reflection: {
+            date: "October 25 – EMBRACING NEW IDEAS",
+            quote: "An open mind leaves a chance for someone to drop a worthwhile thought in it.",
+            reflectionText: "Maintaining open-mindedness allows me to learn from others and adapt to new strategies in my recovery. It encourages curiosity and continuous learning, essential for personal growth. By staying open-minded, I remain receptive to insights and support that enhance my journey towards sobriety."
+        },
+        oxfordDefinition: "Willing to consider new ideas; unprejudiced.",
+        pronunciation: "OH-puhn-MY-nid-ness",
+        etymology: "Middle English, from open + mind.",
+        origin: "Late Middle English.",
+        // **Label Properties**
+        roots: "Humility, Trust, Curiosity",
+        trunk: "Embracing new perspectives.",
+        branches: "Adaptability, Learning, Understanding",
+        leaves: "Growth, Innovation, Openness"
+    },
+    selflessness: {
+        title: "Selflessness",
+        aaDefinition: "Placing the needs and well-being of others above one’s own, fostering a supportive and altruistic community.",
+        prayer: "God, guide me to act selflessly. Help me to prioritize the needs of others and contribute positively to the fellowship.",
+        reflection: {
+            date: "November 1 – PRIORITIZING OTHERS",
+            quote: "Selflessness is doing something nice for someone else without expecting anything in return.",
+            reflectionText: "Practicing selflessness enhances my relationships and strengthens the fellowship. It encourages me to offer support without seeking recognition, creating a culture of mutual aid and generosity. By being selfless, I contribute to a compassionate and thriving recovery community."
+        },
+        oxfordDefinition: "Concern more with the needs and wishes of others than with one's own.",
+        pronunciation: "SELF-less-ness",
+        etymology: "Middle English, from self + less.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Compassion, Humility, Trust",
+        trunk: "Putting others first.",
+        branches: "Altruism, Generosity, Compassion",
+        leaves: "Support, Unity, Community"
+    },
+    tolerance: {
+        title: "Tolerance",
+        aaDefinition: "The ability to accept and respect different viewpoints, beliefs, and practices within the fellowship.",
+        prayer: "God, help me to cultivate tolerance. Guide me to accept and respect the diversity within our fellowship.",
+        reflection: {
+            date: "November 5 – RESPECTING DIVERSITY",
+            quote: "Tolerance is giving to every other human being every right that you claim for yourself.",
+            reflectionText: "Embracing tolerance fosters an inclusive and harmonious environment. It allows for diverse perspectives and experiences, enriching the fellowship. By practicing tolerance, I contribute to a respectful and supportive community where everyone feels valued and understood."
+        },
+        oxfordDefinition: "The ability or willingness to tolerate something, in particular the existence of opinions or behavior that one does not necessarily agree with.",
+        pronunciation: "TOL-er-uhns",
+        etymology: "Middle English, from Old French tolerer, from Latin tolerantia, from tolerare ‘to endure’.",
+        origin: "Middle English.",
+        // **Label Properties**
+        roots: "Respect, Compassion, Unity",
+        trunk: "Accepting diverse perspectives.",
+        branches: "Acceptance, Understanding, Respect",
+        leaves: "Harmony, Inclusivity, Support"
+    },
+    charity: {
+        title: "Charity",
+        aaDefinition: "The voluntary giving of help, typically in the form of money or time, to those in need within the fellowship.",
+        prayer: "God, inspire me to act charitably. Help me to give generously and support those who are struggling.",
+        reflection: {
+            date: "November 10 – GIVING GENEROUSLY",
+            quote: "Charity begins at home, but should not end there.",
+            reflectionText: "Engaging in charity strengthens the fellowship by addressing the needs of its members. It fosters a sense of community and mutual support, essential for collective recovery. By practicing charity, I contribute to a compassionate and resilient recovery environment."
+        },
+        oxfordDefinition: "The voluntary giving of help, typically in the form of money, to those in need.",
+        pronunciation: "CHAIR-uh-tee",
+        etymology: "Middle English, from Old French charité, from Latin caritas, from carus ‘dear’.",
+        origin: "Middle English.",
+        // **Label Properties**
+        roots: "Compassion, Generosity, Trust",
+        trunk: "Providing help to those in need.",
+        branches: "Generosity, Support, Compassion",
+        leaves: "Community, Resilience, Mutual Aid"
+    },
+    faithfulness: {
+        title: "Faithfulness",
+        aaDefinition: "Remaining loyal and committed to the principles of the program and the support of the fellowship.",
+        prayer: "God, strengthen my faithfulness. Help me to remain dedicated to my recovery and to honor the principles that guide me.",
+        reflection: {
+            date: "November 15 – LOYALTY AND COMMITMENT",
+            quote: "Faithfulness is the substance of things hoped for, the evidence of things not seen.",
+            reflectionText: "Maintaining faithfulness ensures that I stay aligned with the program's principles and the support of the fellowship. It reinforces my commitment to recovery and builds trust within the community. By being faithful, I demonstrate reliability and dedication, essential for sustained sobriety."
+        },
+        oxfordDefinition: "The quality of being faithful; fidelity.",
+        pronunciation: "FAYTH-ful-ness",
+        etymology: "Middle English, from Old French fidelite, from Latin fidelitas, from fidelis ‘faithful’.",
+        origin: "14th century.",
+        // **Label Properties**
+        roots: "Trust, Responsibility, Commitment",
+        trunk: "Staying dedicated to recovery.",
+        branches: "Loyalty, Dedication, Reliability",
+        leaves: "Trust, Integrity, Support"
+    },
+    spiritualAwakening: {
+        title: "Spiritual Awakening",
+        aaDefinition: "A profound realization and connection with a Higher Power, leading to deeper insight and transformation.",
+        prayer: "God, awaken my spirit. Help me to connect deeply with You and to embrace the transformation You offer.",
+        reflection: {
+            date: "November 20 – DEEPENING SPIRITUALITY",
+            quote: "Spiritual awakening is not about religion, but about reconnecting with the essence of life.",
+            reflectionText: "Experiencing a spiritual awakening transforms my perception and enhances my recovery journey. It provides clarity, purpose, and a renewed sense of connection with a Higher Power. This awakening empowers me to navigate challenges with grace and fosters a profound sense of inner peace."
+        },
+        oxfordDefinition: "An awakening of spiritual consciousness, often leading to significant personal transformation.",
+        pronunciation: "SPIR-i-choo-uhl uh-WAY-king",
+        etymology: "Early 19th century, from spiritual + awakening.",
+        origin: "19th century.",
+        // **Label Properties**
+        roots: "Faith, Trust, Hope",
+        trunk: "Connecting with a Higher Power.",
+        branches: "Insight, Transformation, Clarity",
+        leaves: "Peace, Purpose, Empowerment"
+    },
+
+    // ... Continue adding the remaining principles as needed
+};
 
         // Function to display the details of a selected principle
         function showDetails(principleKey) {
             const principle = principles[principleKey];
             const detailsDiv = document.getElementById('details');
 
-            // Update the details section with the principle information
-            detailsDiv.innerHTML = `
+            if (!principle) {
+                detailsDiv.innerHTML = `<h2>Principle Not Found</h2><p>Sorry, the selected principle could not be found.</p>`;
+                return;
+            }
+
+            // Start building the HTML content
+            let htmlContent = `
                 <h2>${principle.title}</h2>
-                <p><strong>Roots:</strong> ${principle.roots}</p>
-                <p><strong>Trunk:</strong> ${principle.trunk}</p>
-                <p><strong>Branches:</strong> ${principle.branches}</p>
-                <p><strong>Leaves:</strong> ${principle.leaves}</p>
+                
+                <h3>A.A. Definition:</h3>
+                <p>${principle.aaDefinition}</p>
+                
+                <h3>Prayer:</h3>
+                <p>${principle.prayer}</p>
             `;
+
+            // Add Reflection if available
+            if (principle.reflection) {
+                htmlContent += `
+                    <h3>Reflection (${principle.reflection.date}):</h3>
+                    <p><em>"${principle.reflection.quote}"</em></p>
+                    <p>${principle.reflection.reflectionText}</p>
+                `;
+            }
+
+            // Add Oxford Definition and other details
+            htmlContent += `
+                <h3>Oxford Definition:</h3>
+                <p>${principle.oxfordDefinition}</p>
+                <p><strong>Pronunciation:</strong> ${principle.pronunciation}</p>
+                <p><strong>Etymology:</strong> ${principle.etymology}</p>
+                <p><strong>Origin:</strong> ${principle.origin}</p>
+            `;
+
+            // Update the details section with the principle information
+            detailsDiv.innerHTML = htmlContent;
 
             // Add labels to the tree
             displayLabels(principle);
+
+            // Optional: Scroll to the details section
+            detailsDiv.scrollIntoView({ behavior: 'smooth' });
         }
 
         // Function to display labels on the tree
@@ -570,34 +1013,30 @@
                 label.classList.add('label');
                 label.style.left = `${xPercent}%`;
                 label.style.top = `${yPercent}%`;
-                label.textContent = text;
+                label.innerHTML = text; // Use innerHTML to allow HTML tags in quotes
                 labelsContainer.appendChild(label);
             }
 
-            // Add roots labels
-            const roots = principle.roots.split(',').map(item => item.trim());
-            roots.forEach((root, index) => {
-                const pos = positions.roots[index] || {x: 50, y: 80}; // default position
-                createLabel(root, pos.x, pos.y);
-            });
+            // Function to safely add labels if properties exist
+            function addLabels(category, items) {
+                if (!items) return;
+                items.forEach((item, index) => {
+                    const pos = positions[category][index] || {x: 50, y: 50}; // default position
+                    createLabel(item, pos.x, pos.y);
+                });
+            }
 
-            // Add trunk label
-            const trunk = principle.trunk;
-            createLabel(trunk, 50, 60);
+            // Split the label properties into arrays
+            const roots = principle.roots ? principle.roots.split(',').map(item => item.trim()) : [];
+            const trunk = principle.trunk ? [principle.trunk] : [];
+            const branches = principle.branches ? principle.branches.split(',').map(item => item.trim()) : [];
+            const leaves = principle.leaves ? principle.leaves.split(',').map(item => item.trim()) : [];
 
-            // Add branches labels
-            const branches = principle.branches.split(',').map(item => item.trim());
-            branches.forEach((branch, index) => {
-                const pos = positions.branches[index] || {x: 50, y: 40}; // default position
-                createLabel(branch, pos.x, pos.y);
-            });
-
-            // Add leaves labels
-            const leaves = principle.leaves.split(',').map(item => item.trim());
-            leaves.forEach((leaf, index) => {
-                const pos = positions.leaves[index] || {x: 50, y: 20}; // default position
-                createLabel(leaf, pos.x, pos.y);
-            });
+            // Add labels for each category
+            addLabels('roots', roots);
+            addLabels('trunk', trunk);
+            addLabels('branches', branches);
+            addLabels('leaves', leaves);
         }
 
         // Function to toggle the mobile menu
