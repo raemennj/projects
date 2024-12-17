@@ -15,21 +15,19 @@
 
     body {
       font-family: Arial, sans-serif;
-      background-color: #32cd32; /* Bright green background */
-      color: #333;
+      background-color: #2e7d32; /* Dark green background */
+      color: #276c29;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       min-height: 100vh;
       padding: 10px; /* Reduced padding for smaller screens */
-		padding-top: 0;
     }
 
     .container {
-      background-color: #f8f8f0; /* Off-white background */
+      background-color: ghostwhite; /* Off-white background */
       padding: 15px; /* Reduced padding */
-		padding-top: 0;
       border-radius: 10px;
       width: 100%;
       max-width: 400px; /* Adjusted for smaller screens */
@@ -49,6 +47,18 @@
       margin-bottom: 10px;
     }
 
+    /* ===== BUTTON GROUP ===== */
+    .button-group {
+      display: flex;
+      gap: 10px; /* Space between buttons */
+      width: 100%; /* Ensure buttons take full width */
+      margin-bottom: 15px; /* Space below the button group */
+    }
+
+    .button-group button {
+      flex: 1; /* Make both buttons take equal space */
+    }
+
     /* ===== MODE TOGGLE BUTTON ===== */
     .mode-toggle {
       background: #2e7d32;
@@ -57,14 +67,30 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-bottom: 15px;
       font-size: 0.9rem;
       transition: background 0.3s;
-      width: 100%; /* Full width on small screens */
+      width: 100%; /* Full width within the flex item */
     }
 
     .mode-toggle:hover {
       background: #276c29;
+    }
+
+    /* ===== CLEAR ALL BUTTON ===== */
+    .clear-all-btn {
+      background: #2e7d32; /* Red color to indicate clearing */
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%; /* Full width within the flex item */
+    }
+
+    .clear-all-btn:hover {
+      background: #276c29; /* Darker red on hover */
     }
 
     /* ===== COOKIE GRID ===== */
@@ -97,6 +123,35 @@
     }
 
     .color-rectangle {
+      width: 100%;
+      height: 60px;
+      background-color: #ccc;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Removed static text color and text-shadow */
+      /* color: limegreen; */
+      /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); */
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+	     .color-rectangle-two {
+      width: 100%;
+      height: 30px;
+      background-color: #ccc;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Removed static text color and text-shadow */
+      /* color: limegreen; */
+      /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); */
+      font-weight: bold;
+      font-size: 1.5rem;
+    } {
       width: 100%;
       height: 60px;
       background-color: #ccc;
@@ -176,6 +231,16 @@
       width: 90%;
       position: relative;
     }
+ 
+	.modal-content ul {
+	  list-style-type: none;
+	  padding-left: 0;
+	  margin-left: 0;
+	}
+
+	.modal-content ul li {
+	  margin-top: 8px; 
+	}
 
     .modal.show {
       display: flex;
@@ -207,6 +272,11 @@
         height: 50px;
         font-size: 0.8rem;
       }
+		
+      .color-rectangle-two {
+        height: 30px;
+        font-size: 1.5rem;
+      }
 
       .cookie-name {
         font-size: 0.9rem;
@@ -217,10 +287,7 @@
       }
 
       .quantity-display {
-		  width: 20px;
-        background-color: blanchedalmond;
-        color: green;
-        font-size: 0.8rem;
+        font-size: 1.3rem;
       }
     }
   </style>
@@ -229,7 +296,12 @@
   <div class="container">
     <h1>Thank You!</h1>
     <div class="total">Your Total is $<span id="totalCost">0.00</span></div>
-    <button class="mode-toggle" id="modeButton">Switch to Subtract Mode</button>
+    
+    <!-- New Button Group -->
+    <div class="button-group">
+      <button class="clear-all-btn" id="clearAllButton">Clear All</button>
+      <button class="mode-toggle" id="modeButton">Subtract Mode</button>
+    </div>
     
     <div class="cookie-grid" id="cookieGrid"></div>
       
@@ -241,11 +313,12 @@
     <div class="modal-content">
       <span class="close-btn" id="closeInstructions">&times;</span>
       <h2>Instructions</h2>
-      <p>Use the "Switch to Subtract Mode" button to toggle between adding and subtracting cookies.</p>
+      <p>Use the "Subtract Mode" button to toggle between adding and subtracting cookies.</p>
       <ul>
         <li><strong>Add Mode:</strong> Click on a cookie card to add it to the total.</li>
         <li><strong>Subtract Mode:</strong> Click on a cookie card to remove it from the total.</li>
         <li>Items with zero quantity will be unavailable in subtract mode.</li>
+        <li><strong>Clear All:</strong> Remove all from the total to start over.</li>
       </ul>
     </div>
   </div>
@@ -255,9 +328,9 @@
     const cookies = [
       { name: "Adventurefuls", price: 6, color: "#cfc9a2", quantity: 0 },
       { name: "Thin Mints", price: 6, color: "#00a850", quantity: 0 },
-      { name: "Samoas", price: 6, color: "#6e2a8d", quantity: 0 },
-      { name: "Tagalongs", price: 6, color: "#ee2a24", quantity: 0 },
-      { name: "Do-si-dos", price: 6, color: "#f8971d", quantity: 0 },
+      { name: "Carmel Delights", price: 6, color: "#6e2a8d", quantity: 0 },
+      { name: "Peanut Butter Patties", price: 6, color: "#ee2a24", quantity: 0 },
+      { name: "Peanut Butter Sandwich", price: 6, color: "#f8971d", quantity: 0 },
       { name: "Trefoils", price: 6, color: "#0081c6", quantity: 0 },
       { name: "Lemon-Ups", price: 6, color: "#ffdd00", quantity: 0 },
       { name: "S'mores", price: 7, color: "#90492d", quantity: 0 },
@@ -270,6 +343,7 @@
     const instructionsBtn = document.getElementById("showInstructions");
     const instructionsModal = document.getElementById("instructionsModal");
     const closeInstructions = document.getElementById("closeInstructions");
+    const clearAllButton = document.getElementById("clearAllButton"); // New Clear All Button
 
     let totalCost = 0;
     let isAddMode = true; // Starts in Add Mode
@@ -404,12 +478,12 @@
       card.style.backgroundColor = cookie.color;
 
       // Determine the darkened color for the text (e.g., darken by 30%)
-      const textColor = darkenColor(cookie.color, 30);
+      const textColor = darkenColor(cookie.color, 55);
 
       // Set the text color dynamically using inline style
       card.innerHTML = `
         <div class="color-rectangle" style="color: ${textColor};">${cookie.name}</div>
-        <div class="quantity-display"><span id="quantity-${index}">0</span></div>
+        <div class="color-rectangle-two"style="color: ${textColor};"><span id="quantity-${index}">0</span></div>
       `;
 
       card.addEventListener("click", () => handleCardClick(index));
@@ -420,7 +494,21 @@
     // ===== MODE TOGGLE BUTTON EVENT =====
     modeButton.addEventListener("click", () => {
       isAddMode = !isAddMode;
-      modeButton.textContent = isAddMode ? "Switch to Subtract Mode" : "Switch to Add Mode";
+      modeButton.textContent = isAddMode ? "Subtract Mode" : "Add Mode";
+      updateCardStates();
+    });
+
+    // ===== CLEAR ALL BUTTON EVENT =====
+    clearAllButton.addEventListener("click", () => {
+      // Reset all cookie quantities to zero
+      cookies.forEach(cookie => {
+        cookie.quantity = 0;
+      });
+
+      // Update the total cost
+      updateTotalCost();
+
+      // Update the card states
       updateCardStates();
     });
 
