@@ -78,7 +78,7 @@
 
     /* ===== CLEAR ALL BUTTON ===== */
     .clear-all-btn {
-      background: #2e7d32; /* Red color to indicate clearing */
+      background: #2e7d32; /* Green color to indicate clearing */
       color: white;
       padding: 8px 12px;
       border: none;
@@ -90,7 +90,7 @@
     }
 
     .clear-all-btn:hover {
-      background: #276c29; /* Darker red on hover */
+      background: #276c29; /* Darker green on hover */
     }
 
     /* ===== COOKIE GRID ===== */
@@ -131,13 +131,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Removed static text color and text-shadow */
-      /* color: limegreen; */
-      /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); */
       font-weight: bold;
       font-size: 0.9rem;
     }
-	     .color-rectangle-two {
+    .color-rectangle-two {
       width: 100%;
       height: 30px;
       background-color: #ccc;
@@ -146,25 +143,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Removed static text color and text-shadow */
-      /* color: limegreen; */
-      /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); */
       font-weight: bold;
       font-size: 1.5rem;
-    } {
-      width: 100%;
-      height: 60px;
-      background-color: #ccc;
-      margin-bottom: 5px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* Removed static text color and text-shadow */
-      /* color: limegreen; */
-      /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); */
-      font-weight: bold;
-      font-size: 0.9rem;
     }
 
     .cookie-name {
@@ -176,6 +156,7 @@
     .cookie-price {
       font-size: 0.85rem;
       color: #555;
+
       margin-bottom: 5px;
     }
 
@@ -231,16 +212,16 @@
       width: 90%;
       position: relative;
     }
- 
-	.modal-content ul {
-	  list-style-type: none;
-	  padding-left: 0;
-	  margin-left: 0;
-	}
 
-	.modal-content ul li {
-	  margin-top: 8px; 
-	}
+    .modal-content ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-left: 0;
+    }
+
+    .modal-content ul li {
+      margin-top: 8px; 
+    }
 
     .modal.show {
       display: flex;
@@ -254,6 +235,14 @@
       right: 12px;
       font-size: 1.2rem;
       font-weight: bold;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      margin-top: 20px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      text-align: center;
     }
 
     /* ===== RESPONSIVE DESIGN ===== */
@@ -272,7 +261,7 @@
         height: 50px;
         font-size: 0.8rem;
       }
-		
+      
       .color-rectangle-two {
         height: 30px;
         font-size: 1.5rem;
@@ -307,6 +296,11 @@
       
     <button class="instructions-btn" id="showInstructions">Instructions</button>
   </div>
+
+  <!-- Footer -->
+  <footer>
+    &copy; Girl Scout Troop 1565
+  </footer>
 
   <!-- Instructions Modal -->
   <div class="modal" id="instructionsModal">
@@ -477,13 +471,13 @@
       card.id = `cookie-card-${index}`;
       card.style.backgroundColor = cookie.color;
 
-      // Determine the darkened color for the text (e.g., darken by 30%)
+      // Determine the darkened color for the text (e.g., darken by 55%)
       const textColor = darkenColor(cookie.color, 55);
 
       // Set the text color dynamically using inline style
       card.innerHTML = `
         <div class="color-rectangle" style="color: ${textColor};">${cookie.name}</div>
-        <div class="color-rectangle-two"style="color: ${textColor};"><span id="quantity-${index}">0</span></div>
+        <div class="color-rectangle-two" style="color: ${textColor};"><span id="quantity-${index}">0</span></div>
       `;
 
       card.addEventListener("click", () => handleCardClick(index));
@@ -507,6 +501,12 @@
 
       // Update the total cost
       updateTotalCost();
+
+      // If currently in Subtract Mode, reset to Add Mode
+      if (!isAddMode) {
+        isAddMode = true;
+        modeButton.textContent = "Subtract Mode"; // Update the button text accordingly
+      }
 
       // Update the card states
       updateCardStates();
