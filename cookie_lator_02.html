@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Girl Scout Cookie Sales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Optional: Remove the Google Fonts link for Arial as it's a system font -->
+  <style>
+    /* ===== BASE STYLES ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #2e7d32; /* Dark green background */
+      color: #276c29;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 10px; /* Reduced padding for smaller screens */
+    }
+
+    .container {
+      background-color: ghostwhite; /* Off-white background */
+      padding: 15px; /* Reduced padding */
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px; /* Increased max-width for more features */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    /* ===== HEADER ===== */
+    h1 {
+      margin-bottom: 10px;
+      font-size: 1.5rem; /* Adjusted font size */
+    }
+
+    .total {
+      font-size: 2.5rem; /* Slightly increased font size */
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    /* ===== BUTTON GROUPS ===== */
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px; /* Space between buttons */
+      width: 100%; /* Ensure buttons take full width */
+      margin-bottom: 15px; /* Space below the button group */
+    }
+
+    .button-group button {
+      flex: 1; /* Make buttons take equal space */
+      min-width: 100px;
+    }
+
+    /* ===== MODE TOGGLE BUTTON ===== */
+    .mode-toggle {
+      background: #2e7d32;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%; /* Full width within the flex item */
+    }
+
+    .mode-toggle:hover {
+      background: #276c29;
+    }
+
+    /* ===== CLEAR ALL BUTTON ===== */
+    .clear-all-btn {
+      background: #2e7d32; /* Green color to indicate clearing */
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%; /* Full width within the flex item */
+    }
+
+    .clear-all-btn:hover {
+      background: #276c29; /* Darker green on hover */
+    }
+
+    /* ===== COMPLETE SALE BUTTON ===== */
+    .complete-sale-btn {
+      background: #1565c0; /* Blue color for sale */
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%;
+    }
+
+    .complete-sale-btn:hover {
+      background: #0d47a1;
+    }
+
+    /* ===== RESET PROFITS BUTTON ===== */
+    .reset-profits-btn {
+      background: #f57c00; /* Orange color for resetting profits */
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%;
+    }
+
+    .reset-profits-btn:hover {
+      background: #ef6c00;
+    }
+
+    /* ===== SALES HISTORY BUTTON ===== */
+    .sales-history-btn {
+      background: #6a1b9a; /* Purple color */
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%;
+    }
+
+    .sales-history-btn:hover {
+      background: #4a148c;
+    }
+
+    /* ===== COOKIE GRID ===== */
+    .cookie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .cookie-card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 140px; /* Increased height for inventory display */
+    }
+
+    .cookie-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    }
+
+    .color-rectangle {
+      width: 100%;
+      height: 50px;
+      background-color: ghostwhite;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .color-rectangle-two {
+      width: 100%;
+      height: 30px;
+      background-color: ghostwhite;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    .cookie-name {
+      font-size: 1rem;
+      margin-bottom: 3px;
+      text-align: center;
+    }
+
+    .cookie-price {
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 5px;
+    }
+
+    .quantity-display {
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+
+    .inventory-display {
+      position: absolute;
+      top: -18px;
+      right: 10px;
+      background-color: rgba(0,0,0,0.1);
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.8rem;
+    }
+
+    /* ===== DISABLED CARD ===== */
+    .cookie-card.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ===== INSTRUCTIONS BUTTON ===== */
+    .instructions-btn {
+      background: #2e7d32;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%; /* Full width on small screens */
+    }
+
+    .instructions-btn:hover {
+      background: #276c29;
+    }
+
+    /* ===== MODAL STYLES ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: left;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      overflow-y: auto;
+      max-height: 90vh;
+    }
+
+    .modal-content ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-left: 0;
+    }
+
+    .modal-content ul li {
+      margin-top: 8px; 
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .close-btn {
+      color: #333;
+      cursor: pointer;
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    /* ===== INVENTORY MODAL ===== */
+    .inventory-modal .modal-content {
+      max-width: 600px;
+    }
+
+    .inventory-list {
+      max-height: 350px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+
+    .inventory-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .inventory-item input {
+      width: 60px;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .inventory-item button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .inventory-item button:hover {
+      background: #276c29;
+    }
+
+    /* ===== SALES HISTORY MODAL ===== */
+    .sales-history-modal .modal-content {
+      max-width: 600px;
+    }
+
+    .sales-history-list {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+
+    .sales-history-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+
+    .sales-history-item ul {
+      list-style-type: disc;
+      margin-left: 20px;
+    }
+
+    /* ===== CLEAR HISTORY BUTTON ===== */
+    .clear-history-btn {
+      background: #d32f2f; /* Red color to indicate clearing history */
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .clear-history-btn:hover {
+      background: #b71c1c;
+    }
+
+    /* ===== FEEDBACK MESSAGE ===== */
+    .feedback {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #d32f2f;
+    }
+
+    /* ===== PROFIT DISPLAY ===== */
+    .profit-display {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      margin-top: 20px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 480px) {
+      .cookie-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3x3 grid */
+        gap: 8px;
+      }
+
+      .cookie-card {
+        height: 120px; /* Adjusted height */
+        padding: 5px;
+      }
+
+      .color-rectangle {
+        height: 40px;
+        font-size: 0.8rem;
+      }
+      
+      .color-rectangle-two {
+        height: 25px;
+        font-size: 1.2rem;
+      }
+
+      .cookie-name {
+        font-size: 0.9rem;
+      }
+
+      .cookie-price {
+        font-size: 0.8rem;
+      }
+
+      .quantity-display {
+        font-size: 1rem;
+      }
+
+      .inventory-display {
+        font-size: 0.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Thank You!</h1>
+    <div class="total">Your Total is $<span id="totalCost">0.00</span></div>
+    <div class="profit-display" id="profitTotal">Profit: $0.00</div>
+    
+    <!-- Button Groups -->
+    <div class="button-group">
+      <button class="clear-all-btn" id="clearAllButton">Clear All</button>
+      <button class="mode-toggle" id="modeButton">Switch to Subtract Mode</button>
+    </div>
+    
+    <div class="button-group">
+      <button class="complete-sale-btn" id="completeSaleButton">Complete Sale</button>
+      <button class="reset-profits-btn" id="resetProfitsButton">Reset Profits</button>
+    </div>
+
+    <div class="cookie-grid" id="cookieGrid"></div>
+      
+    <button class="instructions-btn" id="showInstructions">Instructions</button>
+    <button class="instructions-btn" id="showInventory">Manage Inventory</button>
+    <button class="sales-history-btn" id="showSalesHistory">Sales History</button>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    &copy; Girl Scout Troop 1565
+  </footer>
+
+  <!-- Instructions Modal -->
+  <div class="modal" id="instructionsModal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeInstructions">&times;</span>
+      <h2>Instructions</h2>
+      <p>Use the "Switch to Subtract Mode" button to toggle between adding and subtracting cookies.</p>
+      <ul>
+        <li><strong>Add Mode:</strong> Click on a cookie card to add it to the total.</li>
+        <li><strong>Subtract Mode:</strong> Click on a cookie card to remove it from the total.</li>
+        <li>Items with zero quantity will be unavailable in subtract mode.</li>
+        <li><strong>Clear All:</strong> Remove all from the total to start over.</li>
+        <li><strong>Complete Sale:</strong> Finalize the sale by updating inventory and profit.</li>
+        <li><strong>Reset Profits:</strong> Reset the total profit to zero.</li>
+        <li><strong>Sales History:</strong> View a log of all completed sales.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Inventory Modal -->
+  <div class="modal inventory-modal" id="inventoryModal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeInventory">&times;</span>
+      <h2>Update Inventory</h2>
+      <div class="inventory-list" id="inventoryList">
+        <!-- Inventory items will be dynamically inserted here -->
+      </div>
+      <button class="instructions-btn" id="saveInventory">Save Inventory</button>
+    </div>
+  </div>
+
+  <!-- Sales History Modal -->
+  <div class="modal sales-history-modal" id="salesHistoryModal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeSalesHistory">&times;</span>
+      <h2>Sales History</h2>
+      <div class="sales-history-list" id="salesHistoryList">
+        <!-- Sales history items will be dynamically inserted here -->
+      </div>
+      <button class="clear-history-btn" id="clearSalesHistoryButton">Clear History</button>
+    </div>
+  </div>
+
+  <!-- Feedback Message -->
+  <div class="feedback" id="feedbackMessage"></div>
+
+  <script>
+    // ===== COOKIE DATA =====
+    let cookies = [
+      { name: "Adventurefuls", price: 6, color: "#cfc9a2", quantity: 0, inventory: 10 },
+      { name: "Thin Mints", price: 6, color: "#00a850", quantity: 0, inventory: 10 },
+      { name: "Carmel Delights", price: 6, color: "#6e2a8d", quantity: 0, inventory: 10 },
+      { name: "Peanut Butter Patties", price: 6, color: "#ee2a24", quantity: 0, inventory: 10 },
+      { name: "Peanut Butter Sandwich", price: 6, color: "#f8971d", quantity: 0, inventory: 10 },
+      { name: "Trefoils", price: 6, color: "#0081c6", quantity: 0, inventory: 10 },
+      { name: "Lemonades", price: 6, color: "#ffdd00", quantity: 0, inventory: 10 },
+      { name: "S'mores", price: 7, color: "#90492d", quantity: 0, inventory: 10 },
+      { name: "Toffee-tastic", price: 7, color: "#00b2ba", quantity: 0, inventory: 10 }
+    ];
+
+    // ===== SALES HISTORY =====
+    let salesHistory = [];
+
+    const cookieGrid = document.getElementById("cookieGrid");
+    const totalCostElem = document.getElementById("totalCost");
+    const modeButton = document.getElementById("modeButton");
+    const instructionsBtn = document.getElementById("showInstructions");
+    const instructionsModal = document.getElementById("instructionsModal");
+    const closeInstructions = document.getElementById("closeInstructions");
+    const clearAllButton = document.getElementById("clearAllButton");
+    const completeSaleButton = document.getElementById("completeSaleButton");
+    const resetProfitsButton = document.getElementById("resetProfitsButton");
+    const feedbackMessage = document.getElementById("feedbackMessage");
+    const profitTotalElem = document.getElementById("profitTotal");
+    const inventoryModal = document.getElementById("inventoryModal");
+    const showInventoryButton = document.getElementById("showInventory");
+    const closeInventory = document.getElementById("closeInventory");
+    const inventoryList = document.getElementById("inventoryList");
+    const saveInventoryButton = document.getElementById("saveInventory");
+    const showSalesHistoryButton = document.getElementById("showSalesHistory");
+    const salesHistoryModal = document.getElementById("salesHistoryModal");
+    const closeSalesHistory = document.getElementById("closeSalesHistory");
+    const salesHistoryList = document.getElementById("salesHistoryList");
+    const clearSalesHistoryButton = document.getElementById("clearSalesHistoryButton");
+
+    let totalCost = 0;
+    let totalProfit = 0;
+    let isAddMode = true; // Starts in Add Mode
+
+    // ===== FUNCTION TO DARKEN A HEX COLOR USING HSL =====
+    /**
+     * Darkens a HEX color by a specified percentage using HSL.
+     * @param {string} hex - The HEX color code (e.g., "#ffcc00").
+     * @param {number} percent - The percentage to darken the color (0-100).
+     * @returns {string} - The darkened HEX color code.
+     */
+    function darkenColor(hex, percent) {
+      // Convert HEX to HSL
+      let { h, s, l } = hexToHSL(hex);
+
+      // Decrease the lightness by the specified percentage
+      l = l - (percent / 100) * l;
+      l = l < 0 ? 0 : l;
+
+      // Convert HSL back to HEX
+      return hslToHex(h, s, l);
+    }
+
+    /**
+     * Converts a HEX color to HSL.
+     * @param {string} hex - The HEX color code.
+     * @returns {object} - An object containing h, s, and l.
+     */
+    function hexToHSL(hex) {
+      // Remove the hash symbol if present
+      hex = hex.replace('#', '');
+
+      // Parse the r, g, b values
+      let r = parseInt(hex.substring(0,2), 16) / 255;
+      let g = parseInt(hex.substring(2,4), 16) / 255;
+      let b = parseInt(hex.substring(4,6), 16) / 255;
+
+      let max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if(max === min){
+        h = s = 0; // achromatic
+      } else {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max){
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+          case g: h = ((b - r) / d + 2); break;
+          case b: h = ((r - g) / d + 4); break;
+        }
+        h /= 6;
+      }
+
+      return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
+    /**
+     * Converts HSL color values to HEX.
+     * @param {number} h - Hue (0-360).
+     * @param {number} s - Saturation (0-100).
+     * @param {number} l - Lightness (0-100).
+     * @returns {string} - The HEX color code.
+     */
+    function hslToHex(h, s, l) {
+      s /= 100;
+      l /= 100;
+
+      let c = (1 - Math.abs(2*l - 1)) * s;
+      let x = c * (1 - Math.abs((h / 60) % 2 - 1));
+      let m = l - c/2;
+      let r_, g_, b_;
+
+      if (0 <= h && h < 60) {
+        r_ = c; g_ = x; b_ = 0;
+      } else if (60 <= h && h < 120) {
+        r_ = x; g_ = c; b_ = 0;
+      } else if (120 <= h && h < 180) {
+        r_ = 0; g_ = c; b_ = x;
+      } else if (180 <= h && h < 240) {
+        r_ = 0; g_ = x; b_ = c;
+      } else if (240 <= h && h < 300) {
+        r_ = x; g_ = 0; b_ = c;
+      } else {
+        r_ = c; g_ = 0; b_ = x;
+      }
+
+      let r = Math.round((r_ + m) * 255).toString(16).padStart(2, '0');
+      let g = Math.round((g_ + m) * 255).toString(16).padStart(2, '0');
+      let b = Math.round((b_ + m) * 255).toString(16).padStart(2, '0');
+
+      return `#${r}${g}${b}`;
+    }
+
+    // ===== FUNCTION TO UPDATE TOTAL COST =====
+    function updateTotalCost() {
+      totalCost = cookies.reduce((acc, cookie) => acc + (cookie.price * cookie.quantity), 0);
+      totalCostElem.textContent = totalCost.toFixed(2);
+      if (!isAddMode) {
+        // In Subtract Mode, hide the total
+        document.querySelector('.total').style.display = 'none';
+      } else {
+        document.querySelector('.total').style.display = 'block';
+      }
+    }
+
+    // ===== FUNCTION TO UPDATE PROFIT =====
+    function updateProfit() {
+      profitTotalElem.textContent = `Profit: $${totalProfit.toFixed(2)}`;
+    }
+
+    // ===== FUNCTION TO UPDATE CARD STATES =====
+    function updateCardStates() {
+      cookies.forEach((cookie, index) => {
+        const card = document.getElementById(`cookie-card-${index}`);
+        const quantityDisplay = document.getElementById(`quantity-${index}`);
+        const inventoryDisplay = document.getElementById(`inventory-${index}`);
+        if (!isAddMode && cookie.quantity === 0) {
+          card.classList.add("disabled");
+        } else {
+          card.classList.remove("disabled");
+        }
+        quantityDisplay.textContent = cookie.quantity;
+        inventoryDisplay.textContent = `Count: ${cookie.inventory}`;
+        if (cookie.inventory === 0) {
+          card.classList.add("disabled");
+        }
+      });
+    }
+
+    // ===== FUNCTION TO HANDLE CARD CLICK =====
+    function handleCardClick(index) {
+      if (isAddMode) {
+        if (cookies[index].quantity < cookies[index].inventory) {
+          cookies[index].quantity += 1;
+          updateTotalCost();
+          updateCardStates();
+        } else {
+          feedbackMessage.textContent = `No more ${cookies[index].name} available!`;
+          setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        }
+      } else {
+        if (cookies[index].quantity > 0) {
+          cookies[index].quantity -= 1;
+          updateTotalCost();
+          updateCardStates();
+        }
+      }
+      saveToLocalStorage();
+    }
+
+    // ===== FUNCTION TO INITIALIZE COOKIE CARDS =====
+    function initializeCookieCards() {
+      cookieGrid.innerHTML = ''; // Clear existing cards
+      cookies.forEach((cookie, index) => {
+        const card = document.createElement("div");
+        card.classList.add("cookie-card");
+        card.id = `cookie-card-${index}`;
+        card.style.backgroundColor = cookie.color;
+
+        // Determine the darkened color for the text (e.g., darken by 55%)
+        const textColor = darkenColor(cookie.color, 55);
+
+        // Set the text color dynamically using inline style
+        card.innerHTML = `
+          <div class="color-rectangle" style="color: ${textColor};">${cookie.name}</div>
+          <div class="color-rectangle-two" style="color: ${textColor};"><span id="quantity-${index}">0</span></div>
+          <div class="inventory-display" id="inventory-${index}">Stock: ${cookie.inventory}</div>
+        `;
+
+        card.addEventListener("click", () => handleCardClick(index));
+
+        cookieGrid.appendChild(card);
+      });
+    }
+
+    // ===== MODE TOGGLE BUTTON EVENT =====
+    modeButton.addEventListener("click", () => {
+      isAddMode = !isAddMode;
+      modeButton.textContent = isAddMode ? "Switch to Subtract Mode" : "Switch to Add Mode";
+      feedbackMessage.textContent = isAddMode ? "Switched to Add Mode" : "Switched to Subtract Mode";
+      setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+      updateCardStates();
+      updateTotalCost();
+      saveToLocalStorage();
+    });
+
+    // ===== CLEAR ALL BUTTON EVENT =====
+    clearAllButton.addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear all selections?")) {
+        cookies.forEach(cookie => {
+          cookie.quantity = 0;
+        });
+        updateTotalCost();
+        updateCardStates();
+        feedbackMessage.textContent = "All selections cleared.";
+        setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        saveToLocalStorage();
+      }
+    });
+
+    // ===== COMPLETE SALE BUTTON EVENT =====
+    completeSaleButton.addEventListener("click", () => {
+      if (totalCost === 0) {
+        feedbackMessage.textContent = "No items to complete sale.";
+        setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        return;
+      }
+
+      if (confirm("Are you sure you want to complete the sale?")) {
+        // Create a sale record
+        let saleDetails = {};
+        cookies.forEach(cookie => {
+          if (cookie.quantity > 0) {
+            saleDetails[cookie.name] = cookie.quantity;
+          }
+        });
+
+        // Update inventory and profit
+        cookies.forEach(cookie => {
+          cookie.inventory -= cookie.quantity;
+          if (cookie.inventory < 0) cookie.inventory = 0;
+          totalProfit += cookie.price * cookie.quantity;
+          cookie.quantity = 0;
+        });
+
+        // Add to sales history
+        const saleRecord = {
+          timestamp: new Date().toLocaleString(),
+          items: { ...saleDetails },
+          total: totalCost.toFixed(2),
+          profit: (totalCost).toFixed(2) // Assuming profit equals total sales for simplicity
+        };
+        salesHistory.push(saleRecord);
+        updateSalesHistoryUI();
+
+        updateTotalCost();
+        updateProfit();
+        updateCardStates();
+        feedbackMessage.textContent = "Sale completed successfully.";
+        setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        saveToLocalStorage();
+      }
+    });
+
+    // ===== RESET PROFITS BUTTON EVENT =====
+    resetProfitsButton.addEventListener("click", () => {
+      if (confirm("Are you sure you want to reset total profits?")) {
+        totalProfit = 0;
+        updateProfit();
+        feedbackMessage.textContent = "Total profits have been reset.";
+        setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        saveToLocalStorage();
+      }
+    });
+
+    // ===== INSTRUCTIONS MODAL CONTROL =====
+    instructionsBtn.addEventListener("click", () => {
+      instructionsModal.classList.add("show");
+    });
+
+    closeInstructions.addEventListener("click", () => {
+      instructionsModal.classList.remove("show");
+    });
+
+    // ===== INVENTORY MODAL CONTROL =====
+    showInventoryButton.addEventListener("click", () => {
+      populateInventoryModal();
+      inventoryModal.classList.add("show");
+    });
+
+    closeInventory.addEventListener("click", () => {
+      inventoryModal.classList.remove("show");
+    });
+
+    // Populate Inventory Modal
+    function populateInventoryModal() {
+      inventoryList.innerHTML = '';
+      cookies.forEach((cookie, index) => {
+        const item = document.createElement("div");
+        item.classList.add("inventory-item");
+        item.innerHTML = `
+          <span>${cookie.name}</span>
+          <input type="number" id="inventory-input-${index}" value="${cookie.inventory}" min="0">
+        `;
+        inventoryList.appendChild(item);
+      });
+    }
+
+    // Save Inventory Changes
+    saveInventoryButton.addEventListener("click", () => {
+      let changesMade = false;
+      cookies.forEach((cookie, index) => {
+        const input = document.getElementById(`inventory-input-${index}`);
+        const newInventory = parseInt(input.value, 10);
+        if (!isNaN(newInventory) && newInventory >= 0) {
+          if (newInventory !== cookie.inventory) {
+            cookie.inventory = newInventory;
+            changesMade = true;
+          }
+        }
+      });
+      if (changesMade) {
+        updateCardStates();
+        updateTotalCost();
+        feedbackMessage.textContent = "Inventory updated successfully.";
+        setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        saveToLocalStorage();
+      } else {
+        feedbackMessage.textContent = "No changes made to inventory.";
+        setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+      }
+      inventoryModal.classList.remove("show");
+    });
+
+    // ===== SALES HISTORY MODAL CONTROL =====
+    showSalesHistoryButton.addEventListener("click", () => {
+      populateSalesHistoryModal();
+      salesHistoryModal.classList.add("show");
+    });
+
+    closeSalesHistory.addEventListener("click", () => {
+      salesHistoryModal.classList.remove("show");
+    });
+
+    // Populate Sales History Modal
+    function populateSalesHistoryModal() {
+      salesHistoryList.innerHTML = '';
+      if (salesHistory.length === 0) {
+        salesHistoryList.innerHTML = '<p>No sales have been completed yet.</p>';
+        return;
+      }
+      salesHistory.forEach((sale, index) => {
+        const saleItem = document.createElement("div");
+        saleItem.classList.add("sales-history-item");
+        saleItem.innerHTML = `
+          <p><strong>Sale #${index + 1}</strong></p>
+          <p><em>${sale.timestamp}</em></p>
+          <ul>
+            ${Object.keys(sale.items).map(cookieName => `<li>${cookieName}: ${sale.items[cookieName]}</li>`).join('')}
+          </ul>
+          <p><strong>Total: $${sale.total}</strong></p>
+          <p><strong>Profit: $${sale.profit}</strong></p>
+        `;
+        salesHistoryList.appendChild(saleItem);
+      });
+    }
+
+    // ===== CLEAR SALES HISTORY BUTTON EVENT =====
+    clearSalesHistoryButton.addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear the sales history?")) {
+        salesHistory = [];
+        updateSalesHistoryUI();
+        feedbackMessage.textContent = "Sales history has been cleared.";
+        setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        saveToLocalStorage();
+      }
+    });
+
+    // ===== FUNCTION TO CLOSE MODALS BY CLICKING OUTSIDE =====
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+      modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+          modal.classList.remove('show');
+          // No QR codes to clear since payment feature is removed
+        }
+      });
+    });
+
+    // ===== FUNCTION TO SAVE DATA TO LOCAL STORAGE =====
+    function saveToLocalStorage() {
+      localStorage.setItem("cookieInventory", JSON.stringify(cookies.map(cookie => ({...cookie}))));
+      localStorage.setItem("isAddMode", isAddMode);
+      localStorage.setItem("totalProfit", totalProfit);
+      localStorage.setItem("salesHistory", JSON.stringify(salesHistory));
+    }
+
+    // ===== FUNCTION TO LOAD DATA FROM LOCAL STORAGE =====
+    function loadFromLocalStorage() {
+      const savedInventory = JSON.parse(localStorage.getItem("cookieInventory"));
+      if (savedInventory) {
+        cookies = savedInventory;
+      }
+      const savedMode = localStorage.getItem("isAddMode");
+      if (savedMode !== null) {
+        isAddMode = savedMode === "true";
+        modeButton.textContent = isAddMode ? "Switch to Subtract Mode" : "Switch to Add Mode";
+      }
+      const savedProfit = parseFloat(localStorage.getItem("totalProfit"));
+      if (!isNaN(savedProfit)) {
+        totalProfit = savedProfit;
+      }
+      const savedSalesHistory = JSON.parse(localStorage.getItem("salesHistory"));
+      if (savedSalesHistory) {
+        salesHistory = savedSalesHistory;
+      }
+    }
+
+    // ===== FUNCTION TO UPDATE SALES HISTORY UI =====
+    function updateSalesHistoryUI() {
+      // If the sales history modal is open, update it immediately
+      if (salesHistoryModal.classList.contains("show")) {
+        populateSalesHistoryModal();
+      }
+    }
+
+    // ===== FUNCTION TO LOG SALE =====
+    function logSale(sale) {
+      salesHistory.push(sale);
+      updateSalesHistoryUI();
+      saveToLocalStorage();
+    }
+
+    // ===== INITIALIZE COOKIE CARDS =====
+    initializeCookieCards();
+
+    // ===== INITIAL CALLS =====
+    loadFromLocalStorage();
+    updateTotalCost();
+    updateCardStates();
+    updateProfit();
+    updateSalesHistoryUI();
+  </script>
+</body>
+</html>
