@@ -4,31 +4,36 @@
   <meta charset="UTF-8">
   <title>Girl Scout Cookie Sales</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <link rel="manifest" href="cookie_images/manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Cookie-Lator">
-	
-	    <!-- Favicon Icons -->
-    <link rel="icon" type="image/png" sizes="16x16" href="cookie_images/cookie-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="cookie_images/cookie-32x32.png">
-    <link rel="icon" type="image/png" sizes="48x48" href="cookie_images/cookie-48x48.png">
+  <meta name="theme-color" content="#2e7d32">
+  <link rel="manifest" href="cookie_images/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cookie-Lator">
 
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="cookie_images/cookie-180x180.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="cookie_images/cookie-167x167.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="cookie_images/cookie-152x152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="cookie_images/cookie-120x120.png">
+  <!-- Favicon Icons -->
+  <link rel="shortcut icon" href="cookie_images/cookie-16x16.png" type="image/png">
+  <link rel="icon" type="image/png" sizes="16x16" href="cookie_images/cookie-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="cookie_images/cookie-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="cookie_images/cookie-48x48.png">
 
-    <!-- Additional Icons -->
-    <link rel="icon" type="image/png" sizes="57x57" href="cookie_images/cookie-57x57.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="cookie_images/cookie-72x72.png">
-    <link rel="icon" type="image/png" sizes="76x76" href="cookie_images/cookie-76x76.png">
-    <link rel="icon" type="image/png" sizes="114x114" href="cookie_images/cookie-114x114.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="cookie_images/cookie-144x144.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="cookie_images/cookie-512x512.png">
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="cookie_images/cookie-180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="cookie_images/cookie-167x167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="cookie_images/cookie-152x152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="cookie_images/cookie-120x120.png">
 
-	
+  <!-- Additional Icons -->
+  <link rel="icon" type="image/png" sizes="57x57" href="cookie_images/cookie-57x57.png">
+  <link rel="icon" type="image/png" sizes="72x72" href="cookie_images/cookie-72x72.png">
+  <link rel="icon" type="image/png" sizes="76x76" href="cookie_images/cookie-76x76.png">
+  <link rel="icon" type="image/png" sizes="114x114" href="cookie_images/cookie-114x114.png">
+  <link rel="icon" type="image/png" sizes="144x144" href="cookie_images/cookie-144x144.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="cookie_images/cookie-512x512.png">
+
+  <!-- Safari Pinned Tab Icon -->
+  <link rel="mask-icon" href="cookie_images/cookie-512x512.png" color="#2e7d32">
+
   <!-- Font Awesome CDN for Icons -->
   <link
     rel="stylesheet"
@@ -1064,8 +1069,7 @@
         for (const [cookieName, quantity] of Object.entries(sale.items)) {
           serializedData += ` - ${cookieName}: ${quantity}\n`;
         }
-        serializedData += `Total: $${sale.total}\n`;
-        serializedData += `Profit: $${sale.profit}\n\n`;
+        serializedData += `Total: $${sale.total}\n\n`;
       });
 
       serializedData += `Total Profit: $${totalProfit.toFixed(2)}`;
@@ -1141,6 +1145,21 @@
         setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
       }
     });
+	  
+	  
+	  
+	  if ('serviceWorker' in navigator) {
+		window.addEventListener('load', () => {
+		  navigator.serviceWorker.register('cookie_images/service-worker.js')
+			.then(registration => {
+			  console.log('Service Worker registered with scope:', registration.scope);
+			})
+			.catch(error => {
+			  console.error('Service Worker registration failed:', error);
+			});
+		});
+	  }
+
   </script>
 </body>
 </html>
