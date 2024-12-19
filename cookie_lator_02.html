@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Girl Scout Cookie Sales</title>
+  <title>Cookie_Lator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#2e7d32">
   <link rel="manifest" href="cookie-images/manifest.json">
@@ -33,16 +33,10 @@
 
   <!-- Safari Pinned Tab Icon -->
   <link rel="mask-icon" href="cookie-images/cookie-512x512.png" color="#2e7d32">
-
-  <!-- Font Awesome CDN for Icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-pVIWptQ+5AmG2fMdzC6kDjTqdFsuJSE9h+OPuXNcJ6JXSfW+gAzZkATgV0Z0Xp05MYYljHDGm3u1BqM6d9M+0g=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
-  <!-- Optional: Remove the Google Fonts link for Arial as it's a system font -->
+    
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/5b8663b3a9.js" crossorigin="anonymous"></script>
+ 
   <style>
     /* ===== BASE STYLES ===== */
     * {
@@ -111,6 +105,9 @@
       font-size: 0.9rem;
       transition: background 0.3s;
       width: 100%; /* Full width within the flex item */
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .mode-toggle:hover {
@@ -500,8 +497,9 @@
     }
 
     /* ===== BUTTONS WITH ICONS ===== */
-    .instructions-btn i {
-      margin-right: 5px;
+    button i {
+      margin-right: 5px; /* Space between icon and text */
+      vertical-align: middle; /* Align icon vertically with text */
     }
   </style>
 </head>
@@ -512,17 +510,27 @@
     
     <!-- Button Groups -->
     <div class="button-group">
-      <button class="clear-all-btn" id="clearAllButton">Clear All</button>
-      <button class="mode-toggle" id="modeButton">Remove Cookies</button>
-      <button class="complete-sale-btn" id="completeSaleButton">Complete Sale</button>
+      <button class="clear-all-btn" id="clearAllButton">
+		  <i class="fa-solid fa-eraser"></i> Clear All</button>
+      <!-- Updated Mode Toggle Button with Icon -->
+      <button class="mode-toggle" id="modeButton">
+        <i class="fa-solid fa-plus-minus"></i> Remove Cookies
+      </button>
+      <button class="complete-sale-btn" id="completeSaleButton">
+        <i class="fa-solid fa-money-bill-1-wave"></i> Complete Sale
+      </button>
     </div>
 
     <div class="cookie-grid" id="cookieGrid"></div>
       
     <div class="button-group">
-      <button class="instructions-btn" id="showInstructions">Instructions</button>
-      <button class="instructions-btn" id="showInventory">Manage Inventory</button>
-      <button class="sales-history-btn" id="showSalesHistory">Sales History</button>
+      <button class="instructions-btn" id="showInstructions">
+		  <i class="fa-solid fa-magnifying-glass-dollar"></i> Instructions</button>
+      <button class="instructions-btn" id="showInventory">
+		  <i class="fa-solid fa-cookie-bite"></i> Manage Inventory</button>
+      <button class="sales-history-btn" id="showSalesHistory">
+        <i class="fa-solid fa-money-check-dollar"></i> Sales History
+      </button>
     </div>
   </div>
 
@@ -560,7 +568,9 @@
       <div class="inventory-list" id="inventoryList">
         <!-- Inventory items will be dynamically inserted here -->
       </div>
-      <button class="instructions-btn" id="saveInventory">Save Inventory</button>
+      <button class="instructions-btn" id="saveInventory">
+        <i class="fa-regular fa-floppy-disk"></i> Save Inventory
+      </button>
     </div>
   </div>
 
@@ -574,12 +584,18 @@
         <!-- Sales history items will be dynamically inserted here -->
       </div>
       <div class="button-group">
-        <button class="clear-history-btn" id="clearSalesHistoryButton">Clear History</button>
-        <button class="reset-profits-btn" id="resetProfitsButton">Reset Profits</button>
-		  <button class="instructions-btn" id="shareSalesHistoryButton">
-          <i class="fas fa-share-alt"></i> Share  History  </button>
+        <button class="clear-history-btn" id="clearSalesHistoryButton">
+          <i class="fa-solid fa-trash-can"></i> Clear History
+        </button>
+        <button class="reset-profits-btn" id="resetProfitsButton">
+          <i class="fa-solid fa-trash-can"></i> Reset Profits
+        </button>
+        <button class="instructions-btn" id="shareSalesHistoryButton">
+          <i class="fa-regular fa-share-from-square"></i> Share History
+        </button>
         <button class="instructions-btn" id="copySalesHistoryButton">
-          <i class="fas fa-copy"></i> Copy to Clipboard  </button>
+          <i class="fa-regular fa-clipboard"></i> Copy to Clipboard
+        </button>
       </div>
 
     </div>
@@ -805,7 +821,10 @@
     // ===== MODE TOGGLE BUTTON EVENT =====
     modeButton.addEventListener("click", () => {
       isAddMode = !isAddMode;
-      modeButton.textContent = isAddMode ? "Remove Cookies" : "Add Cookies";
+      
+      // Update button content with icon and text using innerHTML
+      modeButton.innerHTML = `<i class="fa-solid fa-plus-minus"></i> ${isAddMode ? "Remove Cookies" : "Add Cookies"}`;
+      
       feedbackMessage.textContent = isAddMode ? "Added Cookies" : "Removed Cookies";
       setTimeout(() => { feedbackMessage.textContent = ''; }, 5000);
       updateCardStates();
@@ -1012,7 +1031,6 @@
       const savedMode = localStorage.getItem("isAddMode");
       if (savedMode !== null) {
         isAddMode = savedMode === "true";
-        modeButton.textContent = isAddMode ? "Remove Cookies" : "Add Cookies";
       }
       const savedProfit = parseFloat(localStorage.getItem("totalProfit"));
       if (!isNaN(savedProfit)) {
@@ -1045,6 +1063,8 @@
 
     // ===== INITIAL CALLS =====
     loadFromLocalStorage();
+    // ===== Initialize Mode Button Content with Icon and Text =====
+    modeButton.innerHTML = `<i class="fa-solid fa-plus-minus"></i> ${isAddMode ? "Remove Cookies" : "Add Cookies"}`;
     updateTotalCost();
     updateCardStates();
     updateProfit();
@@ -1145,20 +1165,20 @@
         setTimeout(() => { feedbackMessage.textContent = ''; }, 5000);
       }
     });
-	  
-	  
-	  
-	  if ('serviceWorker' in navigator) {
-		window.addEventListener('load', () => {
-		  navigator.serviceWorker.register('cookie-images/service-worker.js')
-			.then(registration => {
-			  console.log('Service Worker registered with scope:', registration.scope);
-			})
-			.catch(error => {
-			  console.error('Service Worker registration failed:', error);
-			});
-		});
-	  }
+      
+      
+      
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('cookie-images/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+              console.error('Service Worker registration failed:', error);
+            });
+        });
+      }
 
   </script>
 </body>
