@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory Selector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2e7d32">
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/5b8663b3a9.js" crossorigin="anonymous"></script>
+  <style>
+    /* Existing styles remain unchanged */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #2e7d32;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+      color: #276c29;
+    }
+
+    .container {
+      background-color: ghostwhite;
+      padding: 15px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+/* Style for the Share Data and Clear All buttons in the modal */
+#reviewModal .button-group button {
+  background: #2e7d32; /* Match the toolbar button background */
+  color: white; /* Match the toolbar button text color */
+  padding: 8px 12px; /* Match the padding */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem; /* Match the font size */
+  transition: background 0.3s;
+  margin-left: 10px; /* Ensure spacing between buttons */
+}
+
+/* Hover effect for modal buttons */
+#reviewModal .button-group button:hover {
+  background: #276c29; /* Match the toolbar button hover background */
+}
+
+/* Additional specific style for the Clear All button if needed */
+#clearAllBtn {
+  background: #ffd700; /* Retain the red color */
+}
+
+#clearAllBtn:hover {
+  background: #b8860b; /* Slightly darker hover for Clear All */
+}
+    .toolbar button {
+      background: #2e7d32;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius:5px;
+      cursor:pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+      margin-left: 10px;
+    }
+
+    .shareBtn:hover,
+    .toolbar button:hover {
+      background:#276c29;
+    }
+
+    header {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:10px;
+      position:relative;
+    }
+
+    header h1, header h2 {
+      margin:0; padding:0;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      color: #276c29;
+      flex:1;
+      text-align:center;
+    }
+
+    .back-button {
+      position:absolute;
+      left:0;
+      top:50%;
+      transform:translateY(-50%);
+      cursor:pointer;
+      color:#276c29;
+      text-decoration:underline;
+      font-size:1.6rem;
+    }
+
+    .level-link {
+      position:absolute;
+      right:0;
+      top:50%;
+      transform:translateY(-50%);
+      color:#276c29;
+      text-decoration:underline;
+      font-size:0.9rem;
+      cursor:pointer;
+    }
+
+    .list-item {
+      background: #fff;
+      border:1px solid #2e7d32;
+      border-radius:8px;
+      padding:10px;
+      margin-bottom:5px;
+      cursor:pointer;
+      font-size:1rem;
+      color:#2e7d32;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .list-item:hover {
+      background:#f0f0f0;
+    }
+
+    .counts-list {
+      text-align:left;
+      margin-top:10px;
+      margin-bottom:10px;
+      color:#276c29;
+    }
+
+    .counts-list p {
+      margin:5px 0;
+    }
+
+    .quantity-display {
+      font-size: 1.5rem;
+      margin: 10px 0;
+      color:#2e7d32;
+    }
+
+    .quantity-pending {
+      opacity:0.5;
+    }
+    .quantity-confirmed {
+      opacity:1;
+    }
+
+    .keypad {
+      display:flex;
+      flex-wrap:wrap;
+      width:220px;
+      margin:0 auto;
+      justify-content:center;
+    }
+
+    .keypad-button {
+      width:60px;
+      height:60px;
+      margin:5px;
+      background:#eee;
+      border:1px solid #ccc;
+      font-size:20px;
+      line-height:60px;
+      text-align:center;
+      cursor:pointer;
+      user-select:none;
+      color:#2e7d32;
+      border-radius:5px;
+    }
+    .keypad-button:active {
+      background:#ddd;
+    }
+
+    /* ===== BUTTON GROUPS ===== */
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px; /* Space between buttons */
+      width: 100%; /* Ensure buttons take full width */
+      margin-bottom: 0px; /* Space below the button group */
+    }
+
+    .button-group button {
+      flex: 1; /* Make buttons take equal space */
+      min-width: 100px;
+    }
+
+    .modal {
+      display:none;
+      position:fixed;
+      top:0;left:0;width:100%;height:100%;
+      background-color:rgba(0,0,0,0.5);
+      justify-content:center;
+      align-items:center;
+      z-index:1000;
+    }
+    .modal.show {
+      display:flex;
+    }
+    .modal-content {
+      background:#fff;
+      padding:15px;
+      border-radius:8px;
+      max-width:300px;
+      width:90%;
+      max-height:80vh;
+      overflow-y:auto;
+      position:relative;
+      text-align:left;
+      color:#2e7d32;
+    }
+
+    .close-btn {
+      color:#2e7d32;
+      cursor:pointer;
+      position:absolute;
+      top:8px;
+      right:12px;
+      font-size:1.2rem;
+      font-weight:bold;
+    }
+
+    #message {
+      margin-top:10px;
+      font-style:italic;
+      font-size:0.9rem;
+    }
+
+    .review-text {
+      white-space:pre-wrap;
+      font-family:Arial, sans-serif;
+      font-size:0.9rem;
+    }
+
+    /* New styles for Clear button in counts */
+    .clear-count-btn {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius:5px;
+      padding:5px 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-left: 10px;
+      transition: background 0.3s;
+    }
+
+    .clear-count-btn:hover {
+      background: #276c29;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <button id="reviewBtn">Review & Share</button>
+      <!-- Removed the Clear All button from the main toolbar -->
+    </div>
+    <header id="header"></header>
+    <div id="content"></div>
+  </div>
+
+  <!-- Review & Share Modal -->
+  <div class="modal" id="reviewModal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeReview">&times;</span>
+      <h2>Review Data</h2>
+      <div class="review-text" id="reviewText"></div>
+      <div class="button-group">
+        <button id="shareBtn">Share Data</button>
+        <button id="clearAllBtn" style="background:#ff6347; margin-left:10px;">Clear All</button> <!-- Moved Clear All here -->
+        <div id="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Define the default data structure with sizes mapping to empty arrays for counts
+    const defaultData = {
+      "Plywood": {
+        "Acre": {
+          "1/2\" 49x97": []
+        },
+        "Armorite": {
+          "1/2\" 4x8": [],
+          "1/2\" 4x10": [],
+          "1/2\" 4x12": [],
+          "1/2\" 4x16": [],
+          "5/8\" 4x8": [],
+          "5/8\" 4x10": [],
+          "5/8\" 4x12": [],
+          "5/8\" 4x16": []
+        },
+        "Breckenridge": {
+          "3/8\" 4x8": [],
+          "3/8\" 4x10": [],
+          "5/8\" 4x8": [],
+          "5/8\" 4x10": [],
+          "5/8\" 4x9 T111": [],
+          "5/8\" 4x10 T111": []
+        },
+        "Duratemp": {
+          "19/32\" 4x9": [],
+          "19/32\" 4x8": []
+        },
+        "Extira": {
+          "1/2\" 4x16": [],
+          "5/8\" 4x16": [],
+          "3/4\" 4x16": []
+        },
+        "Hydrotex": {
+          "1/2\" 4x8": []
+        },
+        "Joubert": {
+          "1/2\" 4x8": [],
+          "1/2\" 4x10": []
+        },
+        "MDO": {
+          "3/8\" 4x8": [],
+          "3/8\" 4x10": [],
+          "1/2\" 4x8": [],
+          "1/2\" 4x10": [],
+          "5/8\" 4x10": [],
+          "5/8\" 4x8": []
+        },
+        "Meranti": {
+          "1/4\" 4x7": [],
+          "1/4\" 4x8": [],
+          "1/4\" 4x10": [],
+          "1/4\" 5x10": []
+        },
+        "Russian Birch": {
+          "1/4\" 4x8": [],
+          "1/4\" 5x10": [],
+          "1/2\" 4x8": []
+        },
+        "Stablewood": {
+          "5/8\" 4x8": [],
+          "5/8\" 4x10": []
+        },
+        "Tricoya": {
+          "12mm 4x10": []
+        },
+        "White Birch": {
+          "1/2\" 4x8": []
+        }
+      },
+      "Steel Doors": {
+        "Type A": {
+          "Standard Size": []
+        },
+        "Type B": {
+          "Standard Size": [],
+          "Large Size": []
+        }
+        // Add more steel door types as needed
+      },
+      "Dimensional Lumber": {
+        "Lumber Type 1": {
+          "2x4": [],
+          "2x6": [],
+          "2x8": []
+        },
+        "Lumber Type 2": {
+          "2x4": [],
+          "2x6": []
+        }
+        // Add more lumber types as needed
+      },
+      "Glass": {
+        "Tempered": {
+          "1/4\" 4x8": [],
+          "1/2\" 4x10": []
+        },
+        "Laminated": {
+          "3/8\" 4x8": []
+        }
+        // Add more glass types as needed
+      }
+      // Add more categories as needed
+    };
+
+    // Function to save data to localStorage
+    function saveData() {
+      localStorage.setItem('inventoryData', JSON.stringify(inventoryData));
+    }
+
+    // Initialize inventoryData by loading from localStorage or using defaultData
+    let inventoryData = JSON.parse(localStorage.getItem('inventoryData'));
+
+    if (
+      !inventoryData ||
+      typeof inventoryData !== 'object' ||
+      Object.keys(inventoryData).length === 0
+    ) {
+      inventoryData = JSON.parse(JSON.stringify(defaultData)); // Deep copy to prevent reference issues
+      saveData(); // Save the default data to localStorage
+      console.log("Initialized inventoryData with defaultData.");
+    } else {
+      // Ensure all categories, materials, and sizes exist
+      for (const category in defaultData) {
+        if (!inventoryData[category]) {
+          inventoryData[category] = {};
+          console.log(`Added missing category: ${category}`);
+        }
+        for (const material in defaultData[category]) {
+          if (!inventoryData[category][material]) {
+            inventoryData[category][material] = {};
+            console.log(`Added missing material: ${material} in category: ${category}`);
+          }
+          // Initialize sizes with empty arrays if they don't exist
+          for (const size in defaultData[category][material]) {
+            if (!inventoryData[category][material][size]) {
+              inventoryData[category][material][size] = [];
+              console.log(`Added missing size: ${size} in material: ${material} of category: ${category}`);
+            }
+          }
+        }
+      }
+      saveData(); // Save any structural corrections to localStorage
+      console.log("Validated and updated inventoryData structure.");
+    }
+
+    let currentCategory = null;
+    let currentMaterial = null;
+    let currentSize = null;
+
+    const header = document.getElementById('header');
+    const content = document.getElementById('content');
+    const reviewBtn = document.getElementById('reviewBtn');
+    const reviewModal = document.getElementById('reviewModal');
+    const closeReview = document.getElementById('closeReview');
+    const reviewText = document.getElementById('reviewText');
+    const shareBtn = document.getElementById('shareBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn'); // Now inside modal
+    const messageDiv = document.getElementById('message');
+
+    // Start by showing the category list
+    showCategoryList();
+
+    // Function to display the list of categories
+    function showCategoryList() {
+      currentCategory = null;
+      currentMaterial = null;
+      currentSize = null;
+      header.innerHTML = `<h1>Select Category</h1>`;
+      let html = '';
+      Object.keys(inventoryData).forEach(cat => {
+        html += `<div class="list-item" data-category="${cat}">${cat}</div>`;
+      });
+      content.innerHTML = html;
+
+      // Add click event listeners to each category item
+      content.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('click', () => {
+          currentCategory = item.getAttribute('data-category');
+          console.log(`Selected Category: ${currentCategory}`);
+          showMaterialList(currentCategory);
+        });
+      });
+    }
+
+    // Function to display materials within a selected category
+    function showMaterialList(category) {
+      currentCategory = category;
+      currentMaterial = null;
+      currentSize = null;
+      header.innerHTML = `
+        <span class="back-button" id="backToCategories"><i class="fa-regular fa-hand-point-left"></i></span>
+        <h1>${currentCategory} - Select Material</h1>
+      `;
+      document.getElementById('backToCategories').addEventListener('click', showCategoryList);
+
+      let html = '';
+      const materials = Object.keys(inventoryData[currentCategory]);
+      if (materials.length === 0) {
+        html = `<p>No materials found for this category.</p>`;
+      } else {
+        materials.forEach(m => {
+          html += `<div class="list-item" data-material="${m}">${m}</div>`;
+        });
+      }
+      content.innerHTML = html;
+
+      // Add click event listeners to each material item
+      content.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('click', () => {
+          currentMaterial = item.getAttribute('data-material');
+          console.log(`Selected Material: ${currentMaterial}`);
+          showMaterialView();
+        });
+      });
+    }
+
+    // Function to display sizes within a selected material
+    function showMaterialView() {
+      currentSize = null;
+      header.innerHTML = `
+        <span class="back-button" id="backFromMaterial"><i class="fa-regular fa-hand-point-left"></i></span>
+        <h1>${currentCategory} - ${currentMaterial}</h1>
+      `;
+      document.getElementById('backFromMaterial').addEventListener('click', () => showMaterialList(currentCategory));
+
+      let html = '';
+      const sizes = Object.keys(inventoryData[currentCategory][currentMaterial]);
+      if (!sizes || sizes.length === 0) {
+        html = `<p>No sizes found for this material.</p>`;
+      } else {
+        sizes.forEach(s => {
+          const counts = getCounts(currentCategory, currentMaterial, s);
+          const total = counts.reduce((a, b) => a + b, 0);
+          html += `
+            <div class="list-item" data-size="${encodeURIComponent(s)}">
+              <span>${s}${total > 0 ? ` (Total: ${total})` : ''}</span>
+              <span style="display:flex; align-items:center;">
+                ${total > 0 ? `<button class="clear-count-btn" data-category="${currentCategory}" data-material="${currentMaterial}" data-size="${encodeURIComponent(s)}">Clear</button>` : ''}
+              </span>
+            </div>
+          `;
+        });
+      }
+      content.innerHTML = html;
+
+      // Add click event listeners to each size item
+      content.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          // Prevent triggering when clicking the clear button
+          if (e.target.classList.contains('clear-count-btn')) return;
+          currentSize = decodeURIComponent(item.getAttribute('data-size'));
+          console.log(`Selected Size: ${currentSize}`);
+          showSizeView();
+        });
+      });
+
+      // Add event listeners for Clear buttons
+      content.querySelectorAll('.clear-count-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent triggering the parent click event
+          const cat = btn.getAttribute('data-category');
+          const mat = btn.getAttribute('data-material');
+          const sz = decodeURIComponent(btn.getAttribute('data-size'));
+          clearLastCount(cat, mat, sz);
+        });
+      });
+    }
+
+    // Function to display counts and the keypad for a selected size
+    function showSizeView() {
+      header.innerHTML = `
+        <span class="back-button" id="backFromSize"><i class="fa-regular fa-hand-point-left"></i></span>
+        <span class="level-link" id="materialLink">${currentMaterial}</span>
+        <h2 style="color:#276c29; margin-top:5px; font-size:1rem;">${currentSize}</h2>
+      `;
+
+      document.getElementById('backFromSize').addEventListener('click', showMaterialView);
+      document.getElementById('materialLink').addEventListener('click', showMaterialView);
+
+      const counts = getCounts(currentCategory, currentMaterial, currentSize);
+      const total = counts.reduce((a, b) => a + b, 0);
+
+      let html = `
+        <div class="counts-list">
+          <p>Counts: ${counts.length > 0 ? counts.join(', ') : 'No counts yet.'}</p>
+          <p>Total: <strong>${total}</strong></p>
+        </div>
+        <div class="quantity-display quantity-confirmed" id="quantityDisplay">0</div>
+        <div class="keypad" id="keypad">
+          <div class="keypad-button">1</div><div class="keypad-button">2</div><div class="keypad-button">3</div>
+          <div class="keypad-button">4</div><div class="keypad-button">5</div><div class="keypad-button">6</div>
+          <div class="keypad-button">7</div><div class="keypad-button">8</div><div class="keypad-button">9</div>
+          <div class="keypad-button" id="clearKey">C</div>
+          <div class="keypad-button">0</div>
+          <div class="keypad-button" id="addKey">Add</div>
+        </div>
+      `;
+
+      content.innerHTML = html;
+
+      setupKeypad();
+    }
+
+    let inputTimeout = null;
+    let pendingQuantity = "0";
+    let quantityConfirmed = true; // Start as confirmed since no entry yet
+
+    // Function to set up the keypad interactions
+    function setupKeypad() {
+      const quantityDisplay = document.getElementById('quantityDisplay');
+      const keypad = document.getElementById('keypad');
+      pendingQuantity = "0";
+      quantityConfirmed = true;
+
+      keypad.querySelectorAll('.keypad-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const val = btn.textContent;
+          if (val >= '0' && val <= '9') {
+            if (pendingQuantity === "0") pendingQuantity = val;
+            else pendingQuantity += val;
+            setPendingState(quantityDisplay, pendingQuantity);
+          } else if (val === 'C') {
+            pendingQuantity = "0";
+            setPendingState(quantityDisplay, pendingQuantity);
+          } else if (val === 'Add') {
+            // Only add if confirmed and quantity > 0
+            if (quantityConfirmed && parseInt(pendingQuantity, 10) > 0) {
+              addCountEntry(currentCategory, currentMaterial, currentSize, parseInt(pendingQuantity, 10));
+              console.log(`Added Count: ${pendingQuantity} to ${currentCategory} > ${currentMaterial} > ${currentSize}`);
+              showSizeView(); // Refresh the view with updated counts
+            } else {
+              alert("Please enter a valid quantity before adding.");
+            }
+          }
+        });
+      });
+
+      function setPendingState(displayEl, qtyStr) {
+        displayEl.textContent = qtyStr;
+        displayEl.classList.remove('quantity-confirmed');
+        displayEl.classList.add('quantity-pending');
+        quantityConfirmed = false;
+
+        if (inputTimeout) clearTimeout(inputTimeout);
+        inputTimeout = setTimeout(() => {
+          displayEl.classList.remove('quantity-pending');
+          displayEl.classList.add('quantity-confirmed');
+          quantityConfirmed = true;
+        }, 300);
+      }
+    }
+
+    // Function to retrieve counts for a specific category, material, and size
+    function getCounts(category, material, size) {
+      if (
+        inventoryData[category] &&
+        inventoryData[category][material] &&
+        inventoryData[category][material][size]
+      ) {
+        return inventoryData[category][material][size];
+      }
+      return [];
+    }
+
+    // Function to add a count entry
+    function addCountEntry(category, material, size, qty) {
+      if (!inventoryData[category]) {
+        inventoryData[category] = {};
+        console.log(`Created new category: ${category}`);
+      }
+      if (!inventoryData[category][material]) {
+        inventoryData[category][material] = {};
+        console.log(`Created new material: ${material} in category: ${category}`);
+      }
+      if (!inventoryData[category][material][size]) {
+        inventoryData[category][material][size] = [];
+        console.log(`Created new size: ${size} in material: ${material} of category: ${category}`);
+      }
+      if (qty > 0) {
+        inventoryData[category][material][size].push(qty);
+        console.log(`Count added: ${qty} to ${category} > ${material} > ${size}`);
+      }
+      saveData();
+    }
+
+    // Review & Share functionality
+    reviewBtn.addEventListener('click', () => {
+      let lines = [];
+      for (const cat in inventoryData) {
+        let categoryHasCounts = false; // Flag to check if category has any counts
+        let categoryContent = `<strong>Category: ${cat}</strong><br><br>`;
+        let materialContent = '';
+        for (const mat in inventoryData[cat]) {
+          let materialHasCounts = false; // Flag to check if material has any counts
+          let matContent = `&nbsp;&nbsp;<strong>Material:</strong> ${mat}<br><br>`;
+          for (const sz in inventoryData[cat][mat]) {
+            const counts = inventoryData[cat][mat][sz];
+            const total = counts.reduce((a, b) => a + b, 0);
+            if (counts.length > 0 && total > 0) { // Only include sizes with counts
+              materialHasCounts = true;
+              categoryHasCounts = true;
+              matContent += `&nbsp;&nbsp;&nbsp;&nbsp;<strong>Size:</strong> ${sz}<br>`;
+              matContent += `&nbsp;&nbsp;&nbsp;&nbsp;<strong>Counts:</strong> ${counts.join(', ')}<br>`;
+              matContent += `&nbsp;&nbsp;&nbsp;&nbsp;<strong>Total:</strong> ${total}<br><br>`;
+            }
+          }
+          if (materialHasCounts) {
+            materialContent += matContent;
+          }
+        }
+        if (categoryHasCounts) {
+          lines.push(categoryContent);
+          lines.push(materialContent);
+          lines.push('<br>'); // Add spacing between categories
+        }
+      }
+      let summary = lines.join('');
+      if (summary.trim() === '') summary = "No data recorded yet.";
+      reviewText.innerHTML = summary;
+      reviewModal.classList.add('show');
+      console.log("Review & Share modal opened.");
+    });
+
+    // Close the review modal
+    closeReview.addEventListener('click', () => {
+      reviewModal.classList.remove('show');
+      messageDiv.textContent = "";
+      console.log("Review & Share modal closed.");
+    });
+
+    // Close the modal when clicking outside the content
+    reviewModal.addEventListener('click', (e) => {
+      if (e.target === reviewModal) {
+        reviewModal.classList.remove('show');
+        messageDiv.textContent = "";
+        console.log("Review & Share modal closed by clicking outside.");
+      }
+    });
+
+    // Share data using Web Share API
+    shareBtn.addEventListener('click', async () => {
+      const textToShare = reviewText.textContent;
+      messageDiv.textContent = "";
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Inventory Data',
+            text: textToShare
+          });
+          messageDiv.textContent = "Data shared successfully!";
+          console.log("Data shared successfully.");
+        } catch (err) {
+          messageDiv.textContent = "Share canceled or failed.";
+          console.error("Error sharing data:", err);
+        }
+      } else {
+        messageDiv.textContent = "Web Share API not supported.";
+        console.warn("Web Share API not supported.");
+      }
+    });
+
+    // Clear All data functionality
+    clearAllBtn.addEventListener('click', () => {
+      if (confirm("Are you sure you want to clear all data? This action cannot be undone.")) {
+        inventoryData = JSON.parse(JSON.stringify(defaultData)); // Deep copy of defaultData
+        saveData();
+        showCategoryList();
+        if (reviewModal.classList.contains('show')) {
+          reviewModal.classList.remove('show');
+        }
+        messageDiv.textContent = "All data has been cleared.";
+        console.log("All inventory data has been cleared and reset to default.");
+      }
+    });
+
+    // Function to clear the last count entry for a specific category, material, and size
+    function clearLastCount(category, material, size) {
+      if (
+        inventoryData[category] &&
+        inventoryData[category][material] &&
+        inventoryData[category][material][size] &&
+        inventoryData[category][material][size].length > 0
+      ) {
+        const removedCount = inventoryData[category][material][size].pop();
+        saveData();
+        alert(`Removed last count of ${removedCount} from ${size}.`);
+        console.log(`Removed count: ${removedCount} from ${category} > ${material} > ${size}`);
+        showMaterialView(); // Refresh the material view to update totals and buttons
+      } else {
+        alert("No counts to remove for this size.");
+        console.warn(`Attempted to remove count from empty size: ${size} in material: ${material} of category: ${category}`);
+      }
+    }
+  </script>
+</body>
+</html>

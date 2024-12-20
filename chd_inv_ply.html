@@ -5,6 +5,8 @@
 <title>Inventory Selector</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#2e7d32">
+	  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/5b8663b3a9.js" crossorigin="anonymous"></script>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -29,10 +31,37 @@
 
   .toolbar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* Changed from space-between to align buttons to the right */
     margin-bottom: 10px;
   }
+/* Style for the Share Data and Clear All buttons in the modal */
+#reviewModal .button-group button {
+  background: #2e7d32; /* Match the toolbar button background */
+  color: white; /* Match the toolbar button text color */
+  padding: 8px 12px; /* Match the padding */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem; /* Match the font size */
+  transition: background 0.3s;
+  margin-left: 10px; /* Ensure spacing between buttons */
+}
 
+/* Hover effect for modal buttons */
+#reviewModal .button-group button:hover {
+  background: #276c29; /* Match the toolbar button hover background */
+}
+
+/* Additional specific style for the Clear All button if needed */
+#clearAllBtn {
+  background: #d32f2f; /* Retain the red color */
+}
+
+#clearAllBtn:hover {
+  background: #a52828; /* Slightly darker hover for Clear All */
+}
+
+	
   .toolbar button {
     background: #2e7d32;
     color: white;
@@ -42,6 +71,7 @@
     cursor:pointer;
     font-size: 0.9rem;
     transition: background 0.3s;
+    margin-left: 10px; /* Added margin for spacing */
   }
   .toolbar button:hover {
     background:#276c29;
@@ -74,7 +104,7 @@
     cursor:pointer;
     color:#276c29;
     text-decoration:underline;
-    font-size:0.9rem;
+    font-size:1.6rem;
   }
 
   .level-link {
@@ -97,6 +127,9 @@
     cursor:pointer;
     font-size:1rem;
     color:#2e7d32;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   .list-item:hover {
     background:#f0f0f0;
@@ -151,6 +184,19 @@
   .keypad-button:active {
     background:#ddd;
   }
+	    /* ===== BUTTON GROUPS ===== */
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px; /* Space between buttons */
+      width: 100%; /* Ensure buttons take full width */
+      margin-bottom: 0px; /* Space below the button group */
+    }
+
+    .button-group button {
+      flex: 1; /* Make buttons take equal space */
+      min-width: 100px;
+    }
 
   .modal {
     display:none;
@@ -199,13 +245,29 @@
     font-size:0.9rem;
   }
 
+  /* New styles for Clear button in counts */
+  .clear-count-btn {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    border-radius:5px;
+    padding:5px 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 10px;
+    transition: background 0.3s;
+  }
+
+  .clear-count-btn:hover {
+    background: #276c29;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="toolbar">
     <button id="reviewBtn">Review & Share</button>
-    <button id="clearAllBtn">Clear All</button>
+    <!-- Removed the Clear All button from the main toolbar -->
   </div>
   <header id="header"></header>
   <div id="content"></div>
@@ -217,7 +279,9 @@
     <span class="close-btn" id="closeReview">&times;</span>
     <h2>Review Data</h2>
     <div class="review-text" id="reviewText"></div>
+	  <div class="button-group">
     <button id="shareBtn">Share Data</button>
+    <button id="clearAllBtn" style="background:#d32f2f; margin-left:10px;">Clear All</button> <!-- Moved Clear All here -->
     <div id="message"></div>
   </div>
 </div>
@@ -252,7 +316,7 @@ const reviewModal = document.getElementById('reviewModal');
 const closeReview = document.getElementById('closeReview');
 const reviewText = document.getElementById('reviewText');
 const shareBtn = document.getElementById('shareBtn');
-const clearAllBtn = document.getElementById('clearAllBtn');
+const clearAllBtn = document.getElementById('clearAllBtn'); // Now inside modal
 const messageDiv = document.getElementById('message');
 
 showMaterialList();
@@ -277,28 +341,45 @@ function showMaterialList() {
 
 function showMaterialView() {
   currentSize = null;
-  header.innerHTML = `<span class="back-button" id="backFromMaterial">&larr;</span><h1>${currentMaterial}</h1>`;
+  header.innerHTML = `<span class="back-button" id="backFromMaterial"><i class="fa-regular fa-hand-point-left"></i></span><h1>${currentMaterial}</h1>`;
   document.getElementById('backFromMaterial').addEventListener('click', showMaterialList);
 
   let html = '';
   materialData[currentMaterial].forEach(s => {
     const counts = getCounts(currentMaterial, s);
     const total = counts.reduce((a,b)=>a+b,0);
-    html += `<div class="list-item" data-size="${encodeURIComponent(s)}">${s}${total>0?` (Total: ${total})`:''}</div>`;
+    html += `<div class="list-item" data-size="${encodeURIComponent(s)}">
+              <span>${s}${total>0?` (Total: ${total})`:''}</span>
+              <span style="display:flex; align-items:center;">
+                ${total > 0 ? `<button class="clear-count-btn" data-material="${currentMaterial}" data-size="${encodeURIComponent(s)}">Clear</button>` : ''}
+              </span>
+             </div>`;
   });
   content.innerHTML = html;
 
   content.querySelectorAll('.list-item').forEach(item => {
-    item.addEventListener('click', () => {
+    item.addEventListener('click', (e) => {
+      // Prevent triggering when clicking the clear button
+      if (e.target.classList.contains('clear-count-btn')) return;
       currentSize = decodeURIComponent(item.getAttribute('data-size'));
       showSizeView();
+    });
+  });
+
+  // Add event listeners for Clear buttons
+  content.querySelectorAll('.clear-count-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent triggering the parent click event
+      const mat = btn.getAttribute('data-material');
+      const sz = decodeURIComponent(btn.getAttribute('data-size'));
+      clearLastCount(mat, sz);
     });
   });
 }
 
 function showSizeView() {
   // Show counts and keypad immediately.
-  header.innerHTML = `<span class="back-button" id="backFromSize">&larr;</span>
+  header.innerHTML = `<span class="back-button" id="backFromSize"><i class="fa-regular fa-hand-point-left"></i></span>
   <span class="level-link" id="materialLink">${currentMaterial}</span>
   <h2 style="color:#276c29;margin-top:5px;font-size:1rem;">${currentSize}</h2>`;
 
@@ -308,25 +389,21 @@ function showSizeView() {
   const counts = getCounts(currentMaterial, currentSize);
   const total = counts.reduce((a,b)=>a+b,0);
 
-  let html = `<div class="counts-list">`;
-  if (counts.length === 0) {
-    html += `<p>No counts yet.</p>`;
-  } else {
-    html += `<p>Counts: ${counts.join(', ')}</p>`;
-    html += `<p>Total: ${total}</p>`;
-  }
-  html += `</div>`;
+  let html = `<div class="counts-list">
+                <p>Counts: ${counts.length > 0 ? counts.join(', ') : 'No counts yet.'}</p>
+                <p>Total: <strong>${total}</strong></p>
+              </div>`;
 
-  // Keypad layout with Add button
+  // Keypad layout with Add and Clear buttons
   html += `
     <div class="quantity-display quantity-confirmed" id="quantityDisplay">0</div>
     <div class="keypad" id="keypad">
       <div class="keypad-button">1</div><div class="keypad-button">2</div><div class="keypad-button">3</div>
       <div class="keypad-button">4</div><div class="keypad-button">5</div><div class="keypad-button">6</div>
       <div class="keypad-button">7</div><div class="keypad-button">8</div><div class="keypad-button">9</div>
-	  <div class="keypad-button" id="clearKey">Clear</div>
+      <div class="keypad-button" id="clearKey">C</div>
       <div class="keypad-button">0</div>
-	  <div class="keypad-button" id="addKey">Add</div>
+      <div class="keypad-button" id="addKey">Add</div>
     </div>
   `;
 
@@ -355,8 +432,8 @@ function setupKeypad() {
         pendingQuantity = "0";
         setPendingState(quantityDisplay, pendingQuantity);
       } else if (val === 'Add') {
-        // Only add if confirmed
-        if (quantityConfirmed && parseInt(pendingQuantity,10)>0) {
+        // Only add if confirmed and quantity > 0
+        if (quantityConfirmed && parseInt(pendingQuantity,10) > 0) {
           addCountEntry(currentMaterial, currentSize, parseInt(pendingQuantity,10));
           showSizeView(); // refresh the view with updated counts
         }
@@ -413,13 +490,13 @@ reviewBtn.addEventListener('click', () => {
       const total = counts.reduce((a,b)=>a+b,0);
       lines.push(`Size: ${sz}`);
       lines.push(`Counts: ${counts.join(', ')}`);
-      lines.push(`<strong>Total: ${total}</strong>\n`); // Updated Line
+      lines.push(`<strong>Total: ${total}</strong>\n`);
     }
-    lines.push('');
+    lines.push(''); // Add empty line for spacing
   }
-  let summary = lines.join('\n');
+  let summary = lines.join('<br>');
   if (summary.trim() === '') summary = "No data recorded yet.";
-  reviewText.innerHTML = summary; // Updated Line
+  reviewText.innerHTML = summary;
   reviewModal.classList.add('show');
 });
 
@@ -453,19 +530,30 @@ shareBtn.addEventListener('click', async () => {
   }
 });
 
-
-// Clear All
+// Clear All - Now inside the modal
 clearAllBtn.addEventListener('click', () => {
-  if (confirm("Clear all data?")) {
+  if (confirm("Are you sure you want to clear all data? This action cannot be undone.")) {
     inventoryData = {};
     saveData();
     showMaterialList();
     if (reviewModal.classList.contains('show')) {
       reviewModal.classList.remove('show');
     }
-    messageDiv.textContent = "";
+    messageDiv.textContent = "All data has been cleared.";
   }
 });
+
+// Function to clear the last count entry for a specific material and size
+function clearLastCount(material, size) {
+  if (inventoryData[material] && inventoryData[material][size] && inventoryData[material][size].length > 0) {
+    const removedCount = inventoryData[material][size].pop();
+    saveData();
+    alert(`Removed last count of ${removedCount} from ${size}.`);
+    showMaterialView(); // Refresh the material view to update totals and buttons
+  } else {
+    alert("No counts to remove for this size.");
+  }
+}
 
 </script>
 </body>
