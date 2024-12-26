@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Light Bright - Enhanced Drawing</title>
+  <title>Light Bright - Persistent Drawing & Enhanced Features</title>
 
   <style>
     /* Reset and full-height layout */
@@ -41,6 +41,7 @@
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 0.5rem;
+      flex-wrap: wrap;
     }
 
     /* The main content fills all remaining space below the header */
@@ -53,7 +54,7 @@
     /* The board container will fill the entire main content area */
     .board-container {
       position: relative;
-      flex: 1;            /* fill remaining vertical space */
+      flex: 1;            /* Fill remaining vertical space */
       border: 1px solid #444;
       background-color: black;
       
@@ -69,19 +70,48 @@
       background-color: black;
     }
 
-    select {
+    select, button {
       font-size: 1rem;
-      padding: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    select {
+      background-color: #333;
+      color: white;
+    }
+
+    select:focus, button:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #00ffff;
+    }
+
+    button {
+      background-color: #444;
+      color: white;
+      margin-left: 0.5rem;
+    }
+
+    button.active {
+      background-color: #00ffff;
+      color: black;
+    }
+
+    button:hover {
+      background-color: #555;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Light Bright (Enhanced Drawing)</h1>
+    <h1>Light Bright (Persistent Drawing)</h1>
     <div class="selector-row">
       <label for="colorSelect">Choose Peg Color:</label>
       <select id="colorSelect">
+        <!-- Expanded Color Palette -->
         <option value="#ffffff">White</option>
         <option value="#ff0000">Red</option>
         <option value="#00ff00">Green</option>
@@ -89,8 +119,23 @@
         <option value="#ffff00">Yellow</option>
         <option value="#ff00ff">Magenta</option>
         <option value="#00ffff">Cyan</option>
+        <option value="#ffa500">Orange</option>
+        <option value="#800080">Purple</option>
+        <option value="#008000">Dark Green</option>
+        <option value="#ff1493">Deep Pink</option>
+        <option value="#00ced1">Dark Turquoise</option>
+        <option value="#f0e68c">Khaki</option>
+        <option value="#add8e6">Light Blue</option>
+        <option value="#ff69b4">Hot Pink</option>
+        <option value="#7fffd4">Aquamarine</option>
+        <option value="#cd5c5c">Indian Red</option>
+        <option value="#ff4500">Orange Red</option>
+        <option value="#2e8b57">Sea Green</option>
+        <option value="#daa520">Goldenrod</option>
         <!-- Add more colors as desired -->
       </select>
+      <button id="eraserButton">Eraser</button>
+      <button id="clearBoard">Clear Board</button>
     </div>
   </header>
 
@@ -103,6 +148,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const colorSelect = document.getElementById('colorSelect');
+      const eraserButton = document.getElementById('eraserButton');
+      const clearButton = document.getElementById('clearBoard');
       const svgBoard    = document.getElementById('lightBrightBoard');
       const board       = document.querySelector('.board-container');
 
@@ -111,6 +158,11 @@
       const pegRadius = pegSpacing / 2.2; // Radius of each peg
 
       let cols, rows, rowOffset, containerWidth, containerHeight;
+      let currentColor = colorSelect.value; // Current drawing color
+      let isEraser = false; // Eraser mode flag
+
+      // Load saved drawing from localStorage
+      let savedDrawing = JSON.parse(localStorage.getItem('lightBrightDrawing')) || {};
 
       // Function to calculate and create pegs
       function createPegs() {
@@ -149,9 +201,14 @@
             circle.setAttribute('cy', y + pegSpacing/2);
             // The radius is slightly smaller than half the spacing
             circle.setAttribute('r', pegRadius);
-            circle.setAttribute('fill', 'gray');
+            circle.setAttribute('fill', '#111'); // Default color changed to #111
             circle.style.cursor = 'pointer';
-            circle.setAttribute('data-colored', 'false'); // Track coloring
+            circle.setAttribute('data-index', r * cols + c); // Unique index for each peg
+
+            // Apply saved color if exists
+            if (savedDrawing[r * cols + c]) {
+              circle.setAttribute('fill', savedDrawing[r * cols + c]);
+            }
 
             // Append the peg to the SVG board
             svgBoard.appendChild(circle);
@@ -188,7 +245,7 @@
         // Calculate potential neighboring pegs due to offset
         const possiblePegs = [];
 
-        // Current row and previous row may have overlapping pegs due to offset
+        // Current row and adjacent rows may have overlapping pegs due to offset
         possiblePegs.push({ r: row, c: col });
         if (row > 0) possiblePegs.push({ r: row - 1, c: col });
         if (row < rows -1) possiblePegs.push({ r: row + 1, c: col });
@@ -217,11 +274,21 @@
         return null;
       }
 
-      // Function to color a peg
+      // Function to color or erase a peg
       function colorPeg(circle) {
-        if (circle && circle.getAttribute('data-colored') === 'false') {
-          circle.setAttribute('fill', colorSelect.value);
-          circle.setAttribute('data-colored', 'true');
+        if (circle && !coloredPegs.has(circle)) {
+          let selectedColor = currentColor;
+          if (isEraser) {
+            selectedColor = '#111'; // Eraser sets peg to #111
+          }
+
+          circle.setAttribute('fill', selectedColor);
+          coloredPegs.add(circle);
+
+          // Save the color to localStorage
+          const index = circle.getAttribute('data-index');
+          savedDrawing[index] = selectedColor;
+          localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
         }
       }
 
@@ -240,10 +307,7 @@
         e.preventDefault(); // Prevent default touch behaviors
 
         const peg = getPegUnderPointer(e);
-        if (peg && !coloredPegs.has(peg)) {
-          colorPeg(peg);
-          coloredPegs.add(peg);
-        }
+        colorPeg(peg);
       });
 
       // Stop drawing when pointer is lifted or leaves the SVG area
@@ -261,6 +325,36 @@
       document.addEventListener('pointerup', () => {
         isDrawing = false;
         coloredPegs.clear();
+      });
+
+      // Clear Board Functionality
+      clearButton.addEventListener('click', () => {
+        const allPegs = svgBoard.querySelectorAll('circle');
+        allPegs.forEach(peg => {
+          peg.setAttribute('fill', '#111'); // Reset to #111
+          const index = peg.getAttribute('data-index');
+          savedDrawing[index] = '#111';
+        });
+        localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
+      });
+
+      // Eraser Button Functionality
+      eraserButton.addEventListener('click', () => {
+        isEraser = !isEraser; // Toggle eraser mode
+        if (isEraser) {
+          eraserButton.classList.add('active');
+        } else {
+          eraserButton.classList.remove('active');
+        }
+      });
+
+      // Update currentColor when a new color is selected
+      colorSelect.addEventListener('change', () => {
+        currentColor = colorSelect.value;
+        if (isEraser) {
+          isEraser = false;
+          eraserButton.classList.remove('active');
+        }
       });
     });
   </script>
