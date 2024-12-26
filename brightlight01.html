@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Light Bright - 100% Height Below Header</title>
+
+  <style>
+    /* Reset and full-height layout */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    /* The page is split: a header at top, the rest is flexible main content */
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1rem;
+      background-color: #222; /* or black, up to you */
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      margin: 0 0 1rem;
+      font-size: 1.5rem;
+    }
+
+    .selector-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* The main content fills all remaining space below the header */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* The board container will fill the entire main content area */
+    .board-container {
+      position: relative;  /* so we can measure its size in JS */
+      flex: 1;            /* fill remaining vertical space */
+      border: 1px solid #444;
+      background-color: black;
+    }
+
+    /* The SVG that holds the pegs */
+    #lightBrightBoard {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background-color: black;
+    }
+
+    select {
+      font-size: 1rem;
+      padding: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Light Bright (100% Height)</h1>
+    <div class="selector-row">
+      <label for="colorSelect">Choose Peg Color:</label>
+      <select id="colorSelect">
+        <option value="#ffffff">White</option>
+        <option value="#ff0000">Red</option>
+        <option value="#00ff00">Green</option>
+        <option value="#0000ff">Blue</option>
+        <option value="#ffff00">Yellow</option>
+        <option value="#ff00ff">Magenta</option>
+        <option value="#00ffff">Cyan</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <div class="board-container">
+      <svg id="lightBrightBoard" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const colorSelect = document.getElementById('colorSelect');
+      const svgBoard    = document.getElementById('lightBrightBoard');
+      const board       = document.querySelector('.board-container');
+
+      // Measure the board container to figure out how many pegs can fit
+      const rect = board.getBoundingClientRect();
+      const containerWidth  = rect.width;
+      const containerHeight = rect.height;
+
+      // How large each peg cell is (pixels between centers)
+      const pegSpacing = 25;
+
+      // Number of columns & rows we can fit
+      const cols = Math.floor(containerWidth  / pegSpacing);
+      const rows = Math.floor(containerHeight / pegSpacing);
+
+      // Offset for staggered rows
+      const rowOffset = pegSpacing / 2;
+
+      // Set the SVG coordinate system to match the container size
+      svgBoard.setAttribute('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
+
+      let isDrawing = false; // Are we currently painting?
+
+      // If pointer goes down on the SVG, begin painting
+      svgBoard.addEventListener('pointerdown', () => {
+        isDrawing = true;
+      });
+
+      // On pointer up anywhere, stop painting
+      document.addEventListener('pointerup', () => {
+        isDrawing = false;
+      });
+
+      // If the pointer leaves the board entirely, also stop painting
+      svgBoard.addEventListener('pointerleave', () => {
+        isDrawing = false;
+      });
+
+      // Generate the peg circles
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          // Calculate x,y in the SVG coordinate system
+          const x = (r % 2 === 0) 
+            ? c * pegSpacing
+            : c * pegSpacing + rowOffset; // offset every other row
+          const y = r * pegSpacing;
+
+          // Create an SVG circle
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', x + pegSpacing/2);
+          circle.setAttribute('cy', y + pegSpacing/2);
+          // The radius is slightly smaller than half the spacing
+          circle.setAttribute('r', pegSpacing/2.2);
+          circle.setAttribute('fill', 'gray');
+          circle.style.cursor = 'pointer';
+
+          // Clicking on a circle => fill it
+          circle.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            circle.setAttribute('fill', colorSelect.value);
+          });
+
+          // Entering a circle while painting => fill it
+          circle.addEventListener('pointerenter', () => {
+            if (isDrawing) {
+              circle.setAttribute('fill', colorSelect.value);
+            }
+          });
+
+          // Append the peg to the SVG board
+          svgBoard.appendChild(circle);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
