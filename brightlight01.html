@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Light Bright - 100% Height, Mobile-Friendly</title>
+  <title>Light Bright - Enhanced Drawing</title>
 
   <style>
     /* Reset and full-height layout */
@@ -15,6 +15,7 @@
       background-color: black;
       color: white;
       font-family: Arial, sans-serif;
+      overflow: hidden; /* Prevent accidental scrolling */
     }
 
     /* The page is split: a header at top, the rest is flexible main content */
@@ -27,6 +28,7 @@
       padding: 1rem;
       background-color: #222; /* Dark header background */
       box-sizing: border-box;
+      flex-shrink: 0; /* Prevent header from shrinking */
     }
 
     header h1 {
@@ -76,7 +78,7 @@
 <body>
 
   <header>
-    <h1>Light Bright (100% Height, Mobile-Friendly)</h1>
+    <h1>Light Bright (Enhanced Drawing)</h1>
     <div class="selector-row">
       <label for="colorSelect">Choose Peg Color:</label>
       <select id="colorSelect">
@@ -87,6 +89,7 @@
         <option value="#ffff00">Yellow</option>
         <option value="#ff00ff">Magenta</option>
         <option value="#00ffff">Cyan</option>
+        <!-- Add more colors as desired -->
       </select>
     </div>
   </header>
@@ -103,79 +106,162 @@
       const svgBoard    = document.getElementById('lightBrightBoard');
       const board       = document.querySelector('.board-container');
 
-      // Measure the board container to figure out how many pegs can fit
-      const rect = board.getBoundingClientRect();
-      const containerWidth  = rect.width;
-      const containerHeight = rect.height;
+      // Configuration
+      const pegSpacing = 25; // Pixels between centers of pegs
+      const pegRadius = pegSpacing / 2.2; // Radius of each peg
 
-      // How large each peg cell is (pixels between centers)
-      const pegSpacing = 25;
+      let cols, rows, rowOffset, containerWidth, containerHeight;
 
-      // Calculate how many columns & rows we can fit
-      const cols = Math.floor(containerWidth  / pegSpacing);
-      const rows = Math.floor(containerHeight / pegSpacing);
+      // Function to calculate and create pegs
+      function createPegs() {
+        // Clear existing pegs
+        while (svgBoard.firstChild) {
+          svgBoard.removeChild(svgBoard.firstChild);
+        }
 
-      // Offset for staggered rows
-      const rowOffset = pegSpacing / 2;
+        // Measure the board container to figure out how many pegs can fit
+        const rect = board.getBoundingClientRect();
+        containerWidth  = rect.width;
+        containerHeight = rect.height;
 
-      // Set the SVG coordinate system to match the container size
-      svgBoard.setAttribute('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
+        // Calculate how many columns & rows we can fit
+        cols = Math.floor(containerWidth  / pegSpacing);
+        rows = Math.floor(containerHeight / pegSpacing);
+
+        // Offset for staggered rows
+        rowOffset = pegSpacing / 2;
+
+        // Set the SVG coordinate system to match the container size
+        svgBoard.setAttribute('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
+
+        // Generate the peg circles
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            // Calculate x,y in the SVG coordinate system
+            const x = (r % 2 === 0) 
+              ? c * pegSpacing
+              : c * pegSpacing + rowOffset; // offset every other row
+            const y = r * pegSpacing;
+
+            // Create an SVG circle
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x + pegSpacing/2);
+            circle.setAttribute('cy', y + pegSpacing/2);
+            // The radius is slightly smaller than half the spacing
+            circle.setAttribute('r', pegRadius);
+            circle.setAttribute('fill', 'gray');
+            circle.style.cursor = 'pointer';
+            circle.setAttribute('data-colored', 'false'); // Track coloring
+
+            // Append the peg to the SVG board
+            svgBoard.appendChild(circle);
+          }
+        }
+      }
+
+      // Initial peg creation
+      createPegs();
+
+      // Recalculate pegs on window resize for responsiveness
+      window.addEventListener('resize', () => {
+        createPegs();
+      });
 
       // Track whether we are currently "painting" (dragging with pointer down)
       let isDrawing = false;
+      let coloredPegs = new Set(); // To prevent recoloring the same peg multiple times during a drag
 
-      // pointerdown on the board => begin painting
-      svgBoard.addEventListener('pointerdown', (e) => {
-        e.preventDefault(); // Helps prevent default behavior on mobile
-        isDrawing = true;
-      });
+      // Helper function to get the peg under the pointer
+      function getPegUnderPointer(event) {
+        const point = svgBoard.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
 
-      // pointerup anywhere => stop painting
-      document.addEventListener('pointerup', () => {
-        isDrawing = false;
-      });
+        // Transform the point to SVG coordinates
+        const ctm = svgBoard.getScreenCTM().inverse();
+        const svgPoint = point.matrixTransform(ctm);
 
-      // pointerleave from the board => also stop painting
-      svgBoard.addEventListener('pointerleave', () => {
-        isDrawing = false;
-      });
+        // Calculate the closest peg indices
+        const col = Math.floor(svgPoint.x / pegSpacing);
+        const row = Math.floor(svgPoint.y / pegSpacing);
 
-      // Generate the peg circles
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          // Calculate x,y in the SVG coordinate system
-          const x = (r % 2 === 0) 
-            ? c * pegSpacing
-            : c * pegSpacing + rowOffset; // offset every other row
-          const y = r * pegSpacing;
+        // Calculate potential neighboring pegs due to offset
+        const possiblePegs = [];
 
-          // Create an SVG circle
-          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          circle.setAttribute('cx', x + pegSpacing/2);
-          circle.setAttribute('cy', y + pegSpacing/2);
-          // The radius is slightly smaller than half the spacing
-          circle.setAttribute('r', pegSpacing/2.2);
-          circle.setAttribute('fill', 'gray');
-          circle.style.cursor = 'pointer';
+        // Current row and previous row may have overlapping pegs due to offset
+        possiblePegs.push({ r: row, c: col });
+        if (row > 0) possiblePegs.push({ r: row - 1, c: col });
+        if (row < rows -1) possiblePegs.push({ r: row + 1, c: col });
 
-          // Single click/touch => fill it
-          circle.addEventListener('pointerdown', (e) => {
-            e.preventDefault(); 
-            isDrawing = true;
-            circle.setAttribute('fill', colorSelect.value);
-          });
+        // Iterate through possible pegs to find the one under the pointer
+        for (const peg of possiblePegs) {
+          const r = peg.r;
+          const c = peg.c;
 
-          // Drag over (pointerenter) => fill if isDrawing is true
-          circle.addEventListener('pointerenter', () => {
-            if (isDrawing) {
-              circle.setAttribute('fill', colorSelect.value);
+          if (r >= 0 && r < rows && c >= 0 && c < cols) {
+            const index = r * cols + c;
+            const circle = svgBoard.children[index];
+            if (!circle) continue;
+
+            // Calculate distance from pointer to peg center
+            const cx = parseFloat(circle.getAttribute('cx'));
+            const cy = parseFloat(circle.getAttribute('cy'));
+            const distance = Math.hypot(svgPoint.x - cx, svgPoint.y - cy);
+
+            if (distance <= pegRadius) {
+              return circle;
             }
-          });
+          }
+        }
 
-          // Append the peg to the SVG board
-          svgBoard.appendChild(circle);
+        return null;
+      }
+
+      // Function to color a peg
+      function colorPeg(circle) {
+        if (circle && circle.getAttribute('data-colored') === 'false') {
+          circle.setAttribute('fill', colorSelect.value);
+          circle.setAttribute('data-colored', 'true');
         }
       }
+
+      // Pointer event handlers
+      svgBoard.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // Prevent default touch behaviors
+        isDrawing = true;
+        coloredPegs.clear();
+
+        const peg = getPegUnderPointer(e);
+        colorPeg(peg);
+      });
+
+      svgBoard.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        e.preventDefault(); // Prevent default touch behaviors
+
+        const peg = getPegUnderPointer(e);
+        if (peg && !coloredPegs.has(peg)) {
+          colorPeg(peg);
+          coloredPegs.add(peg);
+        }
+      });
+
+      // Stop drawing when pointer is lifted or leaves the SVG area
+      svgBoard.addEventListener('pointerup', () => {
+        isDrawing = false;
+        coloredPegs.clear();
+      });
+
+      svgBoard.addEventListener('pointerleave', () => {
+        isDrawing = false;
+        coloredPegs.clear();
+      });
+
+      // Also stop drawing when pointer is lifted anywhere on the document
+      document.addEventListener('pointerup', () => {
+        isDrawing = false;
+        coloredPegs.clear();
+      });
     });
   </script>
 </body>
