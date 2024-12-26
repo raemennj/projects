@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Light Bright - 100% Height Below Header</title>
+  <title>Light Bright - 100% Height, Mobile-Friendly</title>
 
   <style>
     /* Reset and full-height layout */
@@ -25,7 +25,7 @@
 
     header {
       padding: 1rem;
-      background-color: #222; /* or black, up to you */
+      background-color: #222; /* Dark header background */
       box-sizing: border-box;
     }
 
@@ -50,10 +50,13 @@
 
     /* The board container will fill the entire main content area */
     .board-container {
-      position: relative;  /* so we can measure its size in JS */
+      position: relative;
       flex: 1;            /* fill remaining vertical space */
       border: 1px solid #444;
       background-color: black;
+      
+      /* Prevent the page from scrolling when a user swipes/drag inside this container */
+      touch-action: none;
     }
 
     /* The SVG that holds the pegs */
@@ -73,7 +76,7 @@
 <body>
 
   <header>
-    <h1>Light Bright (100% Height)</h1>
+    <h1>Light Bright (100% Height, Mobile-Friendly)</h1>
     <div class="selector-row">
       <label for="colorSelect">Choose Peg Color:</label>
       <select id="colorSelect">
@@ -108,7 +111,7 @@
       // How large each peg cell is (pixels between centers)
       const pegSpacing = 25;
 
-      // Number of columns & rows we can fit
+      // Calculate how many columns & rows we can fit
       const cols = Math.floor(containerWidth  / pegSpacing);
       const rows = Math.floor(containerHeight / pegSpacing);
 
@@ -118,19 +121,21 @@
       // Set the SVG coordinate system to match the container size
       svgBoard.setAttribute('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
 
-      let isDrawing = false; // Are we currently painting?
+      // Track whether we are currently "painting" (dragging with pointer down)
+      let isDrawing = false;
 
-      // If pointer goes down on the SVG, begin painting
-      svgBoard.addEventListener('pointerdown', () => {
+      // pointerdown on the board => begin painting
+      svgBoard.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // Helps prevent default behavior on mobile
         isDrawing = true;
       });
 
-      // On pointer up anywhere, stop painting
+      // pointerup anywhere => stop painting
       document.addEventListener('pointerup', () => {
         isDrawing = false;
       });
 
-      // If the pointer leaves the board entirely, also stop painting
+      // pointerleave from the board => also stop painting
       svgBoard.addEventListener('pointerleave', () => {
         isDrawing = false;
       });
@@ -153,14 +158,14 @@
           circle.setAttribute('fill', 'gray');
           circle.style.cursor = 'pointer';
 
-          // Clicking on a circle => fill it
+          // Single click/touch => fill it
           circle.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
+            e.preventDefault(); 
             isDrawing = true;
             circle.setAttribute('fill', colorSelect.value);
           });
 
-          // Entering a circle while painting => fill it
+          // Drag over (pointerenter) => fill if isDrawing is true
           circle.addEventListener('pointerenter', () => {
             if (isDrawing) {
               circle.setAttribute('fill', colorSelect.value);
