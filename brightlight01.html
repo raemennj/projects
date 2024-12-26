@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Light Bright - Persistent Drawing & Enhanced Features</title>
+  <title>Light Bright</title>
 
   <style>
     /* Reset and full-height layout */
@@ -34,6 +34,7 @@
     header h1 {
       margin: 0 0 1rem;
       font-size: 1.5rem;
+      text-align: center;
     }
 
     .selector-row {
@@ -42,6 +43,7 @@
       gap: 0.5rem;
       margin-bottom: 0.5rem;
       flex-wrap: wrap;
+      justify-content: center;
     }
 
     /* The main content fills all remaining space below the header */
@@ -107,32 +109,32 @@
 <body>
 
   <header>
-    <h1>Light Bright (Persistent Drawing)</h1>
+    <h1>Light Bright</h1>
     <div class="selector-row">
       <label for="colorSelect">Choose Peg Color:</label>
       <select id="colorSelect">
-        <!-- Expanded Color Palette -->
-        <option value="#ffffff">White</option>
-        <option value="#ff0000">Red</option>
-        <option value="#00ff00">Green</option>
-        <option value="#0000ff">Blue</option>
-        <option value="#ffff00">Yellow</option>
-        <option value="#ff00ff">Magenta</option>
-        <option value="#00ffff">Cyan</option>
-        <option value="#ffa500">Orange</option>
+        <!-- Crayola Color Palette -->
+        <option value="#FF0000">Red</option>
+        <option value="#FF7F00">Orange</option>
+        <option value="#FFFF00">Yellow</option>
+        <option value="#00FF00">Green</option>
+        <option value="#0000FF">Blue</option>
+        <option value="#4B0082">Indigo</option>
+        <option value="#9400D3">Violet</option>
+        <option value="#FFC0CB">Pink</option>
+        <option value="#A52A2A">Brown</option>
+        <option value="#FFFFFF">White</option>
+        <option value="#000000">Black</option>
+        <option value="#00CED1">Dark Turquoise</option>
+        <option value="#FFD700">Gold</option>
+        <option value="#ADFF2F">Green Yellow</option>
+        <option value="#7FFFD4">Aquamarine</option>
+        <option value="#FF69B4">Hot Pink</option>
         <option value="#800080">Purple</option>
-        <option value="#008000">Dark Green</option>
-        <option value="#ff1493">Deep Pink</option>
-        <option value="#00ced1">Dark Turquoise</option>
-        <option value="#f0e68c">Khaki</option>
-        <option value="#add8e6">Light Blue</option>
-        <option value="#ff69b4">Hot Pink</option>
-        <option value="#7fffd4">Aquamarine</option>
-        <option value="#cd5c5c">Indian Red</option>
-        <option value="#ff4500">Orange Red</option>
-        <option value="#2e8b57">Sea Green</option>
-        <option value="#daa520">Goldenrod</option>
-        <!-- Add more colors as desired -->
+        <option value="#FFA500">Orange Red</option>
+        <option value="#DC143C">Crimson</option>
+        <option value="#8A2BE2">Blue Violet</option>
+        <!-- Add more Crayola colors as desired -->
       </select>
       <button id="eraserButton">Eraser</button>
       <button id="clearBoard">Clear Board</button>
