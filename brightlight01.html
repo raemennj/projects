@@ -25,8 +25,10 @@
     }
 
     header {
-      padding: 1rem;
+      padding: .25rem;
       background-color: #222; /* Dark header background */
+		background-image:url("images/colorpeg.png");
+		background-position: -80px;
       box-sizing: border-box;
       flex-shrink: 0; /* Prevent header from shrinking */
     }
@@ -109,9 +111,8 @@
 <body>
 
   <header>
-    <h1>Light Bright</h1>
     <div class="selector-row">
-      <label for="colorSelect">Choose Peg Color:</label>
+      <label for="colorSelect">Color:</label>
       <select id="colorSelect">
         <!-- Crayola Color Palette -->
         <option value="#FF0000">Red</option>
@@ -136,8 +137,8 @@
         <option value="#8A2BE2">Blue Violet</option>
         <!-- Add more Crayola colors as desired -->
       </select>
-      <button id="eraserButton">Eraser</button>
       <button id="clearBoard">Clear Board</button>
+      <button id="eraserButton">Eraser</button>
     </div>
   </header>
 
