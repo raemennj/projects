@@ -73,7 +73,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      width: 100%; /* Make button fill the custom-dropdown */
+      width: 200px; /* Adjust width as needed */
       box-sizing: border-box;
     }
 
@@ -84,32 +84,45 @@
     }
 
     .dropdown-content {
-      display: none;
+      display: grid; /* Define as a grid container */
+      grid-template-columns: 1fr 1fr; /* Create two equal columns */
+      gap: 0.5rem; /* Space between grid items */
+      padding: 0.5rem 0; /* Adds vertical padding */
+      background-color: #111; /* Ensure background matches your design */
+      border-radius: 4px; /* Optional: Adds rounded corners */
       position: absolute;
-      background-color: #444;
-      min-width: 160px;
-      /* Remove max-height and overflow to display all items */
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-      border-radius: 4px;
-      z-index: 1;
-      margin-top: 0.5rem;
+		width: 300px;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1000; /* Ensure it appears above other elements */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      display: none; /* Hidden by default */
     }
 
     .dropdown-content.show {
-      display: block;
+      display: grid; /* Ensure grid layout remains when shown */
     }
 
     .dropdown-item {
-      padding: 0.5rem;
-      display: flex;
+      display: flex; /* Align items horizontally */
       align-items: center;
-      cursor: pointer;
-      gap: 0.5rem;
-      border-radius: 4px;
+      padding: 0.5rem 1rem; /* Adjust padding as needed */
+      box-sizing: border-box;
+      cursor: pointer; /* Change cursor on hover */
+      border-radius: 4px; /* Optional: Adds rounded corners */
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      outline: none; /* Remove default outline */
     }
 
-    .dropdown-item:hover {
-      background-color: #555;
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+      background-color: #555; /* Hover and focus effect */
+      transform: scale(1.02); /* Slightly enlarges the item on hover/focus */
+    }
+
+    .dropdown-item.active {
+      background-color: #666; /* Active state */
     }
 
     .swatch {
@@ -205,6 +218,41 @@
     header.animate-sweep {
       animation: sweepGradient var(--header-transition-duration) ease forwards;
     }
+
+    /* Solid background when eraser mode is active */
+    header.eraser-mode {
+      background: #111; /* Changed from grey to #111 */
+      transition: background var(--header-transition-duration) ease;
+    }
+
+    /* Responsive Design: Single Column on Small Screens */
+    @media (max-width: 600px) {
+      .dropdown-content {
+        grid-template-columns: 1fr; /* Switch to single column on small screens */
+      }
+
+      .dropdown-button {
+        width: 100%; /* Make dropdown button full width on small screens */
+      }
+    }
+
+    /* Scroll Indicators (optional) */
+    .dropdown-content::before,
+    .dropdown-content::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1rem;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(68, 68, 68, 0.8), rgba(68, 68, 68, 0));
+    }
+
+    .dropdown-content::after {
+      top: 100%;
+      transform: translateY(-1rem);
+      background: linear-gradient(to top, rgba(68, 68, 68, 0.8), rgba(68, 68, 68, 0));
+    }
   </style>
 </head>
 <body>
@@ -212,7 +260,7 @@
   <header>
     <h1></h1>
     <div class="selector-row">
-      <label for="colorSelect">Color:</label>
+      <label for="colorSelect">Choose Color:</label>
       
       <!-- Custom Dropdown -->
       <div class="custom-dropdown" aria-haspopup="true" aria-expanded="false">
@@ -222,83 +270,83 @@
         </button>
         <div class="dropdown-content" id="dropdownContent" role="menu">
           <!-- Crayola Color Palette -->
-          <div class="dropdown-item" data-color="#FF0000" data-name="Red">
+          <div class="dropdown-item" data-color="#FF0000" data-name="Red" tabindex="0">
             <div class="swatch" style="background-color: #FF0000;"></div>
             Red
           </div>
-          <div class="dropdown-item" data-color="#FF7F00" data-name="Orange">
+          <div class="dropdown-item" data-color="#FF7F00" data-name="Orange" tabindex="0">
             <div class="swatch" style="background-color: #FF7F00;"></div>
             Orange
           </div>
-          <div class="dropdown-item" data-color="#FFFF00" data-name="Yellow">
+          <div class="dropdown-item" data-color="#FFFF00" data-name="Yellow" tabindex="0">
             <div class="swatch" style="background-color: #FFFF00;"></div>
             Yellow
           </div>
-          <div class="dropdown-item" data-color="#00FF00" data-name="Green">
+          <div class="dropdown-item" data-color="#00FF00" data-name="Green" tabindex="0">
             <div class="swatch" style="background-color: #00FF00;"></div>
             Green
           </div>
-          <div class="dropdown-item" data-color="#0000FF" data-name="Blue">
+          <div class="dropdown-item" data-color="#0000FF" data-name="Blue" tabindex="0">
             <div class="swatch" style="background-color: #0000FF;"></div>
             Blue
           </div>
-          <div class="dropdown-item" data-color="#4B0082" data-name="Indigo">
+          <div class="dropdown-item" data-color="#4B0082" data-name="Indigo" tabindex="0">
             <div class="swatch" style="background-color: #4B0082;"></div>
             Indigo
           </div>
-          <div class="dropdown-item" data-color="#9400D3" data-name="Violet">
+          <div class="dropdown-item" data-color="#9400D3" data-name="Violet" tabindex="0">
             <div class="swatch" style="background-color: #9400D3;"></div>
             Violet
           </div>
-          <div class="dropdown-item" data-color="#FFC0CB" data-name="Pink">
+          <div class="dropdown-item" data-color="#FFC0CB" data-name="Pink" tabindex="0">
             <div class="swatch" style="background-color: #FFC0CB;"></div>
             Pink
           </div>
-          <div class="dropdown-item" data-color="#A52A2A" data-name="Brown">
+          <div class="dropdown-item" data-color="#A52A2A" data-name="Brown" tabindex="0">
             <div class="swatch" style="background-color: #A52A2A;"></div>
             Brown
           </div>
-          <div class="dropdown-item" data-color="#FFFFFF" data-name="White">
+          <div class="dropdown-item" data-color="#FFFFFF" data-name="White" tabindex="0">
             <div class="swatch" style="background-color: #FFFFFF;"></div>
             White
           </div>
-          <div class="dropdown-item" data-color="#000000" data-name="Black">
+          <div class="dropdown-item" data-color="#000000" data-name="Black" tabindex="0">
             <div class="swatch" style="background-color: #000000;"></div>
             Black
           </div>
-          <div class="dropdown-item" data-color="#00CED1" data-name="Dark Turquoise">
+          <div class="dropdown-item" data-color="#00CED1" data-name="Dark Turquoise" tabindex="0">
             <div class="swatch" style="background-color: #00CED1;"></div>
             Dark Turquoise
           </div>
-          <div class="dropdown-item" data-color="#FFD700" data-name="Gold">
+          <div class="dropdown-item" data-color="#FFD700" data-name="Gold" tabindex="0">
             <div class="swatch" style="background-color: #FFD700;"></div>
             Gold
           </div>
-          <div class="dropdown-item" data-color="#ADFF2F" data-name="Green Yellow">
+          <div class="dropdown-item" data-color="#ADFF2F" data-name="Green Yellow" tabindex="0">
             <div class="swatch" style="background-color: #ADFF2F;"></div>
             Green Yellow
           </div>
-          <div class="dropdown-item" data-color="#7FFFD4" data-name="Aquamarine">
+          <div class="dropdown-item" data-color="#7FFFD4" data-name="Aquamarine" tabindex="0">
             <div class="swatch" style="background-color: #7FFFD4;"></div>
             Aquamarine
           </div>
-          <div class="dropdown-item" data-color="#FF69B4" data-name="Hot Pink">
+          <div class="dropdown-item" data-color="#FF69B4" data-name="Hot Pink" tabindex="0">
             <div class="swatch" style="background-color: #FF69B4;"></div>
             Hot Pink
           </div>
-          <div class="dropdown-item" data-color="#800080" data-name="Purple">
+          <div class="dropdown-item" data-color="#800080" data-name="Purple" tabindex="0">
             <div class="swatch" style="background-color: #800080;"></div>
             Purple
           </div>
-          <div class="dropdown-item" data-color="#FFA500" data-name="Orange Red">
+          <div class="dropdown-item" data-color="#FFA500" data-name="Orange Red" tabindex="0">
             <div class="swatch" style="background-color: #FFA500;"></div>
             Orange Red
           </div>
-          <div class="dropdown-item" data-color="#DC143C" data-name="Crimson">
+          <div class="dropdown-item" data-color="#DC143C" data-name="Crimson" tabindex="0">
             <div class="swatch" style="background-color: #DC143C;"></div>
             Crimson
           </div>
-          <div class="dropdown-item" data-color="#8A2BE2" data-name="Blue Violet">
+          <div class="dropdown-item" data-color="#8A2BE2" data-name="Blue Violet" tabindex="0">
             <div class="swatch" style="background-color: #8A2BE2;"></div>
             Blue Violet
           </div>
@@ -306,7 +354,7 @@
         </div>
       </div>
 
-      <button id="eraserButton" title="Eraser">Eraser</button>
+      <button id="eraserButton" title="Activate Eraser">Eraser</button>
       <button id="clearBoard" title="Clear All Pegs">Clear Board</button>
     </div>
   </header>
@@ -558,13 +606,6 @@
         });
         localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
 
-        // **Option A:** Reset header background to default color (Red)
-        /*
-        document.documentElement.style.setProperty('--selected-color', '#FF0000'); // Reset to Red
-        header.classList.remove('eraser-mode');
-        triggerHeaderSweepAnimation();
-        */
-
         // **Option B:** Keep the current selected color
         header.classList.remove('eraser-mode');
         triggerHeaderSweepAnimation();
@@ -635,21 +676,38 @@
       customDropdown.addEventListener('click', (event) => {
         // Prevent the event from bubbling up to the window click listener
         event.stopPropagation();
-        dropdownContent.classList.toggle('show');
-
-        // Update ARIA attribute
-        const isExpanded = dropdownContent.classList.contains('show');
+        const isExpanded = dropdownContent.classList.toggle('show');
         customDropdown.setAttribute('aria-expanded', isExpanded);
+
+        if (isExpanded) {
+          // Focus the first dropdown item when opened
+          const firstItem = dropdownContent.querySelector('.dropdown-item');
+          if (firstItem) {
+            firstItem.focus();
+          }
+        }
       });
 
       // Handle color selection from dropdown
       const dropdownItems = document.querySelectorAll('.dropdown-item');
-      dropdownItems.forEach(item => {
+      dropdownItems.forEach((item, index) => {
         item.addEventListener('click', (event) => {
           event.stopPropagation(); // Prevent the dropdown from closing immediately
           const color = item.getAttribute('data-color');
           const name = item.getAttribute('data-name');
           selectColor(color, name);
+
+          // Update active state
+          dropdownItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+        });
+
+        // Keyboard navigation for dropdown items
+        item.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            item.click();
+          }
         });
       });
 
@@ -670,6 +728,7 @@
           const color = firstItem.getAttribute('data-color');
           const name = firstItem.getAttribute('data-name');
           selectColor(color, name);
+          firstItem.classList.add('active'); // Set the first item as active
         }
       }
 
