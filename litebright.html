@@ -1,0 +1,680 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lite Bright</title>
+
+  <style>
+    /* Reset and full-height layout */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden; /* Prevent accidental scrolling */
+    }
+
+    /* CSS Variables */
+    :root {
+      --selected-color: #FF0000; /* Default color (Red) */
+      --header-transition-duration: 0.5s;
+    }
+
+    /* The page is split: a header at top, the rest is flexible main content */
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1rem;
+      background: linear-gradient(to bottom, var(--selected-color), #111);
+      transition: background var(--header-transition-duration) ease;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      position: relative;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    header h1 {
+      margin: 0 0 1rem;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .selector-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* Custom Dropdown Styles */
+    .custom-dropdown {
+      position: relative;
+      display: inline-block;
+      cursor: pointer; /* Ensure cursor indicates clickable area */
+    }
+
+    .dropdown-button {
+      background-color: #333;
+      color: white;
+      padding: 0.25rem 0.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%; /* Make button fill the custom-dropdown */
+      box-sizing: border-box;
+    }
+
+    .dropdown-button::after {
+      content: '▼';
+      font-size: 0.6rem;
+      margin-left: auto;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #444;
+      min-width: 160px;
+      /* Remove max-height and overflow to display all items */
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      border-radius: 4px;
+      z-index: 1;
+      margin-top: 0.5rem;
+    }
+
+    .dropdown-content.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: 0.5rem;
+      border-radius: 4px;
+    }
+
+    .dropdown-item:hover {
+      background-color: #555;
+    }
+
+    .swatch {
+      position: relative;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .swatch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: white;
+      opacity: 0.3;
+    }
+
+    /* The main content fills all remaining space below the header */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* The board container will fill the entire main content area */
+    .board-container {
+      position: relative;
+      flex: 1;            /* Fill remaining vertical space */
+      border: 1px solid #444;
+      background-color: black;
+      
+      /* Prevent the page from scrolling when a user swipes/drag inside this container */
+      touch-action: none;
+    }
+
+    /* The SVG that holds the pegs */
+    #lightBrightBoard {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background-color: black;
+    }
+
+    select, button {
+      font-size: 1rem;
+      padding: 0.25rem 0.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    select {
+      background-color: #333;
+      color: white;
+    }
+
+    select:focus, button:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #00ffff;
+    }
+
+    button {
+      background-color: #444;
+      color: white;
+      margin-left: 0.5rem;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    button.active {
+      background-color: #00ffff;
+      color: black;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    /* Sweep Animation */
+    @keyframes sweepGradient {
+      from {
+        background-position: top;
+      }
+      to {
+        background-position: bottom;
+      }
+    }
+
+    header.animate-sweep {
+      animation: sweepGradient var(--header-transition-duration) ease forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1></h1>
+    <div class="selector-row">
+      <label for="colorSelect">Color:</label>
+      
+      <!-- Custom Dropdown -->
+      <div class="custom-dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="dropdown-button" id="dropdownButton" aria-label="Select Color">
+          <div class="swatch" id="currentSwatch" style="background-color: #FF0000;"></div>
+          <span id="currentColorName">Red</span>
+        </button>
+        <div class="dropdown-content" id="dropdownContent" role="menu">
+          <!-- Crayola Color Palette -->
+          <div class="dropdown-item" data-color="#FF0000" data-name="Red">
+            <div class="swatch" style="background-color: #FF0000;"></div>
+            Red
+          </div>
+          <div class="dropdown-item" data-color="#FF7F00" data-name="Orange">
+            <div class="swatch" style="background-color: #FF7F00;"></div>
+            Orange
+          </div>
+          <div class="dropdown-item" data-color="#FFFF00" data-name="Yellow">
+            <div class="swatch" style="background-color: #FFFF00;"></div>
+            Yellow
+          </div>
+          <div class="dropdown-item" data-color="#00FF00" data-name="Green">
+            <div class="swatch" style="background-color: #00FF00;"></div>
+            Green
+          </div>
+          <div class="dropdown-item" data-color="#0000FF" data-name="Blue">
+            <div class="swatch" style="background-color: #0000FF;"></div>
+            Blue
+          </div>
+          <div class="dropdown-item" data-color="#4B0082" data-name="Indigo">
+            <div class="swatch" style="background-color: #4B0082;"></div>
+            Indigo
+          </div>
+          <div class="dropdown-item" data-color="#9400D3" data-name="Violet">
+            <div class="swatch" style="background-color: #9400D3;"></div>
+            Violet
+          </div>
+          <div class="dropdown-item" data-color="#FFC0CB" data-name="Pink">
+            <div class="swatch" style="background-color: #FFC0CB;"></div>
+            Pink
+          </div>
+          <div class="dropdown-item" data-color="#A52A2A" data-name="Brown">
+            <div class="swatch" style="background-color: #A52A2A;"></div>
+            Brown
+          </div>
+          <div class="dropdown-item" data-color="#FFFFFF" data-name="White">
+            <div class="swatch" style="background-color: #FFFFFF;"></div>
+            White
+          </div>
+          <div class="dropdown-item" data-color="#000000" data-name="Black">
+            <div class="swatch" style="background-color: #000000;"></div>
+            Black
+          </div>
+          <div class="dropdown-item" data-color="#00CED1" data-name="Dark Turquoise">
+            <div class="swatch" style="background-color: #00CED1;"></div>
+            Dark Turquoise
+          </div>
+          <div class="dropdown-item" data-color="#FFD700" data-name="Gold">
+            <div class="swatch" style="background-color: #FFD700;"></div>
+            Gold
+          </div>
+          <div class="dropdown-item" data-color="#ADFF2F" data-name="Green Yellow">
+            <div class="swatch" style="background-color: #ADFF2F;"></div>
+            Green Yellow
+          </div>
+          <div class="dropdown-item" data-color="#7FFFD4" data-name="Aquamarine">
+            <div class="swatch" style="background-color: #7FFFD4;"></div>
+            Aquamarine
+          </div>
+          <div class="dropdown-item" data-color="#FF69B4" data-name="Hot Pink">
+            <div class="swatch" style="background-color: #FF69B4;"></div>
+            Hot Pink
+          </div>
+          <div class="dropdown-item" data-color="#800080" data-name="Purple">
+            <div class="swatch" style="background-color: #800080;"></div>
+            Purple
+          </div>
+          <div class="dropdown-item" data-color="#FFA500" data-name="Orange Red">
+            <div class="swatch" style="background-color: #FFA500;"></div>
+            Orange Red
+          </div>
+          <div class="dropdown-item" data-color="#DC143C" data-name="Crimson">
+            <div class="swatch" style="background-color: #DC143C;"></div>
+            Crimson
+          </div>
+          <div class="dropdown-item" data-color="#8A2BE2" data-name="Blue Violet">
+            <div class="swatch" style="background-color: #8A2BE2;"></div>
+            Blue Violet
+          </div>
+          <!-- Add more Crayola colors as desired -->
+        </div>
+      </div>
+
+      <button id="eraserButton" title="Eraser">Eraser</button>
+      <button id="clearBoard" title="Clear All Pegs">Clear Board</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="board-container">
+      <svg id="lightBrightBoard" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const customDropdown = document.querySelector('.custom-dropdown');
+      const dropdownContent = document.getElementById('dropdownContent');
+      const currentSwatch = document.getElementById('currentSwatch');
+      const currentColorName = document.getElementById('currentColorName');
+      const eraserButton = document.getElementById('eraserButton');
+      const clearButton = document.getElementById('clearBoard');
+      const svgBoard    = document.getElementById('lightBrightBoard');
+      const board       = document.querySelector('.board-container');
+      const header      = document.querySelector('header');
+
+      // Configuration
+      const pegSpacing = 25; // Pixels between centers of pegs
+      const pegRadius = pegSpacing / 2.2; // Radius of each peg
+
+      let cols, rows, rowOffset, containerWidth, containerHeight;
+      let currentColor = null; // Current drawing color
+      let isEraser = false; // Eraser mode flag
+
+      // Load saved drawing from localStorage
+      let savedDrawing = JSON.parse(localStorage.getItem('lightBrightDrawing')) || {};
+
+      // Function to calculate and create pegs
+      function createPegs() {
+        // Clear existing pegs
+        while (svgBoard.firstChild) {
+          svgBoard.removeChild(svgBoard.firstChild);
+        }
+
+        // Measure the board container to figure out how many pegs can fit
+        const rect = board.getBoundingClientRect();
+        containerWidth  = rect.width;
+        containerHeight = rect.height;
+
+        // Calculate how many columns & rows we can fit
+        cols = Math.floor(containerWidth  / pegSpacing);
+        rows = Math.floor(containerHeight / pegSpacing);
+
+        // Offset for staggered rows
+        rowOffset = pegSpacing / 2;
+
+        // Set the SVG coordinate system to match the container size
+        svgBoard.setAttribute('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
+
+        // Generate the peg circles
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            // Calculate x,y in the SVG coordinate system
+            const x = (r % 2 === 0) 
+              ? c * pegSpacing
+              : c * pegSpacing + rowOffset; // offset every other row
+            const y = r * pegSpacing;
+
+            // Create an SVG group to hold the peg and its highlight
+            const pegGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+            // Create the main peg circle
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x + pegSpacing/2);
+            circle.setAttribute('cy', y + pegSpacing/2);
+            // The radius is slightly smaller than half the spacing
+            circle.setAttribute('r', pegRadius);
+            circle.setAttribute('fill', '#111'); // Default color changed to #111
+            circle.style.cursor = 'pointer';
+            circle.setAttribute('data-index', r * cols + c); // Unique index for each peg
+            circle.classList.add('peg');
+
+            // Apply saved color if exists and not default
+            if (savedDrawing[r * cols + c] && savedDrawing[r * cols + c] !== '#111') {
+              circle.setAttribute('fill', savedDrawing[r * cols + c]);
+              // Apply glow effect
+              circle.style.filter = `drop-shadow(0 0 5px ${savedDrawing[r * cols + c]})`;
+            }
+
+            // Create the highlight circle
+            const highlight = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            highlight.setAttribute('cx', (x + pegSpacing/2) - pegRadius * 0.3);
+            highlight.setAttribute('cy', (y + pegSpacing/2) - pegRadius * 0.3);
+            highlight.setAttribute('r', pegRadius * 0.4);
+            highlight.setAttribute('fill', 'white');
+            highlight.setAttribute('opacity', (savedDrawing[r * cols + c] && savedDrawing[r * cols + c] !== '#111') ? '0.3' : '0');
+            highlight.style.pointerEvents = 'none'; // Allow pointer events to pass through
+            highlight.classList.add('highlight');
+
+            // Append circles to the group
+            pegGroup.appendChild(circle);
+            pegGroup.appendChild(highlight);
+
+            // Append the group to the SVG board
+            svgBoard.appendChild(pegGroup);
+          }
+        }
+      }
+
+      // Initial peg creation
+      createPegs();
+
+      // Recalculate pegs on window resize for responsiveness with debouncing
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          createPegs();
+        }, 200);
+      });
+
+      // Track whether we are currently "painting" (dragging with pointer down)
+      let isDrawing = false;
+      let coloredPegs = new Set(); // To prevent recoloring the same peg multiple times during a drag
+
+      // Helper function to get the peg under the pointer
+      function getPegUnderPointer(event) {
+        const point = svgBoard.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
+
+        // Transform the point to SVG coordinates
+        const ctm = svgBoard.getScreenCTM().inverse();
+        const svgPoint = point.matrixTransform(ctm);
+
+        // Calculate the closest peg indices
+        const col = Math.floor(svgPoint.x / pegSpacing);
+        const row = Math.floor(svgPoint.y / pegSpacing);
+
+        // Calculate potential neighboring pegs due to offset
+        const possiblePegs = [];
+
+        // Current row and adjacent rows may have overlapping pegs due to offset
+        possiblePegs.push({ r: row, c: col });
+        if (row > 0) possiblePegs.push({ r: row - 1, c: col });
+        if (row < rows -1) possiblePegs.push({ r: row + 1, c: col });
+
+        // Iterate through possible pegs to find the one under the pointer
+        for (const peg of possiblePegs) {
+          const r = peg.r;
+          const c = peg.c;
+
+          if (r >= 0 && r < rows && c >= 0 && c < cols) {
+            const index = r * cols + c;
+            const pegGroup = svgBoard.children[index];
+            if (!pegGroup) continue;
+
+            const circle = pegGroup.querySelector('circle.peg');
+
+            // Calculate distance from pointer to peg center
+            const cx = parseFloat(circle.getAttribute('cx'));
+            const cy = parseFloat(circle.getAttribute('cy'));
+            const distance = Math.hypot(svgPoint.x - cx, svgPoint.y - cy);
+
+            if (distance <= pegRadius) {
+              return circle;
+            }
+          }
+        }
+
+        return null;
+      }
+
+      // Function to color or erase a peg
+      function colorPeg(circle) {
+        if (circle && !coloredPegs.has(circle)) {
+          let selectedColor = currentColor;
+          if (isEraser) {
+            selectedColor = '#111'; // Eraser sets peg to #111
+          }
+
+          circle.setAttribute('fill', selectedColor);
+          coloredPegs.add(circle);
+
+          // Apply or remove glow effect
+          if (selectedColor !== '#111') {
+            circle.style.filter = `drop-shadow(0 0 5px ${selectedColor})`;
+          } else {
+            circle.style.filter = '';
+          }
+
+          // Access the highlight circle
+          const highlight = circle.parentElement.querySelector('circle.highlight');
+          if (selectedColor !== '#111') {
+            highlight.setAttribute('opacity', '0.3');
+          } else {
+            highlight.setAttribute('opacity', '0');
+          }
+
+          // Save the color to localStorage
+          const index = circle.getAttribute('data-index');
+          savedDrawing[index] = selectedColor;
+          localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
+        }
+      }
+
+      // Pointer event handlers
+      svgBoard.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // Prevent default touch behaviors
+        isDrawing = true;
+        coloredPegs.clear();
+
+        const peg = getPegUnderPointer(e);
+        colorPeg(peg);
+      });
+
+      svgBoard.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        e.preventDefault(); // Prevent default touch behaviors
+
+        const peg = getPegUnderPointer(e);
+        colorPeg(peg);
+      });
+
+      // Stop drawing when pointer is lifted or leaves the SVG area
+      svgBoard.addEventListener('pointerup', () => {
+        isDrawing = false;
+        coloredPegs.clear();
+      });
+
+      svgBoard.addEventListener('pointerleave', () => {
+        isDrawing = false;
+        coloredPegs.clear();
+      });
+
+      // Also stop drawing when pointer is lifted anywhere on the document
+      document.addEventListener('pointerup', () => {
+        isDrawing = false;
+        coloredPegs.clear();
+      });
+
+      // Clear Board Functionality
+      clearButton.addEventListener('click', () => {
+        const allPegGroups = svgBoard.querySelectorAll('g');
+        allPegGroups.forEach(pegGroup => {
+          const circle = pegGroup.querySelector('circle.peg');
+          const highlight = pegGroup.querySelector('circle.highlight');
+          circle.setAttribute('fill', '#111'); // Reset to #111
+          circle.style.filter = ''; // Remove glow effect
+          highlight.setAttribute('opacity', '0'); // Hide highlight
+          const index = circle.getAttribute('data-index');
+          savedDrawing[index] = '#111';
+        });
+        localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
+
+        // **Option A:** Reset header background to default color (Red)
+        /*
+        document.documentElement.style.setProperty('--selected-color', '#FF0000'); // Reset to Red
+        header.classList.remove('eraser-mode');
+        triggerHeaderSweepAnimation();
+        */
+
+        // **Option B:** Keep the current selected color
+        header.classList.remove('eraser-mode');
+        triggerHeaderSweepAnimation();
+      });
+
+      // Eraser Button Functionality
+      eraserButton.addEventListener('click', () => {
+        isEraser = !isEraser; // Toggle eraser mode
+        if (isEraser) {
+          eraserButton.classList.add('active');
+          eraserButton.textContent = 'Eraser (On)';
+          toggleHeaderBackgroundForEraser(true);
+        } else {
+          eraserButton.classList.remove('active');
+          eraserButton.textContent = 'Eraser';
+          toggleHeaderBackgroundForEraser(false);
+        }
+      });
+
+      // Function to handle color selection
+      function selectColor(color, name) {
+        currentColor = color;
+        isEraser = false;
+        eraserButton.classList.remove('active');
+        eraserButton.textContent = 'Eraser';
+        currentSwatch.style.backgroundColor = color;
+        currentColorName.textContent = name;
+        dropdownContent.classList.remove('show');
+
+        // Update the header background color
+        updateHeaderBackground(color);
+      }
+
+      // Function to update the header's gradient background
+      function updateHeaderBackground(color) {
+        // Update the CSS variable
+        document.documentElement.style.setProperty('--selected-color', color);
+
+        // Trigger the sweep animation
+        triggerHeaderSweepAnimation();
+      }
+
+      // Function to toggle header background for eraser mode
+      function toggleHeaderBackgroundForEraser(isEraserActive) {
+        if (isEraserActive) {
+          header.classList.add('eraser-mode');
+        } else {
+          header.classList.remove('eraser-mode');
+          // Optionally reset to the current selected color
+          document.documentElement.style.setProperty('--selected-color', currentColor);
+          triggerHeaderSweepAnimation();
+        }
+      }
+
+      // Function to trigger the sweep animation
+      function triggerHeaderSweepAnimation() {
+        // Remove the animation class if it's already present to allow re-triggering
+        header.classList.remove('animate-sweep');
+
+        // Trigger reflow to restart the animation
+        void header.offsetWidth;
+
+        // Add the animation class
+        header.classList.add('animate-sweep');
+      }
+
+      // Handle dropdown toggle on the entire custom-dropdown
+      customDropdown.addEventListener('click', (event) => {
+        // Prevent the event from bubbling up to the window click listener
+        event.stopPropagation();
+        dropdownContent.classList.toggle('show');
+
+        // Update ARIA attribute
+        const isExpanded = dropdownContent.classList.contains('show');
+        customDropdown.setAttribute('aria-expanded', isExpanded);
+      });
+
+      // Handle color selection from dropdown
+      const dropdownItems = document.querySelectorAll('.dropdown-item');
+      dropdownItems.forEach(item => {
+        item.addEventListener('click', (event) => {
+          event.stopPropagation(); // Prevent the dropdown from closing immediately
+          const color = item.getAttribute('data-color');
+          const name = item.getAttribute('data-name');
+          selectColor(color, name);
+        });
+      });
+
+      // Close the dropdown if clicked outside
+      window.addEventListener('click', (event) => {
+        if (!customDropdown.contains(event.target)) {
+          if (dropdownContent.classList.contains('show')) {
+            dropdownContent.classList.remove('show');
+            customDropdown.setAttribute('aria-expanded', 'false');
+          }
+        }
+      });
+
+      // Initialize the dropdown to the first color
+      function initializeDefaultColor() {
+        const firstItem = document.querySelector('.dropdown-item');
+        if (firstItem) {
+          const color = firstItem.getAttribute('data-color');
+          const name = firstItem.getAttribute('data-name');
+          selectColor(color, name);
+        }
+      }
+
+      initializeDefaultColor();
+    });
+  </script>
+</body>
+</html>
