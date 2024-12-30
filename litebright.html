@@ -91,7 +91,7 @@
       background-color: #111; /* Ensure background matches your design */
       border-radius: 4px; /* Optional: Adds rounded corners */
       position: absolute;
-		width: 300px;
+      width: 300px;
       top: 100%;
       left: 0;
       right: 0;
@@ -234,6 +234,43 @@
       .dropdown-button {
         width: 100%; /* Make dropdown button full width on small screens */
       }
+      
+      /* Adjust modal size for small screens */
+      .modal-content {
+        width: 95%;
+        max-width: 95%;
+      }
+
+      /* Adjust save-slot layout */
+      .save-slot {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .save-slot-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .save-slot-preview {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      .save-slot-buttons {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      /* Ensure buttons take full width */
+      .save-slot-buttons button {
+        width: 100%;
+      }
+
+      .save-slot-buttons {
+        width: 100%;
+      }
     }
 
     /* Scroll Indicators (optional) */
@@ -253,6 +290,248 @@
       transform: translateY(-1rem);
       background: linear-gradient(to top, rgba(68, 68, 68, 0.8), rgba(68, 68, 68, 0));
     }
+
+    /* Modal Styles */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 2000; /* Above other elements */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #222;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #444;
+      width: 90%;
+      max-width: 800px;
+      border-radius: 8px;
+      color: white;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .save-slots {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .save-slot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #333;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+
+    .save-slot-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      position: relative;
+    }
+
+    .save-slot-info input {
+      background-color: #555;
+      color: white;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      width: 150px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    .save-slot-info input::placeholder {
+      color: #ccc;
+    }
+
+    .save-slot-info input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #00ffff;
+    }
+
+    .save-slot-info .save-name-button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-left: 0.5rem;
+      transition: color 0.2s ease;
+    }
+
+    .save-slot-info .save-name-button:hover {
+      color: #00ffff;
+    }
+
+    .save-slot-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: 1rem;
+    }
+
+    .save-slot-buttons button {
+      background-color: #555;
+      color: white;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .save-slot-buttons button:hover {
+      background-color: #666;
+    }
+
+    .save-slot-buttons button.delete-button {
+      background-color: #d9534f; /* Red for delete */
+    }
+
+    .save-slot-buttons button.delete-button:hover {
+      background-color: #c9302c;
+    }
+
+    .save-slot-buttons button.save-button {
+      background-color: #5bc0de; /* Blue for save */
+    }
+
+    .save-slot-buttons button.save-button:hover {
+      background-color: #31b0d5;
+    }
+
+    /* Thumbnail Preview Styles */
+    .save-slot-preview {
+      width: 60px;
+      height: 60px;
+      background-color: #111;
+      border: 1px solid #444;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-left: 1rem;
+      flex-shrink: 0;
+    }
+
+    .save-slot-preview svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Confirmation Modal Styles */
+    .confirmation-modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 3000; /* Above all */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .confirmation-content {
+      background-color: #222;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #444;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 8px;
+      color: white;
+      text-align: center;
+      position: relative;
+    }
+
+    .confirmation-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .confirmation-buttons button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .confirmation-buttons button.confirm {
+      background-color: #5cb85c; /* Green */
+      color: white;
+    }
+
+    .confirmation-buttons button.confirm:hover {
+      background-color: #4cae4c;
+    }
+
+    .confirmation-buttons button.discard {
+      background-color: #d9534f; /* Red */
+      color: white;
+    }
+
+    .confirmation-buttons button.discard:hover {
+      background-color: #c9302c;
+    }
+
+    .confirmation-buttons button.cancel {
+      background-color: #777; /* Grey */
+      color: white;
+    }
+
+    .confirmation-buttons button.cancel:hover {
+      background-color: #666;
+    }
+
+    /* Scroll Indicators for Modal Content */
+    .save-slots::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .save-slots::-webkit-scrollbar-track {
+      background: #333;
+    }
+
+    .save-slots::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 4px;
+    }
+
   </style>
 </head>
 <body>
@@ -350,12 +629,13 @@
             <div class="swatch" style="background-color: #8A2BE2;"></div>
             Blue Violet
           </div>
-          <!-- Add more Crayola colors as desired -->
+          <!-- Add more colors as desired -->
         </div>
       </div>
 
       <button id="eraserButton" title="Activate Eraser">Eraser</button>
       <button id="clearBoard" title="Clear All Pegs">Clear Board</button>
+      <button id="saveLoadButton" title="Save or Load Pegboards">Save/Load</button>
     </div>
   </header>
 
@@ -364,6 +644,80 @@
       <svg id="lightBrightBoard" preserveAspectRatio="xMidYMid meet"></svg>
     </div>
   </main>
+
+  <!-- Save/Load Modal -->
+  <div class="modal" id="saveLoadModal" aria-hidden="true" role="dialog" aria-labelledby="saveLoadModalTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="saveLoadModalTitle">Save Manager</h2>
+        <button class="close-modal" id="closeSaveLoadModal" aria-label="Close Save/Load Modal">&times;</button>
+      </div>
+      <div class="save-slots">
+        <!-- Four Save Slots -->
+        <div class="save-slot" data-slot="1">
+          <div class="save-slot-info">
+            <input type="text" id="slot-name-1" placeholder="Slot 1" aria-label="Slot 1 Name">
+            <button class="save-name-button" title="Save Slot 1 Name" aria-label="Save Slot 1 Name">✔</button>
+            <div class="save-slot-preview" id="slot-preview-1"></div>
+          </div>
+          <div class="save-slot-buttons">
+            <button class="save-button" title="Save to Slot 1">Save</button>
+            <button class="load-button" title="Load from Slot 1">Load</button>
+            <button class="delete-button" title="Delete Slot 1">Delete</button>
+          </div>
+        </div>
+        <div class="save-slot" data-slot="2">
+          <div class="save-slot-info">
+            <input type="text" id="slot-name-2" placeholder="Slot 2" aria-label="Slot 2 Name">
+            <button class="save-name-button" title="Save Slot 2 Name" aria-label="Save Slot 2 Name">✔</button>
+            <div class="save-slot-preview" id="slot-preview-2"></div>
+          </div>
+          <div class="save-slot-buttons">
+            <button class="save-button" title="Save to Slot 2">Save</button>
+            <button class="load-button" title="Load from Slot 2">Load</button>
+            <button class="delete-button" title="Delete Slot 2">Delete</button>
+          </div>
+        </div>
+        <div class="save-slot" data-slot="3">
+          <div class="save-slot-info">
+            <input type="text" id="slot-name-3" placeholder="Slot 3" aria-label="Slot 3 Name">
+            <button class="save-name-button" title="Save Slot 3 Name" aria-label="Save Slot 3 Name">✔</button>
+            <div class="save-slot-preview" id="slot-preview-3"></div>
+          </div>
+          <div class="save-slot-buttons">
+            <button class="save-button" title="Save to Slot 3">Save</button>
+            <button class="load-button" title="Load from Slot 3">Load</button>
+            <button class="delete-button" title="Delete Slot 3">Delete</button>
+          </div>
+        </div>
+        <div class="save-slot" data-slot="4">
+          <div class="save-slot-info">
+            <input type="text" id="slot-name-4" placeholder="Slot 4" aria-label="Slot 4 Name">
+            <button class="save-name-button" title="Save Slot 4 Name" aria-label="Save Slot 4 Name">✔</button>
+            <div class="save-slot-preview" id="slot-preview-4"></div>
+          </div>
+          <div class="save-slot-buttons">
+            <button class="save-button" title="Save to Slot 4">Save</button>
+            <button class="load-button" title="Load from Slot 4">Load</button>
+            <button class="delete-button" title="Delete Slot 4">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="confirmation-modal" id="confirmationModal" aria-hidden="true" role="dialog" aria-labelledby="confirmationModalTitle">
+    <div class="confirmation-content">
+      <h3 id="confirmationModalTitle">Unsaved Changes</h3>
+      <p>You have unsaved changes. Would you like to save them before proceeding?</p>
+      <div class="confirmation-buttons">
+        <button class="confirm" id="confirmSave">Save</button>
+        <button class="discard" id="confirmDiscard">Discard</button>
+        <button class="cancel" id="cancelAction">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -377,6 +731,16 @@
       const board       = document.querySelector('.board-container');
       const header      = document.querySelector('header');
 
+      // New Elements for Save/Load
+      const saveLoadButton     = document.getElementById('saveLoadButton');
+      const saveLoadModal      = document.getElementById('saveLoadModal');
+      const closeSaveLoadModal = document.getElementById('closeSaveLoadModal');
+      const saveSlots          = document.querySelectorAll('.save-slot');
+      const confirmationModal  = document.getElementById('confirmationModal');
+      const confirmSaveBtn     = document.getElementById('confirmSave');
+      const confirmDiscardBtn  = document.getElementById('confirmDiscard');
+      const cancelActionBtn    = document.getElementById('cancelAction');
+
       // Configuration
       const pegSpacing = 25; // Pixels between centers of pegs
       const pegRadius = pegSpacing / 2.2; // Radius of each peg
@@ -387,6 +751,9 @@
 
       // Load saved drawing from localStorage
       let savedDrawing = JSON.parse(localStorage.getItem('lightBrightDrawing')) || {};
+
+      // Track if current board has unsaved changes
+      let isBoardModified = false;
 
       // Function to calculate and create pegs
       function createPegs() {
@@ -534,6 +901,7 @@
 
           circle.setAttribute('fill', selectedColor);
           coloredPegs.add(circle);
+          isBoardModified = true; // Mark board as modified
 
           // Apply or remove glow effect
           if (selectedColor !== '#111') {
@@ -554,6 +922,9 @@
           const index = circle.getAttribute('data-index');
           savedDrawing[index] = selectedColor;
           localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
+
+          // Update thumbnail previews if necessary
+          updateAllThumbnails();
         }
       }
 
@@ -605,10 +976,14 @@
           savedDrawing[index] = '#111';
         });
         localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
+        isBoardModified = false; // Reset modification flag
 
         // **Option B:** Keep the current selected color
         header.classList.remove('eraser-mode');
         triggerHeaderSweepAnimation();
+
+        // Update all thumbnails to show cleared state
+        updateAllThumbnails();
       });
 
       // Eraser Button Functionality
@@ -624,6 +999,7 @@
           toggleHeaderBackgroundForEraser(false);
         }
       });
+
 
       // Function to handle color selection
       function selectColor(color, name) {
@@ -733,6 +1109,322 @@
       }
 
       initializeDefaultColor();
+
+      /* ------------------ Save/Load Functionality ------------------ */
+
+      // Open Save/Load Modal
+      saveLoadButton.addEventListener('click', () => {
+        updateSaveSlotsUI();
+        saveLoadModal.style.display = 'flex';
+        saveLoadModal.setAttribute('aria-hidden', 'false');
+      });
+
+      // Close Save/Load Modal
+      closeSaveLoadModal.addEventListener('click', () => {
+        saveLoadModal.style.display = 'none';
+        saveLoadModal.setAttribute('aria-hidden', 'true');
+      });
+
+      // Function to update the UI of save slots
+      function updateSaveSlotsUI() {
+        saveSlots.forEach(slot => {
+          const slotNumber = slot.getAttribute('data-slot');
+          const slotNameInput = document.getElementById(`slot-name-${slotNumber}`);
+          const slotPreview = document.getElementById(`slot-preview-${slotNumber}`);
+          const savedName = localStorage.getItem(`lightBrightSlot${slotNumber}Name`);
+          if (savedName && savedName !== 'Empty') {
+            slotNameInput.value = savedName;
+            slotNameInput.placeholder = savedName;
+          } else {
+            slotNameInput.value = '';
+            slotNameInput.placeholder = `Slot ${slotNumber}`;
+          }
+
+          // Generate thumbnail preview
+          generateThumbnail(slotNumber);
+        });
+      }
+
+      // Handle Save, Load, and Delete Buttons
+      saveSlots.forEach(slot => {
+        const slotNumber = slot.getAttribute('data-slot');
+        const saveButton = slot.querySelector('.save-button');
+        const loadButton = slot.querySelector('.load-button');
+        const deleteButton = slot.querySelector('.delete-button');
+        const slotNameInput = document.getElementById(`slot-name-${slotNumber}`);
+        const saveNameButton = slot.querySelector('.save-name-button');
+
+        // Save Button (Saves the pegboard to the slot)
+        saveButton.addEventListener('click', () => {
+          const existingData = localStorage.getItem(`lightBrightSlot${slotNumber}`);
+          const slotName = slotNameInput.value.trim() || `Slot ${slotNumber}`;
+
+          if (existingData) {
+            // Prompt to overwrite
+            const confirmOverwrite = confirm(`Slot ${slotNumber} already has a saved pegboard. Do you want to overwrite it?`);
+            if (!confirmOverwrite) {
+              return;
+            }
+          }
+
+          // Save the current board to this slot
+          saveCurrentBoard(slotNumber, slotName);
+        });
+
+        // Load Button
+        loadButton.addEventListener('click', () => {
+          const slotData = localStorage.getItem(`lightBrightSlot${slotNumber}`);
+          if (!slotData) {
+            alert('This slot is empty.');
+            return;
+          }
+
+          if (isBoardModified) {
+            // Prompt the user to save or discard changes before loading
+            confirmationModal.style.display = 'flex';
+            confirmationModal.setAttribute('aria-hidden', 'false');
+
+            // Store the target slot to load after confirmation
+            confirmationModal.dataset.targetSlot = slotNumber;
+            confirmationModal.dataset.action = 'load';
+          } else {
+            // Directly load the slot
+            loadSlot(slotNumber);
+          }
+        });
+
+        // Delete Button
+        deleteButton.addEventListener('click', () => {
+          const confirmDelete = confirm(`Are you sure you want to delete Slot ${slotNumber}?`);
+          if (confirmDelete) {
+            localStorage.removeItem(`lightBrightSlot${slotNumber}`);
+            localStorage.removeItem(`lightBrightSlot${slotNumber}Name`);
+            updateSaveSlotsUI();
+          }
+        });
+
+        // Save Name Button (Checkmark)
+        saveNameButton.addEventListener('click', () => {
+          const newName = slotNameInput.value.trim();
+          if (newName === '') {
+            alert('Slot name cannot be empty.');
+            slotNameInput.focus();
+            return;
+          }
+
+          // Save the name to localStorage
+          localStorage.setItem(`lightBrightSlot${slotNumber}Name`, newName);
+          alert(`Slot ${slotNumber} name has been updated to "${newName}".`);
+
+          // Update the placeholder to reflect the saved name
+          slotNameInput.placeholder = newName;
+        });
+
+        // Handle Enter key for saving the name
+        slotNameInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            saveNameButton.click();
+          }
+        });
+      });
+
+      // Save/Load Modal Close on outside click
+      window.addEventListener('click', (event) => {
+        if (event.target === saveLoadModal) {
+          saveLoadModal.style.display = 'none';
+          saveLoadModal.setAttribute('aria-hidden', 'true');
+        }
+        if (event.target === confirmationModal) {
+          confirmationModal.style.display = 'none';
+          confirmationModal.setAttribute('aria-hidden', 'true');
+          delete confirmationModal.dataset.targetSlot;
+          delete confirmationModal.dataset.action;
+        }
+      });
+
+      // Confirmation Modal Buttons
+      confirmSaveBtn.addEventListener('click', () => {
+        const targetSlot = confirmationModal.dataset.targetSlot;
+        const action = confirmationModal.dataset.action;
+        if (action === 'load') {
+          const slotNameInput = document.getElementById(`slot-name-${targetSlot}`);
+          const slotName = slotNameInput.value.trim() || `Slot ${targetSlot}`;
+          saveCurrentBoard(targetSlot, slotName, () => {
+            confirmationModal.style.display = 'none';
+            confirmationModal.setAttribute('aria-hidden', 'true');
+            loadSlot(targetSlot);
+          });
+        } else {
+          // Future actions can be handled here
+          confirmationModal.style.display = 'none';
+          confirmationModal.setAttribute('aria-hidden', 'true');
+          delete confirmationModal.dataset.targetSlot;
+          delete confirmationModal.dataset.action;
+        }
+      });
+
+      confirmDiscardBtn.addEventListener('click', () => {
+        const targetSlot = confirmationModal.dataset.targetSlot;
+        const action = confirmationModal.dataset.action;
+        if (action === 'load') {
+          confirmationModal.style.display = 'none';
+          confirmationModal.setAttribute('aria-hidden', 'true');
+          loadSlot(targetSlot);
+        } else {
+          // Future actions can be handled here
+          confirmationModal.style.display = 'none';
+          confirmationModal.setAttribute('aria-hidden', 'true');
+          delete confirmationModal.dataset.targetSlot;
+          delete confirmationModal.dataset.action;
+        }
+      });
+
+      cancelActionBtn.addEventListener('click', () => {
+        confirmationModal.style.display = 'none';
+        confirmationModal.setAttribute('aria-hidden', 'true');
+        delete confirmationModal.dataset.targetSlot;
+        delete confirmationModal.dataset.action;
+      });
+
+      // Function to save current board to a slot
+      function saveCurrentBoard(slotNumber, slotName, callback) {
+        // Save the drawing
+        localStorage.setItem(`lightBrightSlot${slotNumber}`, JSON.stringify(savedDrawing));
+        localStorage.setItem(`lightBrightSlot${slotNumber}Name`, slotName);
+        updateSaveSlotsUI();
+        isBoardModified = false; // Reset modification flag
+        if (callback) callback();
+      }
+
+      // Function to load a board from a slot
+      function loadSlot(slotNumber) {
+        const slotData = JSON.parse(localStorage.getItem(`lightBrightSlot${slotNumber}`));
+        if (!slotData) {
+          alert('This slot is empty.');
+          return;
+        }
+
+        // Clear current board
+        const allPegGroups = svgBoard.querySelectorAll('g');
+        allPegGroups.forEach(pegGroup => {
+          const circle = pegGroup.querySelector('circle.peg');
+          const highlight = pegGroup.querySelector('circle.highlight');
+          circle.setAttribute('fill', '#111'); // Reset to #111
+          circle.style.filter = ''; // Remove glow effect
+          highlight.setAttribute('opacity', '0'); // Hide highlight
+        });
+
+        // Apply the loaded drawing
+        for (const [index, color] of Object.entries(slotData)) {
+          const pegGroup = svgBoard.children[index];
+          if (pegGroup) {
+            const circle = pegGroup.querySelector('circle.peg');
+            const highlight = pegGroup.querySelector('circle.highlight');
+            circle.setAttribute('fill', color);
+            if (color !== '#111') {
+              circle.style.filter = `drop-shadow(0 0 5px ${color})`;
+              highlight.setAttribute('opacity', '0.3');
+            } else {
+              circle.style.filter = '';
+              highlight.setAttribute('opacity', '0');
+            }
+          }
+        }
+
+        // Update the current saved drawing
+        savedDrawing = slotData;
+        localStorage.setItem('lightBrightDrawing', JSON.stringify(savedDrawing));
+        isBoardModified = false; // Reset modification flag
+
+        // Close the Save/Load modal
+        saveLoadModal.style.display = 'none';
+        saveLoadModal.setAttribute('aria-hidden', 'true');
+      }
+
+      // Function to check if current board differs from savedDrawing
+      function checkUnsavedChanges() {
+        const currentDrawing = JSON.parse(localStorage.getItem('lightBrightDrawing')) || {};
+        // Compare currentDrawing with savedDrawing
+        for (const key in currentDrawing) {
+          if (currentDrawing[key] !== savedDrawing[key]) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // Listen to changes to mark the board as modified
+      const observer = new MutationObserver(() => {
+        if (checkUnsavedChanges()) {
+          isBoardModified = true;
+        } else {
+          isBoardModified = false;
+        }
+      });
+
+      observer.observe(svgBoard, { attributes: true, childList: true, subtree: true });
+
+      /* ------------------ Thumbnail Preview Functionality ------------------ */
+
+      // Function to generate a thumbnail preview for a given slot
+      function generateThumbnail(slotNumber) {
+        const slotData = JSON.parse(localStorage.getItem(`lightBrightSlot${slotNumber}`));
+        const previewDiv = document.getElementById(`slot-preview-${slotNumber}`);
+        
+        // Clear previous thumbnail
+        while (previewDiv.firstChild) {
+          previewDiv.removeChild(previewDiv.firstChild);
+        }
+        
+        if (!slotData) {
+          // No saved data, leave it empty or show a placeholder
+          return;
+        }
+
+        // Define thumbnail SVG dimensions
+        const thumbWidth = 60;
+        const thumbHeight = 60;
+        const thumbCols = 10;
+        const thumbRows = 10;
+        const thumbPegSpacingX = thumbWidth / thumbCols;
+        const thumbPegSpacingY = thumbHeight / thumbRows;
+        const thumbPegRadius = Math.min(thumbPegSpacingX, thumbPegSpacingY) / 2.2;
+
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("width", thumbWidth);
+        svg.setAttribute("height", thumbHeight);
+
+        // Iterate through the thumbnail grid
+        for (let r = 0; r < thumbRows; r++) {
+          for (let c = 0; c < thumbCols; c++) {
+            const index = r * thumbCols + c;
+            const color = slotData[index] || '#111'; // default color
+            
+            // Create circle
+            const circle = document.createElementNS(svgNS, "circle");
+            circle.setAttribute('cx', c * thumbPegSpacingX + thumbPegSpacingX / 2);
+            circle.setAttribute('cy', r * thumbPegSpacingY + thumbPegSpacingY / 2);
+            circle.setAttribute('r', thumbPegRadius);
+            circle.setAttribute('fill', color);
+            svg.appendChild(circle);
+          }
+        }
+
+        previewDiv.appendChild(svg);
+      }
+
+      // Function to update all thumbnails (called when board is modified)
+      function updateAllThumbnails() {
+        saveSlots.forEach(slot => {
+          const slotNumber = slot.getAttribute('data-slot');
+          generateThumbnail(slotNumber);
+        });
+      }
+
+      /* ------------------ End of Thumbnail Preview Functionality ------------------ */
+
     });
   </script>
 </body>
