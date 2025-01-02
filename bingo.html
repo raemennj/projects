@@ -122,7 +122,7 @@
 
     .card-label {
       font-size: 1.2em;
-      margin-bottom: 10px;
+      margin: 10px;
       color: #333;
       font-weight: bold;
     }
@@ -217,6 +217,10 @@
         align-items: center;
         width: 100%;
       }
+		.cell {
+			
+      font-size: 16px;
+		}
 		
       .print-card-wrapper {
         margin-bottom: 40px;
@@ -375,9 +379,9 @@
         <label for="saveTitle">Bingo Game Title:</label>
         <input type="text" id="saveTitle" placeholder="Bingo Game Title" />
         <button id="saveItems" class="save-slot-button">Save</button>
-        <label for="saveSlots">Saved Slots:</label>
+        <label for="saveSlots">Saved Games:</label>
         <select id="saveSlots">
-          <option value="" disabled selected>Select Slot</option>
+          <option value="" disabled selected>Select Game</option>
         </select>
         <button id="loadItems" class="save-slot-button">Load</button>
         <button id="deleteItems" class="save-slot-button">Delete</button>
@@ -457,7 +461,7 @@
       const savedSlots = getAllSaveSlots();
       
       // Clear existing options
-      saveSlotsSelect.innerHTML = '<option value="" disabled selected>Select Slot</option>';
+      saveSlotsSelect.innerHTML = '<option value="" disabled selected>Select Game</option>';
       
       // Populate with saved slots
       Object.keys(savedSlots).forEach(title => {
