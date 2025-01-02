@@ -152,7 +152,7 @@
     }
 
     .cell.marked {
-      background-color: #ffeb3b;
+      background-color: #ffffff;
       color: #000000;
     }
 
@@ -601,12 +601,12 @@
           // Use an image of the Girl Scout trefoil for FREE space
           cell.innerHTML = `
             <img 
-              src="trefoil.png" 
+              src="images/trefoil.png" 
               alt="Girl Scout Trefoil" 
               onerror="this.style.display='none'" 
               style="max-width: 80%; margin-bottom: 5px;"
             ><br>
-            FREE
+            
           `;
           cell.classList.add('marked'); // Automatically mark the FREE space
         } else {
