@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Girl Scout Bingo</title>
+  <style>
+    /* ===== GLOBAL STYLES ===== */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #4CAF50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== CONTAINER ===== */
+    #container {
+      width: 90%;
+      max-width: 1200px; /* Adjusted to accommodate multiple cards */
+      background-color: antiquewhite;
+      padding: 20px;
+      border-radius: 5px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 20px;
+    }
+
+    /* ===== MAIN TITLE ===== */
+    #mainTitle {
+      background-color: antiquewhite;
+      padding: 15px 25px;
+      border-radius: 10px;
+      color: #4CAF50;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      grid-column: 1 / -1;
+      margin-bottom: 20px;
+      font-size: 2em;
+    }
+
+    /* ===== LEFT SECTION (Input & Save Controls) ===== */
+    #left {
+      display: flex;
+      flex-direction: column;
+      width: 75%;
+    }
+
+    textarea#items {
+      width: 100%;
+      height: 320px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      padding: 8px;
+      font-size: 14px;
+      resize: vertical;
+    }
+
+    #save-slot-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #saveTitle, #saveSlots, button.save-slot-button {
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 5px;
+    }
+
+    #saveTitle, #saveSlots {
+      flex: 1;
+      min-width: 40%;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
+
+    button:disabled {
+      background-color: #a5a5a5;
+      cursor: not-allowed;
+    }
+
+    /* ===== RIGHT SECTION (Cards & Controls) ===== */
+    #right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== BINGO CARD DISPLAY ===== */
+    #card, #print-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px; /* Space between cards */
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .card-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 500px; /* Fixed width for consistency */
+      margin-bottom: 40px;
+    }
+
+    .card-label {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .card {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-gap: 5px;
+      width: 100%;
+    }
+
+    .cell {
+      border: 2px solid #000;
+      border-radius: 5px;
+      text-align: center;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      background-color: #fff;
+      transition: background-color 0.3s ease;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .cell.marked {
+      background-color: #ffeb3b;
+      color: #000000;
+    }
+
+    .cell:hover {
+      background-color: #e0e0e0;
+    }
+
+    /* ===== IMAGES WITHIN CELLS ===== */
+    .cell img {
+      max-width: 80%;
+      height: auto;
+      margin-bottom: 5px;
+    }
+
+    /* ===== CARD CONTROLS ===== */
+    #card-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #card-controls label {
+      font-size: 14px;
+    }
+
+    #cardQuantity {
+      width: 60px;
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    /* ===== PRINT STYLES ===== */
+    @media print {
+      @page {
+        margin: 1in; /* Sets a 1-inch margin on all sides */
+      }
+
+      body * {
+        visibility: hidden;
+      }
+      #print-section, #print-section * {
+        visibility: visible;
+      }
+      #print-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 0;
+        margin: 0;
+      }
+      #print-section h1 {
+        display: none; /* Hide the main print title */
+      }
+      #print-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+		
+      .print-card-wrapper {
+        margin-bottom: 40px;
+        page-break-after: always; /* Each card on a new page */
+        width: 100%; /* Adjusted to fit within 1-inch margins */
+      }
+      .print-card-wrapper:last-child {
+        page-break-after: avoid;
+      }
+      /* Style for the card title in print */
+      .print-card-wrapper h2 {
+        font-size: 2.5em;
+        margin-bottom: 30px; /* Padding between title and card */
+        color: #000000; /* Match the theme color */
+      }
+      /* Ensure the card itself is styled correctly */
+      .print-card-wrapper .card {
+        margin: 0 auto;
+      }
+      /* Hide card labels in print */
+      .card-label {
+        display: none;
+      }
+      footer {
+        display: none; /* Hide footer in print */
+      }
+    }
+
+    /* ===== HIDDEN PRINT SECTION ===== */
+    #print-section {
+      display: none;
+    }
+
+    /* ===== NOTIFICATION STYLES ===== */
+    #notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 5px;
+      color: #fff;
+      display: none;
+      z-index: 1000;
+    }
+    
+    #notification.success {
+      background-color: #4CAF50;
+    }
+    
+    #notification.error {
+      background-color: #f44336;
+    }
+    
+    .hidden {
+      display: none;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      margin-top: 20px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+      
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 800px) {
+      #container {
+        grid-template-columns: 1fr;
+      }
+
+      #card-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #card-controls label, #card-controls input, #card-controls button {
+        width: 100%;
+      }
+.card-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%; /* Set to 100% for responsive design */
+  max-width: 6.5in; /* Ensures it fits within 1-inch margins on a letter-sized page */
+  margin-bottom: 40px;
+  box-sizing: border-box; /* Include padding and border in width */
+}
+
+    }
+
+    /* ===== LOADING INDICATOR ===== */
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 20px 40px;
+      border-radius: 10px;
+      font-size: 1.2em;
+      display: none;
+      z-index: 2000;
+    }
+
+    /* ===== DARK MODE STYLES (OPTIONAL) ===== */
+    body.dark-mode {
+      background-color: #121212;
+      color: #ffffff;
+    }
+    
+    .dark-mode #container {
+      background-color: #1e1e1e;
+    }
+    
+    .dark-mode #mainTitle {
+      background-color: #1e1e1e;
+      color: #bb86fc;
+      box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+    }
+    
+    .dark-mode .cell {
+      background-color: #2c2c2c;
+      color: #bb86fc;
+      border-color: #bb86fc;
+    }
+    
+    .dark-mode .cell:hover {
+      background-color: #3c3c3c;
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== NOTIFICATION AREA ===== -->
+  <div id="notification" class="hidden"></div>
+
+  <!-- ===== LOADING INDICATOR ===== -->
+  <div id="loading">
+    <p>Generating Bingo Cards...</p>
+  </div>
+
+  <!-- ===== MAIN TITLE ===== -->
+  <h1 id="mainTitle">Girl Scout Bingo</h1>
+
+  <!-- ===== MAIN CONTAINER ===== -->
+  <div id="container">
+    <!-- ===== LEFT SECTION ===== -->
+    <section id="left">
+      <!-- Bingo Items Textarea -->
+      <label for="items">Bingo Items:</label>
+      <textarea id="items" placeholder="Type 25-40 items, one per line..."></textarea>
+
+      <!-- Save Slot Controls -->
+      <div id="save-slot-container">
+        <label for="saveTitle">Bingo Game Title:</label>
+        <input type="text" id="saveTitle" placeholder="Bingo Game Title" />
+        <button id="saveItems" class="save-slot-button">Save</button>
+        <label for="saveSlots">Saved Slots:</label>
+        <select id="saveSlots">
+          <option value="" disabled selected>Select Slot</option>
+        </select>
+        <button id="loadItems" class="save-slot-button">Load</button>
+        <button id="deleteItems" class="save-slot-button">Delete</button>
+      </div>
+    </section>
+
+    <!-- ===== RIGHT SECTION ===== -->
+    <aside id="right">
+		      <!-- Bingo Card Controls -->
+      <div id="card-controls">
+        <!-- Quantity Input -->
+        <label for="cardQuantity">Number of Cards:</label>
+        <input type="number" id="cardQuantity" min="1" max="100" value="1" />
+        <button id="makeCard">Make</button>
+        <button id="printCard">Print</button>
+      </div>
+		
+		
+      <!-- Bingo Card Display -->
+      <div id="card"></div>
+
+
+    </aside>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    &copy; Troop 1565 - SU 132 - Girl Scouts Heart of Central California
+  </footer>
+  
+  <!-- ===== PRINT SECTION (HIDDEN ON SCREEN) ===== -->
+  <div id="print-section">
+    <div id="print-card"></div>
+  </div>
+
+  <!-- ===== JAVASCRIPT ===== -->
+  <script>
+    /********************************************************************
+     * 1) Header: Manage Main Title
+     ********************************************************************/
+    const mainTitle = document.getElementById('mainTitle');
+
+    /********************************************************************
+     * 2) Managing Items in Local Storage with Save Slots
+     ********************************************************************/
+    const itemsTextArea = document.getElementById('items');
+    const saveItemsBtn  = document.getElementById('saveItems');
+    const loadItemsBtn  = document.getElementById('loadItems');
+    const deleteItemsBtn = document.getElementById('deleteItems');
+    const saveTitleInput = document.getElementById('saveTitle');
+    const saveSlotsSelect = document.getElementById('saveSlots');
+    const cardContainer = document.getElementById('card');
+    const makeCardBtn   = document.getElementById('makeCard');
+    const printCardBtn  = document.getElementById('printCard');
+    const cardQuantityInput = document.getElementById('cardQuantity');
+    const printSection = document.getElementById('print-section');
+    const printCardContainer = document.getElementById('print-card');
+    const notification = document.getElementById('notification');
+    const loadingIndicator = document.getElementById('loading');
+    const footer = document.querySelector('footer');
+
+    // Function to get all saved slots from localStorage
+    function getAllSaveSlots() {
+      const savedData = JSON.parse(localStorage.getItem('bingoSaveSlots')) || {};
+      console.log("Retrieved Saved Slots:", savedData); // Debugging Line
+      return savedData;
+    }
+
+    // Function to save all slots back to localStorage
+    function saveAllSaveSlots(data) {
+      localStorage.setItem('bingoSaveSlots', JSON.stringify(data));
+      console.log("Saved Slots Updated:", data); // Debugging Line
+    }
+
+    // Function to update the save slots dropdown
+    function updateSaveSlotsDropdown() {
+      const savedSlots = getAllSaveSlots();
+      
+      // Clear existing options
+      saveSlotsSelect.innerHTML = '<option value="" disabled selected>Select Slot</option>';
+      
+      // Populate with saved slots
+      Object.keys(savedSlots).forEach(title => {
+        const option = document.createElement('option');
+        option.value = title;
+        option.textContent = title;
+        saveSlotsSelect.appendChild(option);
+      });
+      
+      console.log("Dropdown Options After Population:", saveSlotsSelect.innerHTML); // Debugging Line
+
+      // Update button states
+      loadItemsBtn.disabled = saveSlotsSelect.options.length <= 1;
+      deleteItemsBtn.disabled = saveSlotsSelect.options.length <= 1;
+    }
+
+    // Save items to a named slot in localStorage
+    saveItemsBtn.addEventListener('click', () => {
+      const title = saveTitleInput.value.trim();
+      const text = itemsTextArea.value.trim();
+
+      if (!title) {
+        showNotification('Please enter a title for the save slot.', 'error');
+        return;
+      }
+
+      if (!text) {
+        showNotification('Please enter items to save.', 'error');
+        return;
+      }
+
+      const savedSlots = getAllSaveSlots();
+
+      if (savedSlots[title]) {
+        const confirmOverwrite = confirm(`A save slot with the title "${title}" already exists. Overwrite it?`);
+        if (!confirmOverwrite) {
+          return;
+        }
+      }
+
+      savedSlots[title] = text;
+      saveAllSaveSlots(savedSlots);
+      updateSaveSlotsDropdown();
+      showNotification(`Items saved under the title "${title}"!`, 'success');
+      saveTitleInput.value = ''; // Clear the title input
+
+      // Update the main title to the save slot title
+      mainTitle.textContent = title;
+    });
+
+    // Load items from a selected slot in localStorage
+    loadItemsBtn.addEventListener('click', () => {
+      const selectedTitle = saveSlotsSelect.value;
+      if (!selectedTitle) {
+        showNotification('Please select a save slot to load.', 'error');
+        return;
+      }
+
+      const savedSlots = getAllSaveSlots();
+      const savedItems = savedSlots[selectedTitle] || '';
+      itemsTextArea.value = savedItems;
+      showNotification(`Items loaded from the slot "${selectedTitle}"!`, 'success');
+
+      // Update the main title to the loaded slot title
+      mainTitle.textContent = selectedTitle;
+    });
+
+    // Delete a selected slot from localStorage
+    deleteItemsBtn.addEventListener('click', () => {
+      const selectedTitle = saveSlotsSelect.value;
+      if (!selectedTitle) {
+        showNotification('Please select a save slot to delete.', 'error');
+        return;
+      }
+
+      const confirmDelete = confirm(`Are you sure you want to delete the save slot "${selectedTitle}"?`);
+      if (!confirmDelete) {
+        return;
+      }
+
+      const savedSlots = getAllSaveSlots();
+      delete savedSlots[selectedTitle];
+      saveAllSaveSlots(savedSlots);
+      updateSaveSlotsDropdown();
+      showNotification(`Save slot "${selectedTitle}" has been deleted.`, 'success');
+
+      // If the deleted slot was the current title, reset the main title
+      if (mainTitle.textContent === selectedTitle) {
+        mainTitle.textContent = 'Girl Scout Bingo';
+      }
+    });
+
+    /********************************************************************
+     * 3) Utility: Shuffle an array in place
+     ********************************************************************/
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    /********************************************************************
+     * 4) Create a 5x5 Bingo grid with FREE space in the center
+     ********************************************************************/
+    function createBingoCard(itemsArray, container, label = '') {
+      // Create a wrapper for the card and its label
+      const cardWrapper = document.createElement('div');
+      cardWrapper.className = 'card-wrapper';
+
+      // Create and append the label if provided
+      if (label) {
+        const cardLabel = document.createElement('div');
+        cardLabel.className = 'card-label';
+        cardLabel.textContent = label;
+        cardWrapper.appendChild(cardLabel);
+      }
+
+      // Create the bingo card
+      const card = document.createElement('div');
+      card.className = 'card';
+      cardWrapper.appendChild(card);
+
+      // We only need 25 items maximum for the 5x5 card
+      const selectedItems = itemsArray.slice(0, 25);
+
+      // Overwrite the center cell (index 12) with a placeholder
+      selectedItems[12] = "FREE";
+
+      // Create the 25 grid cells
+      selectedItems.forEach((text, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+
+        if (i === 12) {
+          // Use an image of the Girl Scout trefoil for FREE space
+          cell.innerHTML = `
+            <img 
+              src="trefoil.png" 
+              alt="Girl Scout Trefoil" 
+              onerror="this.style.display='none'" 
+              style="max-width: 80%; margin-bottom: 5px;"
+            ><br>
+            FREE
+          `;
+          cell.classList.add('marked'); // Automatically mark the FREE space
+        } else {
+          cell.textContent = sanitizeInput(text);
+          // Add click event to toggle marking
+          cell.addEventListener('click', () => {
+            cell.classList.toggle('marked');
+          });
+        }
+        card.appendChild(cell);
+      });
+
+      // Append the card wrapper to the container
+      container.appendChild(cardWrapper);
+    }
+
+    /********************************************************************
+     * 5) Generate the Bingo Card (Make) & Print
+     ********************************************************************/
+    // On “Make Bingo Card” button click
+    makeCardBtn.addEventListener('click', () => {
+      // Show loading indicator
+      loadingIndicator.style.display = 'block';
+
+      // Get items from the text area
+      const rawText = itemsTextArea.value.trim();
+      let allItems  = rawText.split('\n').map(item => item.trim()).filter(x => x !== '');
+
+      // Remove duplicates
+      allItems = [...new Set(allItems)];
+
+      // Validate number of unique items
+      if (allItems.length < 24) {
+        showNotification('Please enter at least 24 unique items to generate a Bingo card.', 'error');
+        loadingIndicator.style.display = 'none';
+        return;
+      }
+
+      // Get the number of cards to generate
+      let quantity = parseInt(cardQuantityInput.value, 10);
+      if (isNaN(quantity) || quantity < 1) {
+        showNotification('Please enter a valid number of cards to generate.', 'error');
+        loadingIndicator.style.display = 'none';
+        return;
+      }
+
+      // Limit the maximum number of cards to prevent performance issues
+      quantity = Math.min(quantity, 100); // Adjust the maximum as needed
+
+      // Clear existing cards
+      cardContainer.innerHTML = '';
+
+      // Generate unique bingo cards
+      for (let i = 0; i < quantity; i++) {
+        // Shuffle the items uniquely for each card
+        const shuffledItems = shuffle([...allItems]);
+
+        // Create a new bingo card with a label
+        createBingoCard(shuffledItems, cardContainer, `Card ${i + 1}`);
+      }
+
+      // Hide loading indicator
+      loadingIndicator.style.display = 'none';
+
+      showNotification(`${quantity} Bingo card(s) generated successfully!`, 'success');
+    });
+
+    // Print the Bingo Card(s)
+    printCardBtn.addEventListener('click', () => {
+      // Check if any cards have been generated
+      if (cardContainer.children.length === 0) {
+        showNotification('Please generate at least one Bingo card before printing.', 'error');
+        return;
+      }
+
+      // Show loading indicator
+      loadingIndicator.style.display = 'block';
+
+      // Clear previous print content
+      printCardContainer.innerHTML = '';
+
+      // Iterate through each card and append it to the print container
+      Array.from(cardContainer.children).forEach((cardWrapper, index) => {
+        // Create a new wrapper for the print card
+        const printCardWrapper = document.createElement('div');
+        printCardWrapper.className = 'print-card-wrapper';
+
+        // Create title element for the Bingo card
+        const cardTitle = document.createElement('h2');
+        cardTitle.textContent = `${mainTitle.textContent}`;
+        printCardWrapper.appendChild(cardTitle);
+
+        // Clone the card-wrapper without the card label
+        const clonedCardWrapper = cardWrapper.cloneNode(true);
+
+        // Remove the card label from the cloned card-wrapper
+        const cardLabel = clonedCardWrapper.querySelector('.card-label');
+        if (cardLabel) {
+          clonedCardWrapper.removeChild(cardLabel);
+        }
+
+        // Append the cloned card to the print wrapper
+        printCardWrapper.appendChild(clonedCardWrapper);
+
+        // Append the print wrapper to the print container
+        printCardContainer.appendChild(printCardWrapper);
+      });
+
+      // Hide the main container and title to ensure only the print section is printed
+      document.getElementById('container').style.display = 'none';
+      mainTitle.style.display = 'none'; // Hide the main title globally
+      footer.style.display = 'none'; // Hide footer in print
+
+      // Show the print section
+      printSection.style.display = 'block';
+
+      // Hide the loading indicator before printing
+      loadingIndicator.style.display = 'none';
+
+      // Trigger the print dialog
+      window.print();
+
+      // After printing, hide the print section and show the main container and title
+      printSection.style.display = 'none';
+      document.getElementById('container').style.display = 'grid';
+      mainTitle.style.display = 'block';
+      footer.style.display = 'block';
+    });
+
+    /********************************************************************
+     * 6) Input Sanitization
+     ********************************************************************/
+    function sanitizeInput(str) {
+      const temp = document.createElement('div');
+      temp.textContent = str;
+      return temp.innerHTML;
+    }
+
+    /********************************************************************
+     * 7) Notifications
+     ********************************************************************/
+    function showNotification(message, type = 'success') {
+      notification.textContent = message;
+      notification.className = ''; // Reset classes
+      notification.classList.add(type);
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+
+    /********************************************************************
+     * 8) Initial Setup
+     ********************************************************************/
+    // Set initial print title based on main title and populate save slots on load
+    window.addEventListener('load', () => {
+      const savedTitle = localStorage.getItem('bingoTitle');
+      if (savedTitle) {
+        mainTitle.textContent = savedTitle;
+      }
+      updateSaveSlotsDropdown(); // Populate save slots on load
+    });
+  </script>
+
+  <!-- ===== EXTERNAL LIBRARIES ===== -->
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- html2canvas Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
