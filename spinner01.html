@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spinning Wheel Decision Maker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Reset and Basic Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      user-select: none; /* Prevent text selection during swipe */
+    }
+
+    /* Wheel Container */
+    .wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 20px;
+    }
+
+    /* Spinning Wheel */
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 10px solid #333;
+      position: relative;
+      overflow: hidden;
+      transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    /* Wheel Segments */
+    .segment {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      top: 50%;
+      left: 50%;
+      transform-origin: 0% 0%;
+      text-align: right;
+      padding-right: 10px;
+      box-sizing: border-box;
+    }
+
+    .segment div {
+      transform: rotate(90deg);
+      width: 200%;
+      height: 200%;
+      position: absolute;
+      top: -100%;
+      left: -100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #fff;
+      pointer-events: none; /* Prevent text from capturing touch events */
+    }
+
+    /* Pointer Indicator */
+    .pointer {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      color: red;
+      z-index: 1;
+    }
+
+    /* Manage Options Button */
+    #manageOptionsBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #manageOptionsBtn:hover {
+      background-color: #555;
+    }
+
+    /* Modal Styling */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+      padding: 20px;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .modal-content input,
+    .modal-content textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .modal-content button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .modal-content button:hover {
+      background-color: #555;
+    }
+
+    /* Saved Sets List */
+    #savedSetsList {
+      list-style-type: none;
+      padding: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+
+    #savedSetsList li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    #savedSetsList li:hover {
+      background-color: #f0f0f0;
+    }
+
+    .set-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .set-actions button {
+      padding: 5px 10px;
+      font-size: 14px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .set-actions button:hover {
+      background-color: #0056b3;
+    }
+
+    .delete-btn {
+      background-color: #dc3545;
+    }
+
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+
+    .load-btn {
+      background-color: #28a745;
+    }
+
+    .load-btn:hover {
+      background-color: #218838;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 500px) {
+      .wheel-container {
+        width: 250px;
+        height: 250px;
+      }
+
+      .pointer {
+        font-size: 20px;
+      }
+
+      .modal-content {
+        margin: 10% auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Wheel Container -->
+  <div class="wheel-container">
+    <div class="pointer">▼</div>
+    <div class="wheel" id="wheel">
+      <!-- Wheel segments will be dynamically generated -->
+    </div>
+  </div>
+
+  <!-- Manage Options Button -->
+  <button id="manageOptionsBtn">Manage Options</button>
+
+  <!-- Modal for Managing Options -->
+  <div id="optionsModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Manage Options</h2>
+      
+      <!-- Save/Edit Set -->
+      <div class="save-options">
+        <input type="text" id="setTitle" placeholder="Set Title">
+        <textarea id="setOptions" placeholder="Enter options, one per line" rows="5"></textarea>
+        <button id="saveSetBtn">Save Set</button>
+      </div>
+      
+      <!-- Load Existing Sets -->
+      <div class="load-options">
+        <h3>Saved Sets</h3>
+        <ul id="savedSetsList">
+          <!-- Saved sets will be listed here -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Functionality -->
+  <script>
+    // DOM Elements
+    const wheel = document.getElementById('wheel');
+    const manageOptionsBtn = document.getElementById('manageOptionsBtn');
+    const modal = document.getElementById('optionsModal');
+    const closeModal = document.querySelector('.close');
+    const saveSetBtn = document.getElementById('saveSetBtn');
+    const savedSetsList = document.getElementById('savedSetsList');
+    const setTitleInput = document.getElementById('setTitle');
+    const setOptionsInput = document.getElementById('setOptions');
+
+    // Initial Options
+    let options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5', 'Option 6'];
+    let rotation = 0;
+
+    // Variable to track if editing a set
+    let editingSetTitle = null;
+
+    // Initialize Wheel on Page Load
+    document.addEventListener('DOMContentLoaded', () => {
+      createWheel(options);
+    });
+
+    /**
+     * Creates the wheel segments based on the provided options.
+     * @param {Array} optionsArray - Array of option strings.
+     */
+    function createWheel(optionsArray) {
+      wheel.innerHTML = ''; // Clear existing segments
+      const numOptions = optionsArray.length;
+      const anglePerOption = 360 / numOptions;
+
+      optionsArray.forEach((option, index) => {
+        const segment = document.createElement('div');
+        segment.classList.add('segment');
+        // Corrected transform line with complete template literals
+        segment.style.transform = `rotate(${index * anglePerOption}deg) skewY(-${90 - anglePerOption}deg)`;
+        segment.style.backgroundColor = getColor(index, numOptions);
+
+        const text = document.createElement('div');
+        text.style.transform = `rotate(${anglePerOption / 2}deg)`;
+        text.textContent = option;
+        segment.appendChild(text);
+
+        wheel.appendChild(segment);
+      });
+    }
+
+    /**
+     * Generates a distinct color for each segment.
+     * @param {number} index - Index of the segment.
+     * @param {number} total - Total number of segments.
+     * @returns {string} - HSL color string.
+     */
+    function getColor(index, total) {
+      const hue = index * (360 / total);
+      return `hsl(${hue}, 70%, 50%)`;
+    }
+
+    // Spinning State
+    let isSpinning = false;
+
+    // Touch Event Variables
+    let startX = null;
+    let startY = null;
+    let startTime = null;
+    let deltaRotation = 0;
+
+    // Add Touch Event Listeners
+    wheel.addEventListener('touchstart', handleTouchStart, false);
+    wheel.addEventListener('touchmove', handleTouchMove, false);
+    wheel.addEventListener('touchend', handleTouchEnd, false);
+
+    // Add Mouse Event Listeners for Desktop Testing
+    wheel.addEventListener('mousedown', handleMouseDown, false);
+    wheel.addEventListener('mousemove', handleMouseMove, false);
+    wheel.addEventListener('mouseup', handleMouseUp, false);
+    wheel.addEventListener('mouseleave', handleMouseLeave, false);
+
+    /**
+     * Handles touch start event.
+     * @param {TouchEvent} e
+     */
+    function handleTouchStart(e) {
+      if (isSpinning) return;
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      startTime = new Date().getTime();
+      deltaRotation = 0;
+    }
+
+    /**
+     * Handles touch move event.
+     * @param {TouchEvent} e
+     */
+    function handleTouchMove(e) {
+      if (isSpinning || startX === null || startY === null) return;
+      const touch = e.touches[0];
+      const currentX = touch.clientX;
+      const currentY = touch.clientY;
+      const deltaX = currentX - startX;
+      // Calculate rotation based on horizontal swipe
+      deltaRotation += deltaX * 0.5; // Adjust sensitivity as needed
+      rotation += deltaRotation;
+      wheel.style.transform = `rotate(${rotation}deg)`;
+      // Reset start positions
+      startX = currentX;
+      startY = currentY;
+    }
+
+    /**
+     * Handles touch end event.
+     * @param {TouchEvent} e
+     */
+    function handleTouchEnd(e) {
+      if (isSpinning || startX === null) return;
+      const endTime = new Date().getTime();
+      const deltaTime = endTime - startTime;
+
+      // Calculate velocity (degrees per millisecond)
+      const velocity = deltaRotation / deltaTime;
+
+      // Determine spin direction
+      const spinDirection = velocity > 0 ? 1 : -1;
+
+      // Determine spin speed based on velocity
+      const spinSpeed = Math.abs(velocity) * 1000; // Adjust multiplier as needed
+
+      // Calculate total rotation with easing
+      const extraSpins = Math.floor(Math.random() * 3) + 3; // 3 to 5 extra spins
+      const finalRotation = rotation + spinDirection * 360 * extraSpins + spinSpeed;
+
+      spinWheel(finalRotation);
+      
+      // Reset touch variables
+      startX = null;
+      startY = null;
+    }
+
+    // Variables for Mouse Events
+    let isMouseDown = false;
+
+    /**
+     * Handles mouse down event.
+     * @param {MouseEvent} e
+     */
+    function handleMouseDown(e) {
+      if (isSpinning) return;
+      isMouseDown = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startTime = new Date().getTime();
+      deltaRotation = 0;
+    }
+
+    /**
+     * Handles mouse move event.
+     * @param {MouseEvent} e
+     */
+    function handleMouseMove(e) {
+      if (isSpinning || !isMouseDown || startX === null || startY === null) return;
+      const currentX = e.clientX;
+      const currentY = e.clientY;
+      const deltaX = currentX - startX;
+
+      // Calculate rotation based on horizontal movement
+      deltaRotation += deltaX * 0.5; // Adjust sensitivity as needed
+      rotation += deltaRotation;
+      wheel.style.transform = `rotate(${rotation}deg)`;
+
+      // Reset start positions
+      startX = currentX;
+      startY = currentY;
+    }
+
+    /**
+     * Handles mouse up event.
+     * @param {MouseEvent} e
+     */
+    function handleMouseUp(e) {
+      if (isSpinning || !isMouseDown || startX === null) return;
+      isMouseDown = false;
+      const endTime = new Date().getTime();
+      const deltaTime = endTime - startTime;
+
+      // Calculate velocity (degrees per millisecond)
+      const velocity = deltaRotation / deltaTime;
+
+      // Determine spin direction
+      const spinDirection = velocity > 0 ? 1 : -1;
+
+      // Determine spin speed based on velocity
+      const spinSpeed = Math.abs(velocity) * 1000; // Adjust multiplier as needed
+
+      // Calculate total rotation with easing
+      const extraSpins = Math.floor(Math.random() * 3) + 3; // 3 to 5 extra spins
+      const finalRotation = rotation + spinDirection * 360 * extraSpins + spinSpeed;
+
+      spinWheel(finalRotation);
+      
+      // Reset mouse variables
+      startX = null;
+      startY = null;
+    }
+
+    /**
+     * Handles mouse leaving the wheel area.
+     * @param {MouseEvent} e
+     */
+    function handleMouseLeave(e) {
+      if (isSpinning && isMouseDown) {
+        handleMouseUp(e);
+      }
+    }
+
+    /**
+     * Spins the wheel to the specified final rotation.
+     * @param {number} finalRotation - The final rotation angle in degrees.
+     */
+    function spinWheel(finalRotation) {
+      isSpinning = true;
+      wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      wheel.style.transform = `rotate(${finalRotation}deg)`;
+
+      wheel.addEventListener('transitionend', () => {
+        isSpinning = false;
+        wheel.style.transition = 'none';
+        rotation = finalRotation % 360;
+        wheel.style.transform = `rotate(${rotation}deg)`;
+        determineSelectedOption();
+      }, { once: true });
+    }
+
+    /**
+     * Determines which option is selected based on the current rotation.
+     */
+    function determineSelectedOption() {
+      const numOptions = options.length;
+      const anglePerOption = 360 / numOptions;
+      const normalizedRotation = (360 - (rotation % 360) + anglePerOption / 2) % 360;
+      const selectedIndex = Math.floor(normalizedRotation / anglePerOption) % numOptions;
+      const selectedOption = options[selectedIndex];
+      alert(`Selected: ${selectedOption}`);
+    }
+
+    // Modal Functionality
+
+    // Open Modal when Manage Options Button is Clicked
+    manageOptionsBtn.addEventListener('click', () => {
+      openModal();
+    });
+
+    // Close Modal when 'X' is Clicked
+    closeModal.addEventListener('click', () => {
+      closeModalFunc();
+    });
+
+    // Close Modal when Clicking Outside the Modal Content
+    window.addEventListener('click', (e) => {
+      if (e.target == modal) {
+        closeModalFunc();
+      }
+    });
+
+    // Save Set Button Click Event
+    saveSetBtn.addEventListener('click', () => {
+      const title = setTitleInput.value.trim();
+      const opts = setOptionsInput.value.trim().split('\n').map(opt => opt.trim()).filter(opt => opt);
+      
+      if (!title) {
+        alert('Please enter a title.');
+        return;
+      }
+
+      if (opts.length < 2) { // Minimum 2 options
+        alert('Please enter at least two options.');
+        return;
+      }
+
+      const savedSets = JSON.parse(localStorage.getItem('savedSets')) || {};
+
+      if (editingSetTitle) {
+        // Editing an existing set
+        if (title !== editingSetTitle && savedSets.hasOwnProperty(title)) {
+          alert('A set with this title already exists. Please choose a different title.');
+          return;
+        }
+
+        // Delete the old set if the title has changed
+        if (title !== editingSetTitle) {
+          delete savedSets[editingSetTitle];
+        }
+
+        // Update the set
+        savedSets[title] = opts;
+        localStorage.setItem('savedSets', JSON.stringify(savedSets));
+        alert('Set updated successfully!');
+        editingSetTitle = null;
+      } else {
+        // Creating a new set
+        if (savedSets.hasOwnProperty(title)) {
+          alert('A set with this title already exists. Please choose a different title.');
+          return;
+        }
+
+        // Save the new set
+        savedSets[title] = opts;
+        localStorage.setItem('savedSets', JSON.stringify(savedSets));
+        alert('Set saved successfully!');
+      }
+
+      // Reset input fields
+      setTitleInput.value = '';
+      setOptionsInput.value = '';
+
+      // Reload saved sets list
+      loadSavedSets();
+    });
+
+    /**
+     * Opens the options modal and loads saved sets.
+     */
+    function openModal() {
+      modal.style.display = 'block';
+      loadSavedSets();
+    }
+
+    /**
+     * Closes the options modal.
+     */
+    function closeModalFunc() {
+      modal.style.display = 'none';
+      // Reset editing state
+      editingSetTitle = null;
+      setTitleInput.value = '';
+      setOptionsInput.value = '';
+    }
+
+    /**
+     * Saves a set of options with the given title to localStorage.
+     * @param {string} title - The title of the set.
+     * @param {Array} opts - Array of option strings.
+     */
+    function saveSet(title, opts) {
+      const savedSets = JSON.parse(localStorage.getItem('savedSets')) || {};
+      savedSets[title] = opts;
+      localStorage.setItem('savedSets', JSON.stringify(savedSets));
+    }
+
+    /**
+     * Loads saved sets from localStorage and displays them in the modal.
+     */
+    function loadSavedSets() {
+      savedSetsList.innerHTML = '';
+      const savedSets = JSON.parse(localStorage.getItem('savedSets')) || {};
+      const setTitles = Object.keys(savedSets);
+
+      if (setTitles.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'No saved sets.';
+        li.style.cursor = 'default';
+        savedSetsList.appendChild(li);
+        return;
+      }
+
+      setTitles.forEach(title => {
+        const li = document.createElement('li');
+
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = title;
+        titleSpan.style.flexGrow = '1';
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.classList.add('set-actions');
+
+        // Load Button
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = 'Load';
+        loadBtn.classList.add('load-btn');
+        loadBtn.addEventListener('click', () => {
+          options = savedSets[title];
+          createWheel(options);
+          closeModalFunc();
+          alert(`Set "${title}" has been loaded onto the wheel.`);
+        });
+
+        // Edit Button
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.addEventListener('click', () => {
+          // Load set into input fields
+          setTitleInput.value = title;
+          setOptionsInput.value = savedSets[title].join('\n');
+          editingSetTitle = title;
+        });
+
+        // Delete Button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.classList.add('delete-btn');
+        deleteBtn.addEventListener('click', () => {
+          const confirmDelete = confirm(`Are you sure you want to delete the set "${title}"?`);
+          if (confirmDelete) {
+            delete savedSets[title];
+            localStorage.setItem('savedSets', JSON.stringify(savedSets));
+            loadSavedSets();
+            alert(`Set "${title}" has been deleted.`);
+            // If the deleted set was being edited, reset the form
+            if (editingSetTitle === title) {
+              closeModalFunc();
+            }
+          }
+        });
+
+        actionsDiv.appendChild(loadBtn);
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+
+        li.appendChild(titleSpan);
+        li.appendChild(actionsDiv);
+
+        savedSetsList.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
