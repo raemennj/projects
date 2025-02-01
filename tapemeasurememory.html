@@ -175,7 +175,7 @@
     .memory-container {
       display: flex;
       justify-content: space-between;
-      margin: 10px 0;
+      margin-bottom: 10px;
       width: 100%;
     }
     .memory-btn,
@@ -189,11 +189,11 @@
     }
     .memory-btn {
       background: #64b5f6;
-      color: darkslategrey;
+      color: darkslategray;
     }
     .memory-clear {
       background: #e57373;
-      color: darkslategrey;
+      color: darkslategray;
     }
     /* Calculator Buttons Grid */
     .buttons {
@@ -208,6 +208,7 @@
       border: none;
       border-radius: 5px;
       background: lightyellow;
+      color: darkslategray;
       cursor: pointer;
       transition: background 0.3s;
     }
@@ -321,15 +322,15 @@
           <div id="decimalResult"></div>
         </div>
       </div>
-      <!-- Memory Buttons Row (Placed between Display and Calculator Buttons) -->
+      <!-- Memory Buttons Row (now between display and main buttons) -->
       <div class="memory-container">
+        <button class="btn memory-clear">MC</button>
         <button class="btn memory-btn" data-slot="0">M1</button>
         <button class="btn memory-btn" data-slot="1">M2</button>
         <button class="btn memory-btn" data-slot="2">M3</button>
         <button class="btn memory-btn" data-slot="3">M4</button>
-        <button class="btn memory-clear">MC</button>
       </div>
-      <!-- Calculator Buttons Grid -->
+      <!-- Calculator Buttons -->
       <div class="buttons">
         <button class="btn clear" data-value="C">C</button>
         <button class="btn" data-value="7">7</button>
@@ -342,19 +343,19 @@
         <button class="btn" data-value="5">5</button>
         <button class="btn" data-value="6">6</button>
         <button class="btn operator" data-value="-">−</button>
-                
+
         <button class="btn menu-btn" id="showModalBtn" aria-label="Show Instructions">menu</button>
         <button class="btn" data-value="1">1</button>
         <button class="btn" data-value="2">2</button>
         <button class="btn" data-value="3">3</button>
         <button class="btn operator" data-value="×">×</button>
-                
+
         <button class="btn empty-btn" aria-hidden="true"></button>
         <button class="btn empty-btn" aria-hidden="true"></button>
         <button class="btn" data-value="0">0</button>
         <button class="btn decimal" data-value=".">.</button>
         <button class="btn operator" data-value="÷">÷</button>
-                
+
         <button class="btn fraction" data-value="1/16">1/16</button>
         <button class="btn fraction" data-value="1/8">1/8</button>
         <button class="btn fraction" data-value="3/16">3/16</button>
@@ -393,7 +394,7 @@
           <li>Click the backspace button to delete the last entry.</li>
           <li>Press 'C' to clear all entries.</li>
           <li>Double-click or long press on a memory button (M1–M4) to store the current result.</li>
-          <li>Tap a memory button to append its value to the current expression and update the result automatically.</li>
+          <li>Tap a memory button to append its value to the current expression.</li>
           <li>Press MC to clear all memory slots.</li>
           <li><a href="segmentcalc.html">Segment Calculator</a></li>
         </ul>
@@ -456,7 +457,7 @@
         return;
       }
 
-      // Standard Calculator button handling (excluding memory buttons)
+      // Main Calculator Buttons (excluding memory buttons)
       buttons.forEach(button => {
         button.addEventListener('click', () => {
           const value = button.getAttribute('data-value');
@@ -510,10 +511,11 @@
         });
       });
 
-      /* Memory Button Interactions */
-      // 1. Storing a memory value (double-click for desktop and long press for mobile)
+      // Memory Button Interactions
+
+      // 1. Storing a Memory Value (double-click for desktop, long press for mobile)
       document.querySelectorAll('.memory-btn').forEach(btn => {
-        // Double-click for desktops
+        // Double-click event for desktops
         btn.addEventListener('dblclick', () => {
           const slot = parseInt(btn.getAttribute('data-slot'), 10);
           const evaluation = evaluateExpression();
@@ -553,21 +555,20 @@
         });
       });
 
-      // 2. Inserting (appending) a memory value into the expression on single tap
+      // 2. Inserting (Appending) a Memory Value on Single Tap/Click
       document.querySelectorAll('.memory-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const slot = parseInt(btn.getAttribute('data-slot'), 10);
           if (memorySlots[slot] === null) return;
           const memString = memorySlots[slot].toString();
-          // If there's an active entry, push it as a separate token
+          // Finalize any current input
           if (currentEntry !== '') {
             tokens.push(currentEntry);
           }
-          // Append the memory value as the new current entry
           currentEntry = memString;
           updateInputDisplay();
           console.log(`Appended memory value from M${slot + 1}`);
-          // Immediately trigger evaluation as if a number was pressed
+          // Trigger evaluation automatically after memory insertion
           clearTimeout(timeout);
           timeout = setTimeout(() => {
             const evaluation = evaluateExpression();
@@ -585,7 +586,7 @@
         });
       });
 
-      // 3. Clearing all memory slots
+      // 3. Clearing Memory Slots
       document.querySelector('.memory-clear').addEventListener('click', () => {
         memorySlots = [null, null, null, null];
         saveMemorySlots();
