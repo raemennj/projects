@@ -13,12 +13,40 @@
   <meta name="apple-mobile-web-app-title" content="Inch Calc">
   <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
   <style>
+    /* CSS Variables for consistency */
+    :root {
+      --background-color: darkslategrey;
+      --calculator-bg: #ffffff;
+      --accent-color: #f9a825;
+      --button-bg: lightyellow;
+      --button-hover: #d0d0d0;
+      --operator-bg: #f9a825;
+      --operator-hover: #f57f17;
+      --fraction-bg: #64b5f6;
+      --fraction-hover: #42a5f5;
+      --decimal-bg: #a5d6a7;
+      --decimal-hover: #81c784;
+      --clear-bg: #e57373;
+      --clear-hover: #ef5350;
+      --memory-bg: #64b5f6; /* memory recall buttons */
+      --pixels-per-inch: 160;
+      --shadow-animation-duration: 0.8s;
+      --tape-gradient: linear-gradient( to bottom,
+            rgba(189, 183, 107, 0.3) 0%,
+            rgba(255, 215, 0, 0.6) 6%,
+            #ffff00 25%,
+            #ffff00 75%,
+            rgba(189, 183, 107, 0.6) 98%,
+            rgba(255, 215, 0, 0.8) 100%
+          );
+    }
+
     /* General Styles */
     body {
       font-size: 18px;
       margin: 0;
       padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left) 5px;
-      background-color: darkslategrey;
+      background-color: var(--background-color);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -36,7 +64,7 @@
       padding-top: 2.5rem;
     }
     .calculator {
-      background: #ffffff;
+      background: var(--calculator-bg);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -54,14 +82,7 @@
       border: 1px solid #000;
       border-radius: 5px;
       overflow: hidden;
-      background: linear-gradient( to bottom,
-        rgba(189, 183, 107, 0.3) 0%,
-        rgba(255, 215, 0, 0.6) 6%,
-        #ffff00 25%,
-        #ffff00 75%,
-        rgba(189, 183, 107, 0.6) 98%,
-        rgba(255, 215, 0, 0.8) 100%
-      );
+      background: var(--tape-gradient);
     }
     .center-line {
       position: absolute;
@@ -135,7 +156,7 @@
       }
     }
     .animate-shadow {
-      animation: shadowMove 1s ease-in-out forwards;
+      animation: shadowMove var(--shadow-animation-duration) ease-in-out forwards;
     }
     /* Display Styles */
     #display {
@@ -188,11 +209,12 @@
       cursor: pointer;
     }
     .memory-btn {
-      background: #64b5f6;
+      background: var(--memory-bg);
       color: darkslategray;
     }
-    .memory-clear {
-      background: #e57373;
+    /* MC button now uses the same clear colors as C */
+    .btn.memory-clear {
+      background: var(--clear-bg);
       color: #fff;
     }
     /* Calculator Buttons Grid */
@@ -207,44 +229,49 @@
       font-size: 1em;
       border: none;
       border-radius: 5px;
-      background: lightyellow;
+      background: var(--button-bg);
       color: darkslategray;
       cursor: pointer;
       transition: background 0.3s;
     }
     .btn:hover {
-      background: #d0d0d0;
+      background: var(--button-hover);
+    }
+    /* Active state for all buttons */
+    .btn:active {
+      transform: scale(0.98);
+      transition: transform 0.1s ease-in-out;
     }
     .operator {
-      background: #f9a825;
+      background: var(--operator-bg);
       color: #fff;
     }
     .operator:hover {
-      background: #f57f17;
+      background: var(--operator-hover);
     }
     .fraction {
-      background: #64b5f6;
+      background: var(--fraction-bg);
       color: #fff;
     }
     .fraction:hover {
-      background: #42a5f5;
+      background: var(--fraction-hover);
     }
     .decimal {
-      background: #a5d6a7;
+      background: var(--decimal-bg);
       color: #fff;
     }
     .decimal:hover {
-      background: #81c784;
+      background: var(--decimal-hover);
     }
     .clear {
-      background: #e57373;
+      background: var(--clear-bg);
       color: #fff;
     }
     .clear:hover {
-      background: #ef5350;
+      background: var(--clear-hover);
     }
     .backspace {
-      background: #e57373;
+      background: var(--clear-bg);
       color: #fff;
     }
     .backspace:hover {
@@ -257,7 +284,7 @@
       border: none;
     }
     .menu-btn {
-      background: #64b5f6;
+      background: var(--memory-bg);
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -265,7 +292,7 @@
       align-items: center;
     }
     .menu-btn:hover {
-      background: #42a5f5;
+      background: var(--fraction-hover);
     }
     @media (min-width: 601px) {
       body {
@@ -273,9 +300,11 @@
         max-width: 600px;
       }
     }
-    /* Modal Styles */
+    /* Modal Styles with smooth transitions */
     .modal {
-      display: none;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-in-out;
       position: fixed;
       z-index: 1000;
       left: 0;
@@ -283,6 +312,10 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0,0,0,0.4);
+    }
+    .modal.show {
+      opacity: 1;
+      pointer-events: auto;
     }
     .modal-content {
       background-color: lightyellow;
@@ -813,7 +846,8 @@
         const containerWidth = tapeMeasureContainer.offsetWidth;
         const centerLinePosition = containerWidth / 2;
         const displayRangeInches = 3;
-        const pixelsPerInch = 160;
+        // Read pixels-per-inch from CSS variable:
+        const pixelsPerInch = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pixels-per-inch'), 10);
         const tickWidth = 3;
         const startInches = Math.max(centerInches - (displayRangeInches / 2), 0);
         const endInches = centerInches + (displayRangeInches / 2);
@@ -861,6 +895,7 @@
           return;
         }
         overlay.classList.remove('animate-shadow');
+        // Force reflow to restart animation
         void overlay.offsetWidth;
         overlay.classList.add('animate-shadow');
         overlay.addEventListener('animationend', () => {
@@ -868,20 +903,20 @@
         }, { once: true });
       }
 
-      // Modal functionality
+      // Modal functionality using the "show" class for smooth transitions
       showModalBtn.addEventListener('click', () => {
-        modal.style.display = 'block';
+        modal.classList.add('show');
         closeModalBtn.focus();
         console.log('Instructions modal opened');
       });
       closeModalBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
+        modal.classList.remove('show');
         showModalBtn.focus();
         console.log('Instructions modal closed');
       });
       window.addEventListener('click', (event) => {
         if (event.target === modal) {
-          modal.style.display = 'none';
+          modal.classList.remove('show');
           showModalBtn.focus();
           console.log('Instructions modal closed by clicking outside');
         }
