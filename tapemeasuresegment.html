@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Integrated Calculator & Segment Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <!-- Load math.js for arithmetic evaluation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="calcicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Inch Calc">
+  <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+  <style>
+    /* CSS Variables and general styles */
+    :root {
+      --background-color: darkslategrey;
+      --calculator-bg: #ffffff;
+      --accent-color: #f9a825;
+      --button-bg: lightyellow;
+      --button-hover: #d0d0d0;
+      --operator-bg: #f9a825;
+      --operator-hover: #f57f17;
+      --fraction-bg: #64b5f6;
+      --fraction-hover: #42a5f5;
+      --decimal-bg: #a5d6a7;
+      --decimal-hover: #81c784;
+      --clear-bg: #e57373;
+      --clear-hover: #ef5350;
+      --memory-bg: #64b5f6;
+      --pixels-per-inch: 160;
+      --shadow-animation-duration: 0.8s;
+      --tape-gradient: linear-gradient( to bottom,
+            rgba(189, 183, 107, 0.3) 0%,
+            rgba(255, 215, 0, 0.6) 6%,
+            #ffff00 25%,
+            #ffff00 75%,
+            rgba(189, 183, 107, 0.6) 98%,
+            rgba(255, 215, 0, 0.8) 100%
+          );
+    }
+    body {
+      font-size: 18px;
+      margin: 0;
+      padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left) 5px;
+      background-color: var(--background-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      touch-action: none;
+      font-family: Arial, sans-serif;
+      position: relative;
+      overflow-y: auto;
+    }
+    /* ==================== CALCULATOR STYLES ==================== */
+    .calculator-wrapper {
+      width: 100%;
+      max-width: 420px;
+      background: var(--calculator-bg);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    .tape-measure-container {
+      position: relative;
+      width: 100%;
+      height: 100px;
+      margin: 20px 0;
+      border: 1px solid #000;
+      border-radius: 5px;
+      overflow: hidden;
+      background: var(--tape-gradient);
+    }
+    .center-line {
+      position: absolute;
+      top: 32%;
+      left: 50%;
+      width: 5px;
+      height: 69%;
+      background-color: red;
+      transform: translateX(-30%);
+      z-index: 2;
+    }
+    .hidden { display: none; }
+    .tape-measure {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .tick {
+      position: absolute;
+      bottom: 0;
+      width: 3px;
+      background-color: black;
+    }
+    .tick.small { height: 15px; }
+    .tick.medium { height: 30px; }
+    .tick.large { height: 50px; }
+    .tick.number { height: 70px; }
+    .tick-label {
+      position: absolute;
+      bottom: 70px;
+      font-size: 1.3em;
+      transform: translateX(-50%);
+      text-align: center;
+      width: 50px;
+    }
+    .animation-overlay {
+      position: absolute;
+      top: 0;
+      left: 100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(120deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+      pointer-events: none;
+      z-index: 1;
+      transform: skewX(20deg);
+      opacity: 0;
+    }
+    @keyframes shadowMove {
+      0% { left: 100%; opacity: 0.6; }
+      100% { left: -100%; opacity: 0; }
+    }
+    .animate-shadow {
+      animation: shadowMove var(--shadow-animation-duration) ease-in-out forwards;
+    }
+    /* Two display containers – one for calc mode, one for segment mode */
+    #calcDisplay, #segmentDisplay {
+      margin-bottom: 10px;
+    }
+    /* Calculator display */
+    #display {
+      background: #222;
+      color: #0f0;
+      padding: 10px;
+      border-radius: 5px;
+      min-height: 80px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #input {
+      font-size: 1.2em;
+      letter-spacing: 0.2em;
+      font-family: monospace;
+    }
+    #result {
+      font-size: 1.5em;
+      margin-top: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+    #fractionResult { text-align: left; font-weight: lighter; }
+    #decimalResult { text-align: right; font-style: italic; color: gray; }
+    /* Segment mode display – overlays the normal display */
+    #segmentDisplay {
+      display: none;
+      background: #222;
+      color: #0f0;
+      padding: 10px;
+      border-radius: 5px;
+      min-height: 80px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: left;
+    }
+    /* Container for each segment input with label */
+    .segment-field {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .segment-field label {
+      width: 80px;
+      margin-right: 10px;
+      color: #fff;
+      font-weight: bold;
+    }
+    .segment-field input.segment-input {
+      flex: 1;
+      font-size: 1.2em;
+      padding: 5px;
+      text-align: left;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    /* Memory container */
+    .memory-container {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-gap: 10px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    .memory-btn,
+    .memory-clear {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .memory-btn { background: var(--memory-bg); color: darkslategrey; }
+    .btn.memory-clear { background: var(--clear-bg); color: #fff; }
+    /* Keypad grid */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-gap: 10px;
+      width: 100%;
+    }
+    .btn {
+      padding: 15px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background: var(--button-bg);
+      color: darkslategrey;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn:hover { background: var(--button-hover); }
+    .btn:active { transform: scale(0.98); transition: transform 0.1s ease-in-out; }
+    .operator { background: var(--operator-bg); color: #fff; }
+    .operator:hover { background: var(--operator-hover); }
+    .fraction { background: var(--fraction-bg); color: #fff; }
+    .fraction:hover { background: var(--fraction-hover); }
+    .decimal { background: var(--decimal-bg); color: #fff; }
+    .decimal:hover { background: var(--decimal-hover); }
+    .clear { background: var(--clear-bg); color: #fff; }
+    .clear:hover { background: var(--clear-hover); }
+    .backspace { background: var(--clear-bg); color: #fff; }
+    .backspace:hover { background: #ffa726; }
+    /* The menu button (for instructions) */
+    .menu-btn {
+      background: var(--memory-bg);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Modal */
+    .modal {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-in-out;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal.show { opacity: 1; pointer-events: auto; }
+    .modal-content {
+      background-color: lightyellow;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid #888;
+      width: 80%;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+    @media screen and (orientation:landscape) {
+      .modal-content { max-height: calc(100vh - 80px); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Calculator Container -->
+  <div class="calculator-wrapper">
+    <!-- Tape Measure Display -->
+    <div class="tape-measure-container" id="tapeMeasureContainer">
+      <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
+      <div class="tape-measure" id="tapeMeasure"></div>
+      <div class="animation-overlay"></div>
+    </div>
+    <!-- Normal Calculator Display -->
+    <div id="calcDisplay">
+      <div id="display">
+        <div id="input" aria-live="polite"></div>
+        <div id="result">
+          <div id="fractionResult"></div>
+          <div id="decimalResult"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Segment Mode Display -->
+    <div id="segmentDisplay">
+      <div class="segment-field">
+        <label for="seg-length">Length:</label>
+        <input type="text" id="seg-length" class="segment-input" placeholder="10 or 10 3/16" readonly>
+      </div>
+      <div class="segment-field">
+        <label for="seg-start">Start:</label>
+        <input type="text" id="seg-start" class="segment-input" placeholder="2 or 1 1/2" readonly>
+      </div>
+      <div class="segment-field">
+        <label for="seg-segments" id="seg-segments-label">Segments:</label>
+        <input type="text" id="seg-segments" class="segment-input" placeholder="4" readonly>
+      </div>
+      <div id="segmentCalcResult" style="margin-top:10px; color:#0f0;"></div>
+      <div id="segmentMarks" style="margin-top:10px; color:#0f0;"></div>
+      <div style="margin-top:10px; display: flex; justify-content: space-between;">
+        <button id="segmentClearBtn" class="btn">Clear</button>
+        <button id="segmentDoneBtn" class="btn">Done</button>
+      </div>
+    </div>
+    <!-- Memory Buttons -->
+    <div class="memory-container">
+      <button class="btn memory-clear">MC</button>
+      <button class="btn memory-btn" data-slot="0">M1</button>
+      <button class="btn memory-btn" data-slot="1">M2</button>
+      <button class="btn memory-btn" data-slot="2">M3</button>
+      <button class="btn memory-btn" data-slot="3">M4</button>
+    </div>
+    <!-- Keypad Buttons -->
+    <div class="buttons">
+      <button class="btn clear" data-value="C">C</button>
+      <button class="btn" data-value="7">7</button>
+      <button class="btn" data-value="8">8</button>
+      <button class="btn" data-value="9">9</button>
+      <button class="btn operator" data-value="+">+</button>
+
+      <button class="btn backspace" data-value="backspace">←</button>
+      <button class="btn" data-value="4">4</button>
+      <button class="btn" data-value="5">5</button>
+      <button class="btn" data-value="6">6</button>
+      <button class="btn operator" data-value="-">−</button>
+
+      <!-- Mode toggle buttons -->
+      <button class="btn segment-mode-btn" id="segmentEqualBtn" data-segmode="equal">Equal</button>
+      <button class="btn" data-value="1">1</button>
+      <button class="btn" data-value="2">2</button>
+      <button class="btn" data-value="3">3</button>
+      <button class="btn operator" data-value="×">×</button>
+
+      <button class="btn segment-mode-btn" id="segmentNearBtn" data-segmode="near">Near</button>
+      <button class="btn menu-btn" id="showModalBtn" aria-label="Show Instructions">menu</button>
+      <button class="btn" data-value="0">0</button>
+      <button class="btn decimal" data-value=".">.</button>
+      <button class="btn operator" data-value="÷">÷</button>
+
+      <button class="btn fraction" data-value="1/16">1/16</button>
+      <button class="btn fraction" data-value="1/8">1/8</button>
+      <button class="btn fraction" data-value="3/16">3/16</button>
+      <button class="btn fraction" data-value="1/4">1/4</button>
+      <button class="btn fraction" data-value="5/16">5/16</button>
+
+      <button class="btn fraction" data-value="3/8">3/8</button>
+      <button class="btn fraction" data-value="7/16">7/16</button>
+      <button class="btn fraction" data-value="1/2">1/2</button>
+      <button class="btn fraction" data-value="9/16">9/16</button>
+      <button class="btn fraction" data-value="5/8">5/8</button>
+
+      <button class="btn fraction" data-value="11/16">11/16</button>
+      <button class="btn fraction" data-value="3/4">3/4</button>
+      <button class="btn fraction" data-value="13/16">13/16</button>
+      <button class="btn fraction" data-value="7/8">7/8</button>
+      <button class="btn fraction" data-value="15/16">15/16</button>
+    </div>
+  </div>
+  
+  <!-- Instructions Modal -->
+  <div id="instructionsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+      <h2 id="modalTitle">Calculator Instructions</h2>
+      <p>
+        Use this calculator for arithmetic with fractions and decimals.
+        To use the segment feature, simply click the "Equal" or "Near" button.
+        In segment mode the display changes to show three input fields (Length, Start, Segments/Inches).
+        Use the keypad to enter values into the active field, swipe on the tape measure to cycle through the calculated marks, and press "Done" to return to calculator mode.
+      </p>
+      <ul>
+        <li>Tap numbers (and fraction buttons) to build your arithmetic expression (in calc mode) or update the active segment field (in segment mode).</li>
+        <li>Press C to clear and ← to backspace.</li>
+        <li>Memory buttons (M1–M4) work as before.</li>
+      </ul>
+      <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      /* ---------- Global Variables ---------- */
+      const MEMORY_KEY = 'calcMemorySlots';
+      let currentMode = "calc";    // "calc" or "segment"
+      let segmentMode = "equal";   // "equal" or "near"
+      let activeSegmentField = "seg-length";
+      let segmentMarksArray = [];
+      let currentMarkIndex = 0;
+      let tokens = [];
+      let currentEntry = '';
+      let timeout = null;
+      let memorySlots = [null, null, null, null];
+      
+      /* ---------- Helper Functions ---------- */
+      function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+      function toReadableFraction(x) {
+        if (isNaN(x)) return '';
+        const whole = Math.floor(x);
+        const fraction = x - whole;
+        let [numerator, denominator] = [Math.round(fraction * 16), 16];
+        const divisor = gcd(numerator, denominator);
+        numerator /= divisor;
+        denominator /= divisor;
+        return whole ? (numerator ? `${whole} ${numerator}/${denominator}` : `${whole}`) : (numerator ? `${numerator}/${denominator}` : '0');
+      }
+      function parseInput(input) {
+        if (!input) return NaN;
+        if (input.includes(' ')) {
+          const parts = input.split(' ');
+          const whole = Number(parts[0]);
+          const frac = parts[1].split('/').map(Number);
+          return (frac.length === 2 && frac[1] !== 0) ? whole + frac[0] / frac[1] : NaN;
+        } else if (input.includes('/')) {
+          const frac = input.split('/').map(Number);
+          return (frac.length === 2 && frac[1] !== 0) ? frac[0] / frac[1] : NaN;
+        } else return Number(input);
+      }
+      
+      /* ---------- Segment Mode Functions ---------- */
+      function calculateSegment() {
+        const lengthVal = parseInput(document.getElementById('seg-length').value);
+        const startVal = parseInput(document.getElementById('seg-start').value);
+        const segmentsVal = parseInput(document.getElementById('seg-segments').value);
+        if (isNaN(lengthVal) || isNaN(startVal) || isNaN(segmentsVal)) {
+          document.getElementById('segmentCalcResult').innerText = "Enter valid numbers.";
+          document.getElementById('segmentMarks').innerText = "";
+          segmentMarksArray = [];
+          return;
+        }
+        let remaining = lengthVal - 2 * startVal;
+        let segLength;
+        let marks = [];
+        marks.push(toReadableFraction(startVal));
+        if (segmentMode === "equal") {
+          segLength = remaining / segmentsVal;
+          for (let i = 0; i < segmentsVal; i++) {
+            marks.push(toReadableFraction((i + 1) * segLength + startVal));
+          }
+        } else { // near mode: segmentsVal is target inches
+          let exactSegments = remaining / segmentsVal;
+          let numSegments = Math.round(exactSegments);
+          segLength = remaining / numSegments;
+          for (let i = 0; i < numSegments; i++) {
+            marks.push(toReadableFraction((i + 1) * segLength + startVal));
+          }
+        }
+        document.getElementById('segmentCalcResult').innerHTML = `Segment Length: ${toReadableFraction(segLength)}"`;
+        document.getElementById('segmentMarks').innerHTML = `Marks:<br>${marks.join('"<br>')}"`;
+        segmentMarksArray = marks;
+        currentMarkIndex = 0;
+        updateTapePosition(parseFloat(marks[0]));
+      }
+      let segmentDebounceTimer;
+      function debounceSegmentCalculation() {
+        clearTimeout(segmentDebounceTimer);
+        segmentDebounceTimer = setTimeout(calculateSegment, 500);
+      }
+      function updateSegmentField(fieldId, value) {
+        let field = document.getElementById(fieldId);
+        field.value += value;
+        debounceSegmentCalculation();
+      }
+      function backspaceSegmentField(fieldId) {
+        let field = document.getElementById(fieldId);
+        field.value = field.value.slice(0, -1);
+        debounceSegmentCalculation();
+      }
+      function clearSegmentField(fieldId) {
+        document.getElementById(fieldId).value = "";
+        debounceSegmentCalculation();
+      }
+      function clearAllSegmentFields() {
+        document.getElementById('seg-length').value = "";
+        document.getElementById('seg-start').value = "";
+        document.getElementById('seg-segments').value = "";
+        document.getElementById('segmentCalcResult').innerHTML = "";
+        document.getElementById('segmentMarks').innerHTML = "";
+        segmentMarksArray = [];
+      }
+      function setActiveSegmentField(fieldId) {
+        activeSegmentField = fieldId;
+        document.querySelectorAll('.segment-input').forEach(input => {
+          input.style.borderColor = "#ccc";
+        });
+        document.getElementById(fieldId).style.borderColor = "red";
+      }
+      function enterSegmentMode() {
+        currentMode = "segment";
+        document.getElementById('calcDisplay').style.display = "none";
+        document.getElementById('segmentDisplay').style.display = "block";
+        setActiveSegmentField("seg-length");
+      }
+      function exitSegmentMode() {
+        currentMode = "calc";
+        document.getElementById('calcDisplay').style.display = "block";
+        document.getElementById('segmentDisplay').style.display = "none";
+      }
+      
+      /* ---------- Swipe Navigation for Tape Measure ---------- */
+      let swipeStartX = null;
+      const swipeThreshold = 50;
+      const tapeContainer = document.getElementById('tapeMeasureContainer');
+      tapeContainer.addEventListener("touchstart", function(e) {
+        swipeStartX = e.touches[0].clientX;
+      }, false);
+      tapeContainer.addEventListener("touchend", function(e) {
+        if (swipeStartX === null) return;
+        let diffX = e.changedTouches[0].clientX - swipeStartX;
+        if (Math.abs(diffX) > swipeThreshold && segmentMarksArray.length > 0) {
+          if(diffX < 0 && currentMarkIndex < segmentMarksArray.length - 1) {
+            currentMarkIndex++;
+            updateTapePosition(parseFloat(segmentMarksArray[currentMarkIndex]));
+          } else if(diffX > 0 && currentMarkIndex > 0) {
+            currentMarkIndex--;
+            updateTapePosition(parseFloat(segmentMarksArray[currentMarkIndex]));
+          }
+        }
+        swipeStartX = null;
+      }, false);
+      
+      /* ---------- Tape Measure Functions ---------- */
+      const tapeMeasure = document.getElementById('tapeMeasure');
+      function generateTickMarks(centerInches) {
+        tapeMeasure.innerHTML = '';
+        const containerWidth = document.getElementById('tapeMeasureContainer').offsetWidth;
+        const centerLinePosition = containerWidth / 2;
+        const displayRangeInches = 3;
+        const pixelsPerInch = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pixels-per-inch'), 10);
+        const tickWidth = 3;
+        const startInches = Math.max(centerInches - (displayRangeInches / 2), 0);
+        const endInches = centerInches + (displayRangeInches / 2);
+        const startMark = Math.floor(startInches * 16);
+        const endMark = Math.ceil(endInches * 16);
+        const fragment = document.createDocumentFragment();
+        for (let i = startMark; i <= endMark; i++) {
+          const tick = document.createElement('div');
+          tick.classList.add('tick');
+          const inches = i / 16;
+          const position = (inches - centerInches) * pixelsPerInch + centerLinePosition - (tickWidth / 2);
+          tick.style.left = position + 'px';
+          if (i % 16 === 0) {
+            tick.classList.add('number');
+            const label = document.createElement('div');
+            label.classList.add('tick-label');
+            label.innerText = inches.toFixed(0);
+            label.style.left = (position + tickWidth / 2) + 'px';
+            fragment.appendChild(label);
+          } else if (i % 8 === 0) {
+            tick.classList.add('large');
+          } else if (i % 4 === 0) {
+            tick.classList.add('medium');
+          } else {
+            tick.classList.add('small');
+          }
+          fragment.appendChild(tick);
+        }
+        tapeMeasure.appendChild(fragment);
+      }
+      function updateTapePosition(measurementInInches) {
+        if (measurementInInches < 0) measurementInInches = 0;
+        generateTickMarks(measurementInInches);
+        triggerShadowAnimation();
+      }
+      function triggerShadowAnimation() {
+        const overlay = document.querySelector('.animation-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('animate-shadow');
+        void overlay.offsetWidth;
+        overlay.classList.add('animate-shadow');
+        overlay.addEventListener('animationend', () => {
+          overlay.classList.remove('animate-shadow');
+        }, { once: true });
+      }
+      
+      /* ---------- Calculator Functions ---------- */
+      const inputDisplay = document.getElementById('input');
+      const fractionResultDisplay = document.getElementById('fractionResult');
+      const decimalResultDisplay = document.getElementById('decimalResult');
+      function clearCalculator() {
+        tokens = [];
+        currentEntry = '';
+        inputDisplay.textContent = '';
+        fractionResultDisplay.textContent = '';
+        decimalResultDisplay.textContent = '';
+        clearTimeout(timeout);
+        document.getElementById('centerLine').classList.add('hidden');
+      }
+      function handleBackspace() {
+        if (currentEntry.length > 0) {
+          currentEntry = currentEntry.slice(0, -1);
+        } else if (tokens.length > 0) {
+          let lastToken = tokens[tokens.length - 1];
+          if (isOperatorToken(lastToken)) {
+            tokens.pop();
+          } else {
+            lastToken = lastToken.slice(0, -1);
+            if (lastToken === "") tokens.pop();
+            else tokens[tokens.length - 1] = lastToken;
+          }
+        }
+        updateInputDisplay();
+        const evaluation = evaluateExpression();
+        if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+          fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+          decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
+          updateTapePosition(evaluation.numericValue);
+          document.getElementById('centerLine').classList.remove('hidden');
+        } else {
+          fractionResultDisplay.textContent = '';
+          decimalResultDisplay.textContent = '';
+          document.getElementById('centerLine').classList.add('hidden');
+        }
+      }
+      function handleNumberInput(value) {
+        currentEntry += value;
+        updateInputDisplay();
+      }
+      function handleDecimalInput() {
+        if (currentEntry.includes('.')) return;
+        currentEntry = currentEntry === '' ? '0.' : currentEntry + '.';
+        updateInputDisplay();
+      }
+      function handleFractionInput(value) {
+        if (currentEntry === '') {
+          currentEntry = value;
+        } else if (/^-?\d+$/.test(currentEntry)) {
+          const whole = parseInt(currentEntry, 10);
+          const [numerator, denominator] = value.split('/').map(Number);
+          if (denominator === 0) return;
+          const fraction = numerator / denominator;
+          const combinedValue = whole + fraction;
+          tokens.push(combinedValue.toString());
+          currentEntry = '';
+        } else if (isOperatorToken(tokens[tokens.length - 1])) {
+          currentEntry += value;
+        } else {
+          tokens.push(currentEntry);
+          tokens.push('+');
+          currentEntry = value;
+        }
+        updateInputDisplay();
+      }
+      function handleOperatorInput(value) {
+        if (currentEntry !== '') {
+          tokens.push(currentEntry);
+          currentEntry = '';
+        }
+        if (tokens.length === 0 && value !== '-') return;
+        const lastToken = tokens[tokens.length - 1];
+        if (isOperatorToken(lastToken)) tokens[tokens.length - 1] = value;
+        else tokens.push(value);
+        updateInputDisplay();
+      }
+      function updateInputDisplay() {
+        let displayText = '';
+        tokens.forEach(token => {
+          if (/^-?\d+\.\d+$/.test(token)) {
+            const parts = token.split('.');
+            const whole = parseInt(parts[0], 10);
+            const fraction = parseFloat('0.' + parts[1]);
+            const denominator = 16;
+            let numerator = Math.round(fraction * denominator);
+            const divisor = gcd(numerator, denominator);
+            numerator /= divisor;
+            const simplifiedDenom = denominator / divisor;
+            displayText += fraction > 0 ? `${whole} ${numerator}/${simplifiedDenom} ` : `${whole} `;
+          } else {
+            displayText += `${token} `;
+          }
+        });
+        if (currentEntry !== '') displayText += `${currentEntry} `;
+        inputDisplay.textContent = displayText.trim();
+      }
+      function isOperatorToken(token) {
+        return ['+', '-', '×', '÷'].includes(token);
+      }
+      function evaluateExpression() {
+        let exprTokens = [...tokens];
+        if (currentEntry !== '') exprTokens.push(currentEntry);
+        if (exprTokens.length === 0) return null;
+        const lastToken = exprTokens[exprTokens.length - 1];
+        if (isOperatorToken(lastToken)) return null;
+        const expression = exprTokens.join(' ');
+        try {
+          const formattedExpression = expression.replace(/×/g, '*').replace(/÷/g, '/');
+          const result = math.evaluate(formattedExpression);
+          const numericValue = typeof result === 'number' ? result : result.toNumber();
+          const formattedResult = formatResult(numericValue);
+          return { numericValue, formattedResult };
+        } catch (error) {
+          fractionResultDisplay.textContent = '';
+          decimalResultDisplay.textContent = '';
+          document.getElementById('centerLine').classList.add('hidden');
+          return null;
+        }
+      }
+      function formatResult(value) {
+        const roundedValue = Math.round(value * 16) / 16;
+        const whole = Math.floor(Math.abs(roundedValue));
+        const fractionalPart = Math.abs(roundedValue) - whole;
+        let numerator = Math.round(fractionalPart * 16);
+        let denominator = 16;
+        const divisor = gcd(numerator, denominator);
+        numerator /= divisor;
+        denominator /= divisor;
+        let fractionResult = '';
+        if (denominator === 1 || numerator === 0) {
+          fractionResult = `${whole}"`;
+        } else if (whole !== 0) {
+          fractionResult = `${whole} ${numerator}/${denominator}"`;
+        } else {
+          fractionResult = `${numerator}/${denominator}"`;
+        }
+        if (roundedValue < 0) fractionResult = `-${fractionResult}`;
+        const decimalResult = `${roundedValue.toFixed(4)}"`;
+        return { fractionResult, decimalResult };
+      }
+      
+      /* ---------- Memory and Modal ---------- */
+      function loadMemorySlots() {
+        const stored = localStorage.getItem(MEMORY_KEY);
+        if (stored) memorySlots = JSON.parse(stored);
+        updateMemoryDisplay();
+      }
+      function saveMemorySlots() {
+        localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots));
+      }
+      function updateMemoryDisplay() {
+        document.querySelectorAll('.memory-btn').forEach(btn => {
+          const slotIndex = parseInt(btn.getAttribute('data-slot'), 10);
+          const memValue = memorySlots[slotIndex];
+          btn.textContent = memValue !== null ? formatResult(memValue).fractionResult : `M${slotIndex + 1}`;
+        });
+      }
+      loadMemorySlots();
+      
+      /* ---------- Event Listeners ---------- */
+      // Segment mode toggle buttons
+      document.getElementById('segmentEqualBtn').addEventListener('click', function() {
+        segmentMode = "equal";
+        this.classList.add('active');
+        document.getElementById('segmentNearBtn').classList.remove('active');
+        document.getElementById('seg-segments-label').textContent = "Segments:";
+        if (currentMode !== "segment") { enterSegmentMode(); }
+        debounceSegmentCalculation();
+      });
+      document.getElementById('segmentNearBtn').addEventListener('click', function() {
+        segmentMode = "near";
+        this.classList.add('active');
+        document.getElementById('segmentEqualBtn').classList.remove('active');
+        document.getElementById('seg-segments-label').textContent = "Inches:";
+        if (currentMode !== "segment") { enterSegmentMode(); }
+        debounceSegmentCalculation();
+      });
+      document.getElementById('segmentDoneBtn').addEventListener('click', exitSegmentMode);
+      document.getElementById('segmentClearBtn').addEventListener('click', clearAllSegmentFields);
+      document.getElementById('seg-length').addEventListener('click', () => setActiveSegmentField("seg-length"));
+      document.getElementById('seg-start').addEventListener('click', () => setActiveSegmentField("seg-start"));
+      document.getElementById('seg-segments').addEventListener('click', () => setActiveSegmentField("seg-segments"));
+      setActiveSegmentField("seg-length");
+      
+      // Button click handling for both calculator and segment mode
+      const allButtons = document.querySelectorAll('.btn');
+      allButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (this.classList.contains('segment-mode-btn')) return;
+          if (currentMode === "segment") {
+            const value = this.getAttribute('data-value');
+            if (!isNaN(value) || value === '.') {
+              updateSegmentField(activeSegmentField, value);
+            } else if (value && value.includes('/')) {
+              let fieldElem = document.getElementById(activeSegmentField);
+              let currentVal = fieldElem.value;
+              if (currentVal !== "" && !currentVal.endsWith(" ")) {
+                updateSegmentField(activeSegmentField, " " + value);
+              } else {
+                updateSegmentField(activeSegmentField, value);
+              }
+            } else if (value === 'backspace') {
+              backspaceSegmentField(activeSegmentField);
+            } else if (value === 'C') {
+              clearSegmentField(activeSegmentField);
+            }
+            return;
+          }
+          // Normal calculator mode:
+          const value = this.getAttribute('data-value');
+          if (!value) return;
+          if (this.classList.contains('memory-btn') || this.classList.contains('memory-clear')) return;
+          if (value === 'C') { clearCalculator(); return; }
+          if (value === 'backspace') { handleBackspace(); return; }
+          const isFrac = this.classList.contains('fraction');
+          const isOp = this.classList.contains('operator');
+          const isDec = this.classList.contains('decimal');
+          if (!isOp && !isFrac && !isDec) {
+            handleNumberInput(value);
+          } else if (isDec) {
+            handleDecimalInput();
+          } else if (isFrac) {
+            handleFractionInput(value);
+          } else if (isOp) {
+            handleOperatorInput(value);
+          }
+          clearTimeout(timeout);
+          timeout = setTimeout(function() {
+            const evaluation = evaluateExpression();
+            if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+              fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+              decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
+              updateTapePosition(evaluation.numericValue);
+              document.getElementById('centerLine').classList.remove('hidden');
+            } else {
+              fractionResultDisplay.textContent = '';
+              decimalResultDisplay.textContent = '';
+              document.getElementById('centerLine').classList.add('hidden');
+            }
+          }, 500);
+        });
+      });
+      
+      // Memory button events
+      document.querySelectorAll('.memory-btn').forEach(btn => {
+        btn.addEventListener('dblclick', function() {
+          const slot = parseInt(this.getAttribute('data-slot'), 10);
+          const evaluation = evaluateExpression();
+          if (!evaluation || evaluation.numericValue === null) return;
+          if (memorySlots[slot] !== null && !confirm(`Memory slot M${slot + 1} already contains ${formatResult(memorySlots[slot]).fractionResult}. Replace it?`)) return;
+          memorySlots[slot] = evaluation.numericValue;
+          saveMemorySlots();
+          updateMemoryDisplay();
+        });
+        let pressTimer;
+        btn.addEventListener('touchstart', function() {
+          pressTimer = setTimeout(() => {
+            const slot = parseInt(this.getAttribute('data-slot'), 10);
+            const evaluation = evaluateExpression();
+            if (!evaluation || evaluation.numericValue === null) return;
+            if (memorySlots[slot] !== null && !confirm(`Memory slot M${slot + 1} already contains ${formatResult(memorySlots[slot]).fractionResult}. Replace it?`)) return;
+            memorySlots[slot] = evaluation.numericValue;
+            saveMemorySlots();
+            updateMemoryDisplay();
+          }, 600);
+        });
+        btn.addEventListener('touchend', () => { clearTimeout(pressTimer); });
+      });
+      document.querySelectorAll('.memory-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const slot = parseInt(this.getAttribute('data-slot'), 10);
+          if (memorySlots[slot] === null) return;
+          const memString = memorySlots[slot].toString();
+          if (currentEntry !== '') tokens.push(currentEntry);
+          currentEntry = memString;
+          updateInputDisplay();
+          clearTimeout(timeout);
+          timeout = setTimeout(function() {
+            const evaluation = evaluateExpression();
+            if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+              fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+              decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
+              updateTapePosition(evaluation.numericValue);
+              document.getElementById('centerLine').classList.remove('hidden');
+            } else {
+              fractionResultDisplay.textContent = '';
+              decimalResultDisplay.textContent = '';
+              document.getElementById('centerLine').classList.add('hidden');
+            }
+          }, 500);
+        });
+      });
+      document.querySelector('.memory-clear').addEventListener('click', function() {
+        if (confirm("Are you sure you want to clear all memory slots?")) {
+          memorySlots = [null, null, null, null];
+          saveMemorySlots();
+          updateMemoryDisplay();
+        }
+      });
+      
+      // Modal handling
+      const modal = document.getElementById('instructionsModal');
+      const showModalBtn = document.getElementById('showModalBtn');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      showModalBtn.addEventListener('click', function() {
+        modal.classList.add('show');
+        closeModalBtn.focus();
+      });
+      closeModalBtn.addEventListener('click', function() {
+        modal.classList.remove('show');
+        showModalBtn.focus();
+      });
+      window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+          modal.classList.remove('show');
+          showModalBtn.focus();
+        }
+      });
+      
+      // Initialize tape measure ticks
+      generateTickMarks(0);
+    });
+  </script>
+</body>
+</html>
