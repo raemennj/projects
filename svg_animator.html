@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cricut SVG Pen Simulator</title>
+  <script src="https://cdn.jsdelivr.net/npm/svg-path-properties@1.1.1/build/svg-path-properties.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0; padding: 0; background-color: #fafafa;
+    }
+    #controls {
+      padding: 10px; background-color: #333; color: #fff; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    #controls button, #controls input { cursor: pointer; }
+    #svgContainer {
+      width: 100vw; height: calc(100vh - 60px); overflow: hidden; position: relative;
+    }
+    svg {
+      width: 100%; height: 100%; transform-origin: center center; transition: transform 0.2s ease;
+    }
+    #speedControl {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <input type="file" id="svgUploader" accept=".svg"/>
+    <button id="playPauseBtn">Play</button>
+    <button id="loopBtn">Loop: Off</button>
+    <label>Speed: <input type="range" id="speedControl" min="0.1" max="3" value="1" step="0.1"></label>
+    <input type="range" id="scrubBar" value="0" step="0.001" min="0" max="1" style="flex-grow:1;"/>
+    <button id="zoomInBtn">Zoom In</button>
+    <button id="zoomOutBtn">Zoom Out</button>
+  </div>
+
+  <div id="svgContainer">Drag & Drop SVG or use the uploader.</div>
+
+  <script>
+    let svgPaths = [], totalLength = 0, animation = null, isPlaying = false, loop = false, scale = 1, speed = 1;
+    const uploader = document.getElementById('svgUploader'),
+          playPauseBtn = document.getElementById('playPauseBtn'),
+          loopBtn = document.getElementById('loopBtn'),
+          scrubBar = document.getElementById('scrubBar'),
+          zoomInBtn = document.getElementById('zoomInBtn'),
+          zoomOutBtn = document.getElementById('zoomOutBtn'),
+          svgContainer = document.getElementById('svgContainer'),
+          speedControl = document.getElementById('speedControl');
+    let svgElement;
+
+    uploader.addEventListener('change', loadSVG);
+
+    function loadSVG(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        svgContainer.innerHTML = e.target.result;
+        svgElement = svgContainer.querySelector('svg');
+        initializePaths();
+      };
+      reader.readAsText(file);
+    }
+
+    function initializePaths() {
+      svgPaths = Array.from(svgElement.querySelectorAll('path'));
+      svgPaths.forEach(path => {
+        const len = path.getTotalLength();
+        path.style.strokeDasharray = len;
+        path.style.strokeDashoffset = len;
+      });
+      setupAnimation();
+    }
+
+    function setupAnimation() {
+      if (animation) animation.pause();
+      animation = anime.timeline({
+        duration: calculateDuration(),
+        easing: 'linear',
+        autoplay: false,
+        loop: loop,
+        update: updateScrubBar,
+      });
+      svgPaths.forEach(path => {
+        animation.add({ targets: path, strokeDashoffset: [path.getTotalLength(), 0] }, "+=0");
+      });
+    }
+
+    function calculateDuration() {
+      totalLength = svgPaths.reduce((sum, p) => sum + p.getTotalLength(), 0);
+      return totalLength * (10 / speed); // adjust multiplier to calibrate speed
+    }
+
+    playPauseBtn.onclick = () => {
+      if (!animation) return;
+      isPlaying ? animation.pause() : animation.play();
+      playPauseBtn.textContent = isPlaying ? 'Play' : 'Pause';
+      isPlaying = !isPlaying;
+    };
+
+    loopBtn.onclick = () => {
+      loop = !loop;
+      loopBtn.textContent = `Loop: ${loop?'On':'Off'}`;
+      if(animation) animation.loop = loop;
+    };
+
+    scrubBar.oninput = () => {
+      if(animation) animation.seek(animation.duration * scrubBar.value);
+    };
+
+    function updateScrubBar(anim) {
+      scrubBar.value = anim.progress / 100;
+    }
+
+    zoomInBtn.onclick = () => zoom(1.2);
+    zoomOutBtn.onclick = () => zoom(0.8);
+    function zoom(factor) {
+      scale *= factor;
+      if(svgElement) svgElement.style.transform = `scale(${scale})`;
+    }
+
+    svgContainer.ondragover = e => e.preventDefault();
+    svgContainer.ondrop = e => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if(file && file.type === 'image/svg+xml') {
+        uploader.files = e.dataTransfer.files;
+        loadSVG({target:{files:[file]}});
+      }
+    };
+
+    speedControl.oninput = () => {
+      speed = parseFloat(speedControl.value);
+      if(animation) {
+        const wasPlaying = isPlaying;
+        const progress = animation.progress;
+        setupAnimation();
+        animation.seek(animation.duration * (progress/100));
+        if(wasPlaying) animation.play();
+      }
+    };
+  </script>
+</body>
+</html>
