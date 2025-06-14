@@ -28,6 +28,9 @@ To embark on this voyage and see the wonders me code can conjure, follow these s
 
 4. **Explore the Web Apps**:
     Each web app resides in its own directory. Dive into the code, make tweaks, and witness the changes on the high seas of the internet.
+## License 📝
+
+This project be shared under the [MIT License](LICENSE). Keep the notice in yer sails as ye set forth.
 
 
 **Cap'n raemenn**  
