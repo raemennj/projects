@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moon Advice</title>
+<style>
+html,body{margin:0;padding:0;height:100%;}
+body{display:flex;align-items:center;justify-content:center;color:white;text-align:center;font-family:Arial, Helvetica, sans-serif;position:relative;overflow:hidden;background:#000;}
+svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;}
+.content{position:relative;padding:1rem;line-height:1.5;}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+    <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#000428" />
+            <stop offset="100%" stop-color="#004e92" />
+        </linearGradient>
+        <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#013" />
+            <stop offset="100%" stop-color="#001a33" />
+        </linearGradient>
+        <radialGradient id="moon" cx="0.5" cy="0.4" r="0.25">
+            <stop offset="0%" stop-color="#fff" />
+            <stop offset="100%" stop-color="#fffae8" />
+        </radialGradient>
+    </defs>
+    <rect x="0" y="0" width="100" height="60" fill="url(#sky)" />
+    <rect x="0" y="60" width="100" height="40" fill="url(#water)" />
+    <polygon points="0,60 20,45 40,55 60,40 80,55 100,48 100,60" fill="#0b284b" />
+    <circle cx="50" cy="45" r="15" fill="url(#moon)" />
+    <ellipse cx="50" cy="72" rx="15" ry="5" fill="rgba(255,255,220,0.3)" />
+</svg>
+<div class="content">
+<h1>Advice from the Moon</h1>
+<p>Live life to the fullest<br>Be someone to look up to<br>Don't be phased by difficulties<br>Take time to reflect<br>Light up the night</p>
+</div>
+</body>
+</html>
