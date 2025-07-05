@@ -340,6 +340,53 @@
   </style>
 </head>
 <body>
+<style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #menuToggle {
+        display: block;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+    }
+    #menuToggle input { display: none; }
+    #menuToggle span {
+        display: block;
+        width: 33px;
+        height: 4px;
+        margin-bottom: 5px;
+        background: #333;
+        border-radius: 3px;
+        transition: all 0.3s ease-in-out;
+    }
+    #menu {
+        position: fixed;
+        left: -200px;
+        top: 0;
+        width: 200px;
+        height: 100%;
+        background: #f8f9fa;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        transition: left 0.3s ease-in-out;
+        padding-top: 60px;
+    }
+    #menu a {
+        display: block;
+        padding: 10px 20px;
+        text-decoration: none;
+        color: #333;
+    }
+    #menuToggle input:checked ~ #menu { left: 0; }
+</style>
+<nav id="menuToggle">
+    <input type="checkbox" />
+    <span></span>
+    <span></span>
+    <span></span>
+    <div id="menu">
+        <a href="/index.html">Home</a>
+    </div>
+</nav>
   <div class="calculator-wrapper">
     <div class="calculator">
       <!-- Tape Measure Display -->
@@ -384,7 +431,7 @@
         <button class="btn" data-value="3">3</button>
         <button class="btn operator" data-value="×">×</button>
 
-        <button class="btn empty-btn" aria-hidden="true"></button>
+        <button class="btn operator" id="feetBtn">Feet</button>
         <button class="btn empty-btn" aria-hidden="true"></button>
         <button class="btn" data-value="0">0</button>
         <button class="btn decimal" data-value=".">.</button>
@@ -454,6 +501,7 @@
       let tokens = [];
       let currentEntry = '';
       let timeout = null;
+      let feetBaseValue = null;
 
       // Memory state and persistence
       const MEMORY_KEY = 'calcMemorySlots';
@@ -496,6 +544,7 @@
         button.addEventListener('click', () => {
           const value = button.getAttribute('data-value');
           // Skip memory buttons (handled separately)
+          if (button.id === "feetBtn") return;
           if (button.classList.contains('memory-btn') || button.classList.contains('memory-clear')) {
             return;
           }
@@ -542,8 +591,27 @@
               console.log('Calculation failed or incomplete');
             }
           }, 500);
+
         });
       });
+      // NEW: Feet Mode button
+      document.getElementById("feetBtn").addEventListener("click", () => {
+        if (currentEntry !== "" && /^-?\d+$/.test(currentEntry)) {
+          const feet = parseInt(currentEntry, 10);
+          feetBaseValue = feet * 12;
+          tokens = [];
+          currentEntry = "";
+          updateInputDisplay();
+          fractionResultDisplay.textContent = `${feet}" base`;
+          decimalResultDisplay.textContent = `${feetBaseValue.toFixed(2)}"`;
+          updateTapePosition(feetBaseValue);
+          centerLine.classList.remove("hidden");
+          console.log(`Feet mode: base ${feetBaseValue} in.`);
+        } else {
+          alert("Enter a whole number before pressing 'Feet'.");
+        }
+      });
+
 
       // Memory Button Interactions
 
@@ -653,6 +721,7 @@
         decimalResultDisplay.textContent = '';
         clearTimeout(timeout);
         centerLine.classList.add('hidden');
+        feetBaseValue = null;
         console.log('Calculator cleared');
       }
 
@@ -809,41 +878,30 @@
         return greatestCommonDivisor(b, a % b);
       }
 
+
       function evaluateExpression() {
         let exprTokens = [...tokens];
-        if (currentEntry !== '') {
-          exprTokens.push(currentEntry);
-        }
-        if (exprTokens.length === 0) {
-          console.log('No expression to evaluate');
-          return null;
-        }
-        const lastToken = exprTokens[exprTokens.length - 1];
-        if (isOperatorToken(lastToken)) {
-          console.log('Expression ends with an operator. Awaiting more input.');
-          return null;
-        }
-        const expression = exprTokens.join(' ');
-        console.log(`Evaluating Expression: ${expression}`);
+        if (currentEntry !== '') exprTokens.push(currentEntry);
+        if (exprTokens.length === 0) return null;
+        if (isOperatorToken(exprTokens[exprTokens.length - 1])) return null;
+        const expr = exprTokens.join(' ').replace(/×/g, '*').replace(/÷/g, '/');
         try {
-          const formattedExpression = expression.replace(/×/g, '*').replace(/÷/g, '/');
-          console.log(`Formatted Expression for math.js: ${formattedExpression}`);
-          const result = math.evaluate(formattedExpression);
-          console.log(`Raw Result from math.js: ${result}`);
-          const numericValue = typeof result === 'number' ? result : result.toNumber();
-          console.log(`Numeric Value: ${numericValue}`);
-          const formattedResult = formatResult(numericValue);
-          console.log(`Formatted Result: ${JSON.stringify(formattedResult)}`);
-          return { numericValue, formattedResult };
-        } catch (error) {
-          console.error('Evaluation Error:', error);
+          const raw = math.evaluate(expr);
+          let numericValue = typeof raw === 'number' ? raw : raw.toNumber();
+          if (feetBaseValue !== null) numericValue += feetBaseValue;
+          const formatted = formatResult(numericValue);
+          fractionResultDisplay.textContent = formatted.fractionResult;
+          decimalResultDisplay.textContent = formatted.decimalResult;
+          updateTapePosition(numericValue);
+          centerLine.classList.remove('hidden');
+          return { numericValue, formattedResult: formatted };
+        } catch {
           fractionResultDisplay.textContent = '';
           decimalResultDisplay.textContent = '';
           centerLine.classList.add('hidden');
           return null;
         }
       }
-
       function formatResult(value) {
         console.log(`Formatting Value: ${value}`);
         const roundedValue = Math.round(value * 16) / 16;
