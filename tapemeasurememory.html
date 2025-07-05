@@ -340,53 +340,6 @@
   </style>
 </head>
 <body>
-<style>
-    body { margin: 0; font-family: Arial, sans-serif; }
-    #menuToggle {
-        display: block;
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 1000;
-    }
-    #menuToggle input { display: none; }
-    #menuToggle span {
-        display: block;
-        width: 33px;
-        height: 4px;
-        margin-bottom: 5px;
-        background: #333;
-        border-radius: 3px;
-        transition: all 0.3s ease-in-out;
-    }
-    #menu {
-        position: fixed;
-        left: -200px;
-        top: 0;
-        width: 200px;
-        height: 100%;
-        background: #f8f9fa;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        transition: left 0.3s ease-in-out;
-        padding-top: 60px;
-    }
-    #menu a {
-        display: block;
-        padding: 10px 20px;
-        text-decoration: none;
-        color: #333;
-    }
-    #menuToggle input:checked ~ #menu { left: 0; }
-</style>
-<nav id="menuToggle">
-    <input type="checkbox" />
-    <span></span>
-    <span></span>
-    <span></span>
-    <div id="menu">
-        <a href="/index.html">Home</a>
-    </div>
-</nav>
   <div class="calculator-wrapper">
     <div class="calculator">
       <!-- Tape Measure Display -->
