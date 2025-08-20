@@ -187,10 +187,29 @@
       text-align: left;
       font-weight: lighter;
     }
-    #decimalResult {
+    #feetInchesResult {
       text-align: right;
       font-style: italic;
       color: gray;
+      font-size: 0.8em;
+    }
+    #statusMessage {
+      font-size: 0.8em;
+      margin-top: 4px;
+      text-align: center;
+      color: #555;
+    }
+    #history {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+      width: 100%;
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 0.8em;
+    }
+    #history li {
+      margin-bottom: 2px;
     }
     /* Memory Container */
     .memory-container {
@@ -349,14 +368,15 @@
         <div class="animation-overlay"></div>
       </div>
       <!-- Calculator Display -->
-      <div id="display">
-        <div id="input" aria-live="polite"></div>
-        <div id="result">
-          <div id="fractionResult"></div>
-          <div id="decimalResult"></div>
+        <div id="display">
+          <div id="input" aria-live="polite"></div>
+          <div id="result">
+            <div id="fractionResult"></div>
+            <div id="feetInchesResult"></div>
+          </div>
+          <div id="statusMessage" aria-live="polite"></div>
         </div>
-      </div>
-      <!-- Memory Buttons Row (now between display and main buttons) -->
+        <!-- Memory Buttons Row (now between display and main buttons) -->
       <div class="memory-container">
         <button class="btn memory-clear">MC</button>
         <button class="btn memory-btn" data-slot="0">M1</button>
@@ -384,8 +404,8 @@
         <button class="btn" data-value="3">3</button>
         <button class="btn operator" data-value="×">×</button>
 
-        <button class="btn operator" id="feetBtn">Feet</button>
-        <button class="btn empty-btn" aria-hidden="true"></button>
+          <button class="btn operator" id="feetBtn" aria-label="Convert feet to inches and continue entering inches or fractions.">Feet</button>
+          <button class="btn empty-btn" aria-hidden="true"></button>
         <button class="btn" data-value="0">0</button>
         <button class="btn decimal" data-value=".">.</button>
         <button class="btn operator" data-value="÷">÷</button>
@@ -406,10 +426,11 @@
         <button class="btn fraction" data-value="3/4">3/4</button>
         <button class="btn fraction" data-value="13/16">13/16</button>
         <button class="btn fraction" data-value="7/8">7/8</button>
-        <button class="btn fraction" data-value="15/16">15/16</button>
+          <button class="btn fraction" data-value="15/16">15/16</button>
+        </div>
+        <ul id="history"></ul>
       </div>
     </div>
-  </div>
 
   <!-- Instructions Modal -->
   <div id="instructionsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -437,24 +458,32 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    <script>
+      // Feet button feature converts a typed feet value to inches, commits it,
+      // clears the entry buffer, updates displays immediately (bypassing debounce),
+      // records the conversion in history, and announces a confirmation via an
+      // ARIA live region.
+      document.addEventListener('DOMContentLoaded', () => {
       const inputDisplay = document.getElementById('input');
-      const fractionResultDisplay = document.getElementById('fractionResult');
-      const decimalResultDisplay = document.getElementById('decimalResult');
-      const buttons = document.querySelectorAll('.btn');
-      const modal = document.getElementById('instructionsModal');
-      const showModalBtn = document.getElementById('showModalBtn');
-      const closeModalBtn = document.getElementById('closeModalBtn');
-      const centerLine = document.getElementById('centerLine');
-      const tapeMeasure = document.getElementById('tapeMeasure');
-      const tapeMeasureContainer = document.querySelector('.tape-measure-container');
+        const fractionResultDisplay = document.getElementById('fractionResult');
+        const feetInchesResultDisplay = document.getElementById('feetInchesResult');
+        const statusMessage = document.getElementById('statusMessage');
+        const historyList = document.getElementById('history');
+        const feetBtn = document.getElementById('feetBtn');
+        const buttons = document.querySelectorAll('.btn');
+        const modal = document.getElementById('instructionsModal');
+        const showModalBtn = document.getElementById('showModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const centerLine = document.getElementById('centerLine');
+        const tapeMeasure = document.getElementById('tapeMeasure');
+        const tapeMeasureContainer = document.querySelector('.tape-measure-container');
 
       // Calculator state
-      let tokens = [];
-      let currentEntry = '';
-      let timeout = null;
-      let feetBaseValue = null;
+        let tokens = [];
+        let currentEntry = '';
+        let timeout = null;
+        let lastFeetCommitIndex = null;
+        let statusTimeout = null;
 
       // Memory state and persistence
       const MEMORY_KEY = 'calcMemorySlots';
@@ -530,45 +559,34 @@
           // Debounce evaluation
           clearTimeout(timeout);
           timeout = setTimeout(() => {
-            const evaluation = evaluateExpression();
-            if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-              fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
-              decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
-              updateTapePosition(evaluation.numericValue);
-              centerLine.classList.remove('hidden');
-              console.log('Calculation successful');
-            } else {
-              fractionResultDisplay.textContent = '';
-              decimalResultDisplay.textContent = '';
-              centerLine.classList.add('hidden');
-              console.log('Calculation failed or incomplete');
-            }
-          }, 200);
+              const evaluation = evaluateExpression();
+              if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+                fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+                feetInchesResultDisplay.textContent = `= ${evaluation.feetDisplay}`;
+                updateTapePosition(evaluation.numericValue);
+                centerLine.classList.remove('hidden');
+                console.log('Calculation successful');
+              } else {
+                fractionResultDisplay.textContent = '';
+                feetInchesResultDisplay.textContent = '';
+                centerLine.classList.add('hidden');
+                console.log('Calculation failed or incomplete');
+              }
+            }, 200);
 
         });
       });
-      // NEW: Feet Mode button
-      document.getElementById("feetBtn").addEventListener("click", () => {
-        if (currentEntry !== "" && /^-?\d+$/.test(currentEntry)) {
-          const feet = parseInt(currentEntry, 10);
-          feetBaseValue = feet * 12;
-          tokens = [];
-          currentEntry = "";
-          updateInputDisplay();
-          fractionResultDisplay.textContent = `${feet}" base`;
-          decimalResultDisplay.textContent = `${feetBaseValue.toFixed(2)}"`;
-          updateTapePosition(feetBaseValue);
-          centerLine.classList.remove("hidden");
-          console.log(`Feet mode: base ${feetBaseValue} in.`);
-        } else {
-          alert("Enter a whole number before pressing 'Feet'.");
-        }
-      });
 
+        feetBtn.addEventListener('click', commitFeetToInches);
+        document.addEventListener('keydown', (e) => {
+          if (e.key.toLowerCase() === 'f') {
+            commitFeetToInches();
+          }
+        });
 
-      // Memory Button Interactions
+        // Memory Button Interactions
 
-      // 1. Storing a Memory Value (double-click for desktop, long press for mobile)
+        // 1. Storing a Memory Value (double-click for desktop, long press for mobile)
       document.querySelectorAll('.memory-btn').forEach(btn => {
         // Double-click event for desktops
         btn.addEventListener('dblclick', () => {
@@ -602,6 +620,7 @@
             memorySlots[slot] = evaluation.numericValue;
             saveMemorySlots();
             updateMemoryDisplay();
+            showStatus(`Stored in M${slot + 1}: ${evaluation.feetDisplay} (${evaluation.formattedResult.fractionResult})`);
             console.log(`Stored value ${evaluation.numericValue} in memory slot M${slot + 1}`);
           }, 600);
         });
@@ -615,31 +634,34 @@
         btn.addEventListener('click', () => {
           const slot = parseInt(btn.getAttribute('data-slot'), 10);
           if (memorySlots[slot] === null) return;
-          const memString = memorySlots[slot].toString();
-          // Finalize any current input
-          if (currentEntry !== '') {
-            tokens.push(currentEntry);
-          }
-          currentEntry = memString;
-          updateInputDisplay();
-          console.log(`Appended memory value from M${slot + 1}`);
-          // Trigger evaluation automatically after memory insertion
-          clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            const evaluation = evaluateExpression();
-            if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-              fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
-              decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
-              updateTapePosition(evaluation.numericValue);
-              centerLine.classList.remove('hidden');
-            } else {
-              fractionResultDisplay.textContent = '';
-              decimalResultDisplay.textContent = '';
-              centerLine.classList.add('hidden');
+            const memString = memorySlots[slot].toString();
+            const storedFeet = formatFeetInches(memorySlots[slot]);
+            const storedInches = formatResult(memorySlots[slot]).fractionResult;
+            showStatus(`Stored: ${storedFeet} (${storedInches})`);
+            // Finalize any current input
+            if (currentEntry !== '') {
+              tokens.push(currentEntry);
             }
-          }, 200);
+            currentEntry = memString;
+            updateInputDisplay();
+            console.log(`Appended memory value from M${slot + 1}`);
+            // Trigger evaluation automatically after memory insertion
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+              const evaluation = evaluateExpression();
+              if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+                fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+                feetInchesResultDisplay.textContent = `= ${evaluation.feetDisplay}`;
+                updateTapePosition(evaluation.numericValue);
+                centerLine.classList.remove('hidden');
+              } else {
+                fractionResultDisplay.textContent = '';
+                feetInchesResultDisplay.textContent = '';
+                centerLine.classList.add('hidden');
+              }
+            }, 200);
+          });
         });
-      });
 
       // 3. Clearing Memory Slots with Confirmation
       document.querySelector('.memory-clear').addEventListener('click', () => {
@@ -670,13 +692,14 @@
         tokens = [];
         currentEntry = '';
         inputDisplay.textContent = '';
-        fractionResultDisplay.textContent = '';
-        decimalResultDisplay.textContent = '';
-        clearTimeout(timeout);
-        centerLine.classList.add('hidden');
-        feetBaseValue = null;
-        console.log('Calculator cleared');
-      }
+          fractionResultDisplay.textContent = '';
+          feetInchesResultDisplay.textContent = '';
+          statusMessage.textContent = '';
+          clearTimeout(timeout);
+          centerLine.classList.add('hidden');
+          lastFeetCommitIndex = null;
+          console.log('Calculator cleared');
+        }
 
       function handleBackspace() {
         if (currentEntry.length > 0) {
@@ -701,19 +724,19 @@
         updateInputDisplay();
         
         // Update the solution immediately after backspacing.
-        const evaluation = evaluateExpression();
-        if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-          fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
-          decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
-          updateTapePosition(evaluation.numericValue);
-          centerLine.classList.remove('hidden');
-        } else {
-          fractionResultDisplay.textContent = '';
-          decimalResultDisplay.textContent = '';
-          centerLine.classList.add('hidden');
+          const evaluation = evaluateExpression();
+          if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
+            fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
+            feetInchesResultDisplay.textContent = `= ${evaluation.feetDisplay}`;
+            updateTapePosition(evaluation.numericValue);
+            centerLine.classList.remove('hidden');
+          } else {
+            fractionResultDisplay.textContent = '';
+            feetInchesResultDisplay.textContent = '';
+            centerLine.classList.add('hidden');
+          }
+          console.log('Backspace pressed');
         }
-        console.log('Backspace pressed');
-      }
 
       function handleNumberInput(value) {
         currentEntry += value;
@@ -756,24 +779,79 @@
         console.log(`Fraction input handled: ${value}`);
       }
 
-      function handleOperatorInput(value) {
-        if (currentEntry !== '') {
-          tokens.push(currentEntry);
+        function handleOperatorInput(value) {
+          if (currentEntry !== '') {
+            tokens.push(currentEntry);
+            currentEntry = '';
+          }
+          if (tokens.length === 0 && value !== '-') {
+            console.log('Operator pressed without a preceding number');
+            return;
+          }
+          const lastToken = tokens[tokens.length - 1];
+          if (isOperatorToken(lastToken)) {
+            tokens[tokens.length - 1] = value;
+          } else {
+            tokens.push(value);
+          }
+          updateInputDisplay();
+          console.log(`Operator input handled: ${value}`);
+        }
+
+        function commitFeetToInches() {
+          let feetStr = '';
+          let fromToken = false;
+          let negative = false;
+          if (currentEntry !== '') {
+            feetStr = currentEntry;
+            if (tokens.length > 0 && tokens[tokens.length - 1] === '-') {
+              negative = true;
+              tokens.pop();
+            }
+          } else {
+            if (tokens.length === 0) {
+              showStatus('Enter a number, then Feet.');
+              return;
+            }
+            const lastToken = tokens[tokens.length - 1];
+            if (isOperatorToken(lastToken) || lastFeetCommitIndex === tokens.length - 1) {
+              showStatus('Enter a number, then Feet.');
+              return;
+            }
+            feetStr = tokens.pop();
+            fromToken = true;
+            if (tokens.length > 0 && tokens[tokens.length - 1] === '-') {
+              negative = true;
+              tokens.pop();
+            }
+          }
+
+          if (negative) feetStr = '-' + feetStr;
+          const feetVal = parseFeetInput(feetStr);
+          if (feetVal === null) {
+            showStatus('Invalid feet value.');
+            if (fromToken) {
+              if (negative) tokens.push('-');
+              tokens.push(feetStr.replace('-', ''));
+            } else if (negative) {
+              tokens.push('-');
+            }
+            return;
+          }
+
+          const inchesVal = feetVal * 12;
+          tokens.push(inchesVal.toString());
           currentEntry = '';
+          lastFeetCommitIndex = tokens.length - 1;
+          updateInputDisplay();
+
+          clearTimeout(timeout);
+          evaluateExpression();
+
+          const inchesFormatted = formatResult(inchesVal).fractionResult;
+          showStatus(`${feetStr}′ converted to ${inchesFormatted}`);
+          addHistoryEntry(`Feet: ${feetStr}′ → ${inchesFormatted}`);
         }
-        if (tokens.length === 0 && value !== '-') {
-          console.log('Operator pressed without a preceding number');
-          return;
-        }
-        const lastToken = tokens[tokens.length - 1];
-        if (isOperatorToken(lastToken)) {
-          tokens[tokens.length - 1] = value;
-        } else {
-          tokens.push(value);
-        }
-        updateInputDisplay();
-        console.log(`Operator input handled: ${value}`);
-      }
 
       function updateInputDisplay() {
         let displayText = '';
@@ -824,37 +902,85 @@
         return `${numerator}/${simplifiedDenom}`;
       }
 
-      function greatestCommonDivisor(a, b) {
-        a = Math.abs(a);
-        b = Math.abs(b);
-        if (!b) return a;
-        return greatestCommonDivisor(b, a % b);
-      }
-
-
-      function evaluateExpression() {
-        let exprTokens = [...tokens];
-        if (currentEntry !== '') exprTokens.push(currentEntry);
-        if (exprTokens.length === 0) return null;
-        if (isOperatorToken(exprTokens[exprTokens.length - 1])) return null;
-        const expr = exprTokens.join(' ').replace(/×/g, '*').replace(/÷/g, '/');
-        try {
-          const raw = math.evaluate(expr);
-          let numericValue = typeof raw === 'number' ? raw : raw.toNumber();
-          if (feetBaseValue !== null) numericValue += feetBaseValue;
-          const formatted = formatResult(numericValue);
-          fractionResultDisplay.textContent = formatted.fractionResult;
-          decimalResultDisplay.textContent = formatted.decimalResult;
-          updateTapePosition(numericValue);
-          centerLine.classList.remove('hidden');
-          return { numericValue, formattedResult: formatted };
-        } catch {
-          fractionResultDisplay.textContent = '';
-          decimalResultDisplay.textContent = '';
-          centerLine.classList.add('hidden');
-          return null;
+        function greatestCommonDivisor(a, b) {
+          a = Math.abs(a);
+          b = Math.abs(b);
+          if (!b) return a;
+          return greatestCommonDivisor(b, a % b);
         }
-      }
+
+        function parseFeetInput(str) {
+          if (typeof str !== 'string') return null;
+          str = str.trim();
+          if (str === '') return null;
+          let sign = 1;
+          if (str.startsWith('-')) {
+            sign = -1;
+            str = str.slice(1).trim();
+          }
+          if (str.includes(' ')) {
+            const parts = str.split(' ');
+            if (parts.length !== 2) return null;
+            const whole = parseFloat(parts[0]);
+            const frac = parseFeetInput(parts[1]);
+            if (isNaN(whole) || frac === null) return null;
+            return sign * (whole + frac);
+          }
+          if (str.includes('/')) {
+            const [num, den] = str.split('/').map(Number);
+            if (isNaN(num) || isNaN(den) || den === 0) return null;
+            return sign * (num / den);
+          }
+          const num = parseFloat(str);
+          return isNaN(num) ? null : sign * num;
+        }
+
+        function formatFeetInches(value) {
+          const sign = value < 0 ? '-' : '';
+          const abs = Math.abs(value);
+          const feet = Math.floor(abs / 12);
+          const inches = abs - feet * 12;
+          const inchStr = formatResult(inches).fractionResult.replace('"', '″');
+          return `${sign}${feet}′ ${inchStr}`;
+        }
+
+        function showStatus(msg) {
+          statusMessage.textContent = msg;
+          clearTimeout(statusTimeout);
+          statusTimeout = setTimeout(() => {
+            statusMessage.textContent = '';
+          }, 2000);
+        }
+
+        function addHistoryEntry(text) {
+          const li = document.createElement('li');
+          li.textContent = text;
+          historyList.appendChild(li);
+        }
+
+        function evaluateExpression() {
+          let exprTokens = [...tokens];
+          if (currentEntry !== '') exprTokens.push(currentEntry);
+          if (exprTokens.length === 0) return null;
+          if (isOperatorToken(exprTokens[exprTokens.length - 1])) return null;
+          const expr = exprTokens.join(' ').replace(/×/g, '*').replace(/÷/g, '/');
+          try {
+            const raw = math.evaluate(expr);
+            const numericValue = typeof raw === 'number' ? raw : raw.toNumber();
+            const formatted = formatResult(numericValue);
+            const feetDisplay = formatFeetInches(numericValue);
+            fractionResultDisplay.textContent = formatted.fractionResult;
+            feetInchesResultDisplay.textContent = `= ${feetDisplay}`;
+            updateTapePosition(numericValue);
+            centerLine.classList.remove('hidden');
+            return { numericValue, formattedResult: formatted, feetDisplay };
+          } catch {
+            fractionResultDisplay.textContent = '';
+            feetInchesResultDisplay.textContent = '';
+            centerLine.classList.add('hidden');
+            return null;
+          }
+        }
       function formatResult(value) {
         console.log(`Formatting Value: ${value}`);
         const roundedValue = Math.round(value * 16) / 16;
