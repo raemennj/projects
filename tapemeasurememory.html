@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="responsive-mode">
 <head>
   <meta charset="UTF-8">
   <title>Calculator with Tape Measure & Memory</title>
@@ -12,6 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Inch Calc">
   <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="menu_style.css"/>
   <style>
     /* CSS Variables for consistency */
     :root {
@@ -47,31 +48,16 @@
       margin: 0;
       padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left) 5px;
       background-color: var(--background-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       user-select: none;
       touch-action: none;
       font-family: Arial, sans-serif;
       position: relative;
-      overflow: hidden;
-    }
-    .calculator-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      height: 100vh;
-      padding-top: 2.5rem;
     }
     .calculator {
       background: var(--calculator-bg);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      width: 420px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
     /* Tape Measure Display */
     .tape-measure-container {
@@ -225,6 +211,10 @@
       grid-gap: 10px;
       width: 100%;
     }
+    .placeholder {
+      visibility: hidden;
+      pointer-events: none;
+    }
     .btn {
       padding: 15px;
       font-size: 1em;
@@ -277,12 +267,6 @@
     }
     .backspace:hover {
       background: #ffa726;
-    }
-    .empty-btn {
-      visibility: hidden;
-      pointer-events: none;
-      background: transparent;
-      border: none;
     }
     .menu-btn {
       background: var(--memory-bg);
@@ -340,32 +324,30 @@
   </style>
 </head>
 <body>
-  <div class="calculator-wrapper">
-    <div class="calculator">
-      <!-- Tape Measure Display -->
-      <div class="tape-measure-container">
-        <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
-        <div class="tape-measure" id="tapeMeasure"></div>
-        <div class="animation-overlay"></div>
-      </div>
-      <!-- Calculator Display -->
-      <div id="display">
-        <div id="input" aria-live="polite"></div>
-        <div id="result">
-          <div id="fractionResult"></div>
-          <div id="decimalResult"></div>
+  <div class="calc-viewport">
+    <div class="calculator calc-board">
+      <div class="display-container" data-area="display">
+        <div class="tape-measure-container">
+          <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
+          <div class="tape-measure" id="tapeMeasure"></div>
+          <div class="animation-overlay"></div>
+        </div>
+        <div id="display">
+          <div id="input" aria-live="polite"></div>
+          <div id="result">
+            <div id="fractionResult"></div>
+            <div id="decimalResult"></div>
+          </div>
         </div>
       </div>
-      <!-- Memory Buttons Row (now between display and main buttons) -->
-      <div class="memory-container">
+      <div class="memory-container" data-area="memory">
         <button class="btn memory-clear">MC</button>
         <button class="btn memory-btn" data-slot="0">M1</button>
         <button class="btn memory-btn" data-slot="1">M2</button>
         <button class="btn memory-btn" data-slot="2">M3</button>
         <button class="btn memory-btn" data-slot="3">M4</button>
       </div>
-      <!-- Calculator Buttons -->
-      <div class="buttons">
+      <div class="buttons" data-area="keypad">
         <button class="btn clear" data-value="C">C</button>
         <button class="btn" data-value="7">7</button>
         <button class="btn" data-value="8">8</button>
@@ -378,17 +360,17 @@
         <button class="btn" data-value="6">6</button>
         <button class="btn operator" data-value="-">−</button>
 
-        <button class="btn menu-btn" id="showModalBtn" aria-label="Show Instructions">menu</button>
         <button class="btn" data-value="1">1</button>
         <button class="btn" data-value="2">2</button>
         <button class="btn" data-value="3">3</button>
         <button class="btn operator" data-value="×">×</button>
+        <button class="btn operator" data-value="÷">÷</button>
 
-        <button class="btn operator" id="feetBtn">Feet</button>
-        <button class="btn empty-btn" aria-hidden="true"></button>
         <button class="btn" data-value="0">0</button>
         <button class="btn decimal" data-value=".">.</button>
-        <button class="btn operator" data-value="÷">÷</button>
+        <button class="btn placeholder" aria-hidden="true" tabindex="-1"></button>
+        <button class="btn placeholder" aria-hidden="true" tabindex="-1"></button>
+        <button class="btn placeholder" aria-hidden="true" tabindex="-1"></button>
 
         <button class="btn fraction" data-value="1/16">1/16</button>
         <button class="btn fraction" data-value="1/8">1/8</button>
@@ -408,6 +390,10 @@
         <button class="btn fraction" data-value="7/8">7/8</button>
         <button class="btn fraction" data-value="15/16">15/16</button>
       </div>
+      <div class="tools" data-area="tools">
+        <button class="btn menu-btn" id="showModalBtn" aria-label="Show Instructions">menu</button>
+        <button class="btn operator" id="feetBtn">Feet</button>
+      </div>
     </div>
   </div>
 
@@ -418,9 +404,8 @@
       <p>
         Use this calculator to add, subtract, multiply, or divide fractions and decimals easily. You can also work with mixed numbers.
       </p>
-      <p>
-        <strong>Instructions:</strong>
-        <ul>
+      <p><strong>Instructions:</strong></p>
+      <ul>
           <li>Enter numbers using the number buttons.</li>
           <li>Click on fractions to add them to the calculation.</li>
           <li>Use the operators (+, −, ×, ÷) to perform operations.</li>
@@ -431,8 +416,7 @@
           <li>Tap a memory button to append its value to the current expression.</li>
           <li>Press MC to clear all memory slots.</li>
           <li><a href="segmentcalc.html">Segment Calculator</a></li>
-        </ul>
-      </p>
+      </ul>
       <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
     </div>
   </div>
