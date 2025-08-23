@@ -31,6 +31,7 @@
   .responsive-mode .calc-viewport { height: 100dvh; }
 }
 
+
 /* On wider screens, add breathing room around the viewport */
 @media (min-width: 600px) {
   .responsive-mode .calc-viewport {
@@ -41,6 +42,8 @@
       calc(env(safe-area-inset-left) + var(--gap));
   }
 }
+
+=======
 
 /* The calculator “board” becomes a responsive grid. */
 .responsive-mode .calc-board {
