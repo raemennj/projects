@@ -1,359 +1,212 @@
 <!DOCTYPE html>
-<html lang="en" class="responsive-mode">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-<title>Inch Calc – Responsive Tape & Memory</title>
-<link rel="icon" href="../OneDrive/Desktop/ramenn.github.io_projects/menu/calcicon.png" type="image/png" />
-<link rel="apple-touch-icon" href="../OneDrive/Desktop/ramenn.github.io_projects/menu/apple-touch-icon.png" />
+<title>Inch Calc — Uniform Grid (420)</title>
+<link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
+<link rel="icon" href="calcicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="Inch Calc" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
 
 <style>
-  :root{
-    /* Master sizing knobs (JS updates --tile, --gap, --results-max dynamically) */
-    --tile: 56px;                 /* button height/width baseline */
-    --gap:  10px;                 /* spacing between tiles */
-    --pad:  10px;                 /* page padding */
-    --rail: 1;                    /* operator rail width in tiles (1 col) */
-    --results-max: 160px;         /* computed max-height for results */
-
-    /* Fixed panel mins */
-    --tape-min-h: 100px;          /* ruler presence */
-    --memory-min-h: var(--tile);  /* memory equals one tile row */
-
-    /* Colors (lanes) */
-    --bg: #1f4d4d;                /* darkslategrey-ish */
-    --card: #ffffff;
-    --display-bg:#222;
-    --display-text:#0f0;
-    --operator:#f9a825;
-    --operator-hover:#f57f17;
-    --frac:#64b5f6;
-    --frac-hover:#42a5f5;
-    --decimal:#a5d6a7;
-    --decimal-hover:#81c784;
-    --clear:#e57373;
-    --clear-hover:#ef5350;
-    --memory:#64b5f6;
-    --num:#fffacd;                /* lightyellow */
-    --num-hover:#d0d0d0;
-  }
-
-  /* Frame */
-  html,body{height:100%}
+  /* ---------- Reset ---------- */
+  *,*::before,*::after{ box-sizing:border-box }
+  html,body{ height:100% }
   body{
-    margin:0;
-    background:var(--bg);
-    padding-top: calc(env(safe-area-inset-top) + var(--pad));
-    padding-bottom: calc(env(safe-area-inset-bottom) + var(--pad));
-    padding-left: var(--pad);
-    padding-right: var(--pad);
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    color:#111;
-    overflow:hidden; /* no page scroll */
+    margin:0; background:#1f4d4d; color:#111;
+    font-family:"aktiv-grotesk",-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
     display:flex; align-items:center; justify-content:center;
+    padding:
+      calc(env(safe-area-inset-top) + 10px)
+      calc(env(safe-area-inset-right) + 10px)
+      calc(env(safe-area-inset-bottom) + 10px)
+      calc(env(safe-area-inset-left) + 10px);
+    overflow:hidden; /* page never scrolls */
   }
 
-  /* App wrapper fills screen; layout switches via data-layout */
-  .app{
-    width:100%;
+  :root{
+    --card-max: 420px;     /* designed scale cap */
+    --gap: 10px;           /* unified spacing, set by JS */
+    --tile: 56px;          /* unified button height, set by JS */
+    --pad: var(--gap);
+
+    --tape-min: 100px;
+    --results-min: 60px;
+    --results-max: 160px;  /* set by JS */
+
+    /* theme */
+    --card:#fff; --display-bg:#222; --display-text:#0f0;
+    --num:#fffacd; --op:#f9a825; --frac:#64b5f6; --dec:#a5d6a7;
+    --clear:#e57373; --mem:#64b5f6;
+  }
+
+  /* ---------- Card (stacked zones) ---------- */
+  .card{
+    width: clamp(320px, 100%, var(--card-max));
     height:100%;
-    max-width: 100vw;
-    max-height: 100%;
-    display:grid;
-    box-sizing:border-box;
-    gap: var(--gap);
-  }
-
-  /* Stacked portrait (default): a single column of areas */
-  .app[data-layout="stacked"]{
-    grid-template-rows: minmax(var(--tape-min-h),auto)
-                        minmax(80px, auto)
-                        minmax(var(--memory-min-h), auto)
-                        auto
-                        1fr;
-    grid-template-columns: 1fr;
+    display:grid; gap:var(--gap);
+    grid-template-rows:
+      minmax(var(--tape-min), auto)
+      minmax(var(--results-min), auto)
+      auto
+      auto
+      auto;
     grid-template-areas:
-      "tape"
-      "results"
-      "memory"
-      "console"
-      "fractions";
+      "tape" "results" "memory" "console" "fractions";
   }
-
-  /* Split portrait: two columns, left = display column, right = keypad+fractions */
-  .app[data-layout="split"]{
-    grid-template-columns: 1fr 1.1fr;   /* bias keys a bit larger */
-    grid-template-rows: 1fr;
-    grid-template-areas:
-      "displaypane rightpane";
-  }
-  .displaypane{
-    grid-area: displaypane;
-    display:grid;
-    gap: var(--gap);
-    grid-template-rows: minmax(var(--tape-min-h),auto)
-                        minmax(80px, auto)
-                        minmax(var(--memory-min-h), auto);
-    grid-template-areas:
-      "tape"
-      "results"
-      "memory";
-  }
-  .rightpane{
-    grid-area: rightpane;
-    display:grid; gap: var(--gap);
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      "console"
-      "fractions";
-  }
-
-  /* Panels */
   .panel{
-    background: var(--card);
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    background:var(--card);
+    border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,.15);
     overflow:hidden;
   }
+  .pad{ padding:var(--pad) }
 
-  .tape{ grid-area: tape; height: 100%; min-height: var(--tape-min-h); position:relative; }
-  .results{ grid-area: results; display:flex; flex-direction:column; }
-  .memory{ grid-area: memory; }
-  .console{ grid-area: console; }
-  .fractions{ grid-area: fractions; }
-
-  /* --- Tape --- */
-  .tape-inner{
-    position:absolute; inset:0;
-    background: linear-gradient(to bottom,
-      rgba(189,183,107,0.3) 0%,
-      rgba(255,215,0,0.6) 6%,
-      #ffff00 25%,
-      #ffff00 75%,
-      rgba(189,183,107,0.6) 98%,
-      rgba(255,215,0,0.8) 100%);
-    border:1px solid #000;
-  }
-  .center-line{
-    position:absolute; top: 18%; left: 50%;
-    width: 5px; height: 75%; background: red; transform: translateX(-50%);
-    z-index:2;
-  }
+  /* ---------- Tape ---------- */
+  .tape{ grid-area:tape; position:relative; min-height:var(--tape-min); }
+  .tape-inner{ position:absolute; inset:0; border:1px solid #000;
+    background:linear-gradient(to bottom,
+      rgba(189,183,107,.3) 0%,
+      rgba(255,215,0,.6) 6%,
+      #ff0 25%,
+      #ff0 75%,
+      rgba(189,183,107,.6) 98%,
+      rgba(255,215,0,.8) 100%); }
+  .center-line{ position:absolute; top:18%; left:50%; width:5px; height:75%; background:red; transform:translateX(-50%); }
   .tick{ position:absolute; bottom:0; width:3px; background:#000; }
-  .tick.small{ height:15px; }
-  .tick.med{ height:30px; }
-  .tick.lg{ height:50px; }
-  .tick.num{ height:70px; }
-  .tick-label{
-    position:absolute; bottom:70px; font-size:1.1em; transform:translateX(-50%);
-    text-align:center; width:50px;
-  }
-  .anim-sweep{
-    position:absolute; top:0; left:100%; width:100%; height:100%;
-    background: linear-gradient(120deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.28) 50%, rgba(0,0,0,0.08) 100%);
-    transform: skewX(20deg);
-    pointer-events:none; opacity:0;
-  }
+  .tick.small{height:15px} .tick.med{height:30px} .tick.lg{height:50px} .tick.num{height:70px}
+  .tick-label{ position:absolute; bottom:70px; width:50px; text-align:center; transform:translateX(-50%); font-size:1.05em; }
+  .sweep{ position:absolute; inset:0; pointer-events:none; }
+  .sweep::before{ content:""; position:absolute; left:100%; top:0; width:100%; height:100%;
+    background:linear-gradient(120deg, rgba(0,0,0,.08), rgba(0,0,0,.28) 50%, rgba(0,0,0,.08));
+    transform:skewX(20deg); opacity:0; }
   @keyframes sweep { 0%{left:100%;opacity:.6} 100%{left:-100%;opacity:0} }
-  .animate{ animation: sweep .8s ease-in-out forwards; }
+  .sweep.animate::before{ animation:sweep .8s ease-in-out forwards; }
 
-  /* --- Results: only this can scroll --- */
-  .results{
-    background: var(--display-bg);
-    color: var(--display-text);
-    padding: calc(var(--gap) * 0.75);
-    border-radius: 12px;
-    overflow: hidden;
-    display:flex;
-    gap: calc(var(--gap) * 0.5);
-  }
-  .results-scroll{
-    max-height: var(--results-max);   /* JS updates this value */
-    overflow-y: auto;
-    overscroll-behavior: contain;     /* prevents chaining to page */
-    border-radius: 8px;
-    padding-right: 4px;               /* give scrollbar a gutter */
-  }
-  .row{
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow:hidden;
-    text-overflow: ellipsis;
-  }
-  .row.output{
-    display:flex; justify-content:space-between; gap: 8px;
-    font-size: clamp(16px, 2.2vw, 22px);
-    color: #bdfcb7;
-    opacity: .95;
-  }
-  .row.input{
-    letter-spacing: .07em;
-    font-size: clamp(14px, 1.9vw, 18px);
-    opacity: .9;
+  /* ---------- Results (only scroll area) ---------- */
+  .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); }
+  .results .pad{ display:flex; flex-direction:column; gap:8px; }
+  .history{ max-height:var(--results-max); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
+  .row{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; line-height:1.25; white-space:normal; word-break:break-word; }
+  .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
+  .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(16px,2.2vw,22px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
+
+  /* ---------- Memory (5×1 uniform) ---------- */
+  .memory{ grid-area:memory }
+  .memory-grid{ display:grid; gap:var(--gap);
+    grid-template-columns:repeat(5, 1fr);
+    grid-template-rows:var(--tile);
   }
 
-  /* --- Memory row --- */
-  .memory{
-    display:grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: var(--gap);
-    padding: var(--gap);
-    align-items:center;
-  }
-
-  /* --- Console: numbers + ops rail + utility strip --- */
-  .console{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap: var(--gap);
-    padding: var(--gap);
-  }
+  /* ---------- Console (one true grid 5×4) ---------- */
+  .console{ grid-area:console }
   .console-grid{
-    display:grid;
-    gap: var(--gap);
-    grid-template-columns: calc(3 * var(--tile) + 2 * var(--gap))  /* numbers block width */
-                          calc(var(--rail) * var(--tile));         /* operator rail width */
+    display:grid; gap:var(--gap);
+    grid-template-columns:repeat(5, 1fr);
+    grid-template-rows:repeat(4, var(--tile));
   }
-  .numbers{
-    display:grid;
-    grid-template-columns: repeat(3, var(--tile));
-    grid-auto-rows: var(--tile);
-    gap: var(--gap);
-    justify-content: start;
-  }
-  .ops{
-    display:grid;
-    grid-template-columns: var(--tile);
-    grid-auto-rows: var(--tile);
-    gap: var(--gap);
-    justify-content: start;
-  }
-  .utility{
-    display:grid;
-    grid-template-columns: repeat(3, var(--tile));
-    grid-auto-rows: var(--tile);
-    gap: var(--gap);
-    justify-content: start;
+  .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
+  .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
+
+  /* ---------- Fractions (5×3 uniform) ---------- */
+  .fractions{ grid-area:fractions }
+  .fract-grid{
+    display:grid; gap:var(--gap);
+    grid-template-columns:repeat(5, 1fr);
+    grid-template-rows:repeat(3, var(--tile));
   }
 
-  /* --- Fractions grid --- */
-  .fractions{ padding: var(--gap); }
-  .fractions-grid{
-    display:grid; gap: var(--gap);
-    grid-template-columns: repeat(auto-fit, minmax(var(--tile), 1fr));
-    grid-auto-rows: var(--tile);
-  }
-
-  /* --- Buttons --- */
+  /* ---------- Buttons ---------- */
   .btn{
+    width:100%; height:100%;
     display:grid; place-items:center;
-    height: var(--tile);
-    min-height: 44px;   /* hard tap floor */
-    border-radius: 10px;
-    border:none;
-    background: var(--num);
-    cursor:pointer;
-    font-weight: 600;
-    font-size: clamp(14px, calc(var(--tile) * 0.42), 24px);
-    box-shadow: 0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
-    transition: transform .06s ease, filter .15s ease;
-    user-select:none;
-    -webkit-tap-highlight-color: transparent;
+    border:0; border-radius:10px;
+    font-weight:600; font-size:clamp(14px, calc(var(--tile)*.42), 20px);
+    background:var(--num);
+    box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
+    user-select:none; -webkit-tap-highlight-color:transparent;
   }
-  .btn:active{ transform: scale(0.98); }
-
-  .btn.operator{ background: var(--operator); color:#111; }
-  .btn.operator:hover{ filter: brightness(0.96); }
-  .btn.frac{ background: var(--frac); color:#063c67; }
-  .btn.frac:hover{ filter: brightness(0.96); }
-  .btn.decimal{ background: var(--decimal); color:#0c3a10; }
-  .btn.decimal:hover{ filter: brightness(0.96); }
-  .btn.clear, .btn.back{ background: var(--clear); color:#fff; }
-  .btn.clear:hover, .btn.back:hover{ background: var(--clear-hover); }
-  .btn.memory{ background: var(--memory); color:#0a3a3a; }
-
-  /* Display pane containers for split mode (remove card chrome) */
-  .displaypane .panel, .rightpane .panel{ background: transparent; box-shadow:none; }
+  .btn:active{ transform:scale(.98) }
+  .btn.operator{ background:var(--op); color:#111 }
+  .btn.frac{ background:var(--frac); color:#063c67 }
+  .btn.dec{ background:var(--dec); color:#0c3a10 }
+  .btn.clear,.btn.back{ background:var(--clear); color:#fff }
+  .btn.mem{ background:var(--mem); color:#083f3f }
+  .btn[disabled]{ opacity:.5; filter:saturate(.15) }
 </style>
 </head>
 <body>
 
-  <!-- Layout toggle for demo (click to preview Split mode; optional) -->
-  <button id="layoutToggle"
-          style="position:fixed; right:12px; top:12px; z-index:10; padding:8px 10px; border-radius:9px; border:none; background:#111; color:#fff; cursor:pointer;">
-    Split: Off
-  </button>
+  <div id="card" class="card">
 
-  <!-- APP -->
-  <div id="app" class="app" data-layout="stacked">
-    <!-- Stacked uses direct areas; Split wraps left and right panes -->
-    <div class="panel tape" style="grid-area:tape">
+    <!-- Tape -->
+    <div class="panel tape">
       <div class="tape-inner" id="tape">
         <div class="center-line"></div>
-        <div class="anim-sweep" id="tapeSweep"></div>
+        <div class="sweep" id="sweep"></div>
       </div>
     </div>
 
-    <div class="panel results" style="grid-area:results">
-      <div class="results-scroll" id="resultsScroll" tabindex="0" aria-label="Calculation results">
-        <div class="row input" id="inputLine"></div>
-        <div class="row output">
-          <div id="fractionLine"></div>
-          <div id="decimalLine"></div>
-        </div>
+    <!-- Results -->
+    <div class="panel results">
+      <div class="pad">
+        <div class="history" id="history"><div class="row input" id="inputLine"></div></div>
+        <div class="output"><div id="fractionLine"></div><div id="decimalLine"></div></div>
       </div>
     </div>
 
-    <div class="panel memory" style="grid-area:memory">
-      <button class="btn clear" data-action="mc">MC</button>
-      <button class="btn memory" data-mem="0">M1</button>
-      <button class="btn memory" data-mem="1">M2</button>
-      <button class="btn memory" data-mem="2">M3</button>
-      <button class="btn memory" data-mem="3">M4</button>
+    <!-- Memory (5×1) -->
+    <div class="panel memory pad">
+      <div class="memory-grid">
+        <button class="btn clear" data-action="mc">MC</button>
+        <button class="btn mem" data-mem="0">M1</button>
+        <button class="btn mem" data-mem="1">M2</button>
+        <button class="btn mem" data-mem="2">M3</button>
+        <button class="btn mem" data-mem="3">M4</button>
+      </div>
     </div>
 
-    <div class="panel console" style="grid-area:console">
+    <!-- Console (5×4 uniform) -->
+    <div class="panel console pad">
       <div class="console-grid">
-        <div class="numbers">
-          <button class="btn num" data-val="7">7</button>
-          <button class="btn num" data-val="8">8</button>
-          <button class="btn num" data-val="9">9</button>
+        <!-- Utility rail (col 1) -->
+        <button class="btn clear r1 c1" data-action="clear">C</button>
+        <button class="btn back  r2 c1" data-action="back">←</button>
+        <button class="btn       r3 c1" id="menuBtn">menu</button>
+        <button class="btn operator r4 c1" id="feetBtn">Feet</button>
 
-          <button class="btn num" data-val="4">4</button>
-          <button class="btn num" data-val="5">5</button>
-          <button class="btn num" data-val="6">6</button>
+        <!-- Numbers (cols 2–4) -->
+        <button class="btn r1 c2" data-val="7">7</button>
+        <button class="btn r1 c3" data-val="8">8</button>
+        <button class="btn r1 c4" data-val="9">9</button>
 
-          <button class="btn num" data-val="1">1</button>
-          <button class="btn num" data-val="2">2</button>
-          <button class="btn num" data-val="3">3</button>
+        <button class="btn r2 c2" data-val="4">4</button>
+        <button class="btn r2 c3" data-val="5">5</button>
+        <button class="btn r2 c4" data-val="6">6</button>
 
-          <button class="btn num" data-val="0">0</button>
-          <button class="btn decimal" data-val=".">.</button>
-          <button class="btn" id="menuBtn" title="Instructions">menu</button>
-        </div>
-        <div class="ops">
-          <button class="btn operator" data-op="+">+</button>
-          <button class="btn operator" data-op="-">−</button>
-          <button class="btn operator" data-op="*">×</button>
-          <button class="btn operator" data-op="/">÷</button>
-        </div>
-      </div>
+        <button class="btn r3 c2" data-val="1">1</button>
+        <button class="btn r3 c3" data-val="2">2</button>
+        <button class="btn r3 c4" data-val="3">3</button>
 
-      <div class="utility" style="margin-top: var(--gap);">
-        <button class="btn operator" id="feetBtn" title="Feet mode">Feet</button>
-        <button class="btn back" data-action="back">←</button>
-        <button class="btn clear" data-action="clear">C</button>
+        <button class="btn r4 c2" data-val="0">0</button>
+        <button class="btn dec r4 c3" data-val=".">.</button>
+        <button class="btn r4 c4" disabled></button>
+
+        <!-- Operator rail (col 5) -->
+        <button class="btn operator r1 c5" data-op="+">+</button>
+        <button class="btn operator r2 c5" data-op="-">−</button>
+        <button class="btn operator r3 c5" data-op="*">×</button>
+        <button class="btn operator r4 c5" data-op="/">÷</button>
       </div>
     </div>
 
-    <div class="panel fractions" style="grid-area:fractions">
-      <div class="fractions-grid" id="fractionsGrid">
-        <!-- All sixteenths set -->
+    <!-- Fractions (5×3 uniform) -->
+    <div class="panel fractions pad">
+      <div class="fract-grid">
         <button class="btn frac" data-frac="1/16">1/16</button>
         <button class="btn frac" data-frac="1/8">1/8</button>
         <button class="btn frac" data-frac="3/16">3/16</button>
@@ -375,435 +228,294 @@
     </div>
   </div>
 
-<!-- Simple modal for instructions -->
-<div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30;">
-  <div style="background:#fffdee; color:#222; max-width:min(680px, 92vw); max-height:min(80vh, 700px); overflow:auto; border-radius:12px; padding:16px 18px; box-shadow:0 12px 40px rgba(0,0,0,.45);">
-    <h2 style="margin-top:0">Calculator Instructions</h2>
-    <ul>
-      <li>Enter numbers with the keypad; use fraction buttons for inch fractions.</li>
-      <li>Operators: + − × ÷ (tap the orange buttons).</li>
-      <li>Feet Mode: enter a whole number, tap <b>Feet</b> to set a feet base; subsequent inches add to it.</li>
-      <li>Backspace (←) removes last digit/operator; C clears everything.</li>
-      <li>M1–M4: tap to insert the stored value; double-tap to store current result; MC clears all memory.</li>
-      <li>Only the results panel scrolls when content is long—buttons always remain visible.</li>
-    </ul>
-    <div style="text-align:right; margin-top:8px;">
-      <button id="closeModal" style="background:#111; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
+  <!-- Minimal modal -->
+  <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30;">
+    <div style="background:#fffdee; color:#222; max-width:min(680px, 92vw); max-height:min(80vh, 700px); overflow:auto; border-radius:12px; padding:16px 18px; box-shadow:0 12px 40px rgba(0,0,0,.45);">
+      <h2 style="margin-top:0">Calculator Instructions</h2>
+      <ul>
+        <li>Enter numbers with the keypad; tap fractions for inch fractions.</li>
+        <li>Operators: + − × ÷ (orange rail on the right).</li>
+        <li>Feet Mode: enter a whole number, then tap <b>Feet</b>.</li>
+        <li>← removes last digit/operator; C clears everything.</li>
+        <li>M1–M4: tap to insert; double-tap or long-press to store; MC clears memory.</li>
+        <li>Only the results panel scrolls when content is long.</li>
+      </ul>
+      <div style="text-align:right; margin-top:8px;">
+        <button id="closeModal" style="background:#111; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-(function(){
+(() => {
   'use strict';
 
-  // ===== Layout engine (compute tile, gap, results height) =====
-  const app = document.getElementById('app');
-  const layoutToggle = document.getElementById('layoutToggle');
-  const tapeSweep = document.getElementById('tapeSweep');
-
-  // keypad rows we must fit (Memory 1 + Numbers 4 + Utility 1 + Fractions 3)
-  const TOTAL_ROWS = 1 + 4 + 1 + 3;
-
+  /* ====== Uniform tile/gap solver ======
+     Memory 5×1, Console 5×4, Fractions 5×3
+     One tile height for all rows. Only Results scrolls. */
   const MIN_TAP = 44;
-  const MIN_GAP = 6, MAX_GAP = 14;
-  const PAD = 10;
+  const MIN_GAP = 6, MAX_GAP = 12;
 
-  function setCSSVar(k, v){ document.documentElement.style.setProperty(k, v); }
-  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-  function cssPx(varName, fallback){
-    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-    const n = parseFloat(v);
-    return Number.isFinite(n) ? n : fallback;
-  }
-
-  function measureViewport(){ return { w: window.innerWidth, h: window.innerHeight }; }
+  const setVar = (k,v) => document.documentElement.style.setProperty(k,v);
+  const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+  const cssNum = (name, fallback) => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const n = parseFloat(v); return Number.isFinite(n) ? n : fallback;
+  };
 
   function computeTile(){
-    const { w, h } = measureViewport();
-    let gap = clamp(Math.floor(Math.min(w,h) * 0.02), MIN_GAP, MAX_GAP);
+    const card = document.getElementById('card');
+    const { width: W, height: H } = card.getBoundingClientRect();
 
-    // Width constraint: widest row = 4 columns (3 nums + 1 ops rail)
-    const availableW = Math.max(0, w - PAD*2);
-    const tileByWidth = Math.floor((availableW - (4 - 1) * gap) / 4);
+    let gap = clamp(Math.floor(Math.min(W,H) * 0.02), MIN_GAP, MAX_GAP);
+    setVar('--gap', gap + 'px');
 
-    // Height constraint: reserve tape min + a minimal base for results
-    const tapeMin = cssPx('--tape-min-h', 100);
-    const resultsBase = 80;
-    const availableHForKeypad = Math.max(0, h - PAD*2 - tapeMin - resultsBase - gap);
-    const tileByHeight = Math.floor((availableHForKeypad - (TOTAL_ROWS - 1) * gap) / TOTAL_ROWS);
+    const tapeMin = cssNum('--tape-min', 100);
+    const resultsMin = cssNum('--results-min', 60);
 
-    let tile = Math.max(MIN_TAP, Math.min(tileByWidth, tileByHeight));
+    // Height available for keypad stack (memory + console + fractions) minus the single grid gap above memory
+    const H_for_keypad = Math.max(0, H - tapeMin - resultsMin - gap);
 
-    if (tileByHeight < tileByWidth && gap > MIN_GAP){
-      const shave = Math.min(4, gap - MIN_GAP);
-      gap -= shave;
-      const tileByHeight2 = Math.floor((availableHForKeypad - (TOTAL_ROWS - 1) * gap) / TOTAL_ROWS);
-      tile = Math.max(MIN_TAP, Math.min(tileByWidth, tileByHeight2));
-    }
+    // Keypad composition:
+    // rows = 1 (memory) + 4 (console) + 3 (fractions) = 8
+    // gaps:
+    //  - internal console row gaps: 3×gap
+    //  - internal fractions row gaps: 2×gap
+    //  - card gaps between memory/console & console/fractions: 2×gap
+    //  - panel paddings (top+bottom) for each of the three panels: 6×gap
+    const ROWS = 8;
+    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // = 13 * gap
 
-    const keypadHeight = TOTAL_ROWS * tile + (TOTAL_ROWS - 1) * gap;
-    const resultsMax = Math.max(60, h - PAD*2 - tapeMin - keypadHeight - gap);
+    // Height-derived tile:
+    let tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
 
-    setCSSVar('--tile', tile + 'px');
-    setCSSVar('--gap', gap + 'px');
-    setCSSVar('--results-max', resultsMax + 'px');
+    // Width-derived tile (inside panel padding left+right = 2×gap):
+    const W_inside = W - 2*gap;
+    let tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
+
+    let tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
+
+    // Compute results max height leftover (min 60)
+    const keypadHeight = ROWS*tile + GAP_BUDGET;
+    const resultsMax = Math.max(60, H_for_keypad - keypadHeight);
+
+    setVar('--tile', tile + 'px');
+    setVar('--results-max', resultsMax + 'px');
   }
 
-  // Split vs stacked layout (same DOM, just re-group nodes)
-  function ensureSplit(){
-    if (app.querySelector('.displaypane')) return;
-    const tape = app.querySelector('.tape');
-    const results = app.querySelector('.results');
-    const memory = app.querySelector('.memory');
-    const consolePanel = app.querySelector('.console');
-    const fractions = app.querySelector('.fractions');
-
-    const left = document.createElement('div'); left.className = 'displaypane';
-    const right = document.createElement('div'); right.className = 'rightpane';
-
-    app.innerHTML = '';
-    app.appendChild(left); app.appendChild(right);
-
-    left.appendChild(tape); left.appendChild(results); left.appendChild(memory);
-    right.appendChild(consolePanel); right.appendChild(fractions);
-  }
-  function unwrapSplit(){
-    const left = app.querySelector('.displaypane');
-    const right = app.querySelector('.rightpane');
-    if (!left || !right) return;
-    const nodes = [...left.children, ...right.children];
-    app.innerHTML = '';
-    nodes.forEach(n => app.appendChild(n));
-  }
-
-  layoutToggle.addEventListener('click', () => {
-    const cur = app.getAttribute('data-layout');
-    if (cur === 'stacked') {
-      app.setAttribute('data-layout','split');
-      layoutToggle.textContent = 'Split: On';
-      ensureSplit();
-    } else {
-      app.setAttribute('data-layout','stacked');
-      layoutToggle.textContent = 'Split: Off';
-      unwrapSplit();
-    }
-    computeTile();
-  });
-
-  const ro = new ResizeObserver(() => computeTile());
-  ro.observe(document.body);
+  const ro = new ResizeObserver(computeTile);
+  ro.observe(document.getElementById('card'));
+  window.addEventListener('resize', computeTile);
   window.addEventListener('orientationchange', () => setTimeout(computeTile, 60));
-  window.addEventListener('resize', () => computeTile());
 
-  // ===== Calculator logic =====
+  /* ====== Calculator logic (preserved) ====== */
+  const tape = document.getElementById('tape');
+  const sweep = document.getElementById('sweep');
   const inputLine = document.getElementById('inputLine');
   const fractionLine = document.getElementById('fractionLine');
   const decimalLine = document.getElementById('decimalLine');
 
-  const MEMORY_KEY = 'calcMemorySlots_v2';
-  let memorySlots = [null, null, null, null];
+  const MEMORY_KEY = 'calcMemorySlots_uniform420';
+  let memorySlots = [null,null,null,null];
 
   let tokens = [];
   let currentEntry = '';
-  let debounceTimer = null;
-  let feetBaseValue = null; // inches
+  let feetBase = null; // inches
+  let tmr = null;
+  const PPI = 160;
 
-  // Tape measure setup
-  const tape = document.getElementById('tape');
-  const sweep = document.getElementById('tapeSweep');
-  const pixelsPerInch = 160; // visual scale; can tweak
+  const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
+  const isOp = t => ['+','-','*','/'].includes(t);
+  const isWhole = s => /^-?\d+$/.test(s);
+  const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
+  const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
 
-  function loadMemory(){
-    try{
-      const stored = localStorage.getItem(MEMORY_KEY);
-      if (stored) memorySlots = JSON.parse(stored);
-    }catch(e){}
-    updateMemoryLabels();
-  }
-  function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
-  function updateMemoryLabels(){
-    document.querySelectorAll('.btn.memory').forEach(btn=>{
-      const idx = parseInt(btn.dataset.mem,10);
-      const val = memorySlots[idx];
-      btn.textContent = val===null ? `M${idx+1}` : formatResult(val).fractionResult.replace('"','');
-    });
-  }
-
-  function updateInputDisplay(){
-    let displayText = '';
-    tokens.forEach(t=>{
-      if (/^-?\d+\.\d+$/.test(t)) {
-        const [whole, fraction] = splitDecimal(t);
-        displayText += fraction > 0 ? `${whole} ${convertFraction(fraction)} ` : `${whole} `;
-      } else {
-        displayText += `${t} `;
-      }
-    });
-    if (currentEntry !== '') displayText += `${currentEntry} `;
-    inputLine.textContent = displayText.trim();
-  }
-
-  function isOperator(t){ return ['+','-','*','/'].includes(t); }
-  function isWholeNumber(str){ return /^-?\d+$/.test(str); }
-  function splitDecimal(s){ const p=s.split('.'); return [parseInt(p[0],10), parseFloat('0.'+p[1])]; }
-  function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); return b?gcd(b,a%b):a; }
-  function convertFraction(fracDec){
-    const denom = 16;
-    let num = Math.round(fracDec*denom);
-    const g = gcd(num,denom);
-    num/=g; const d=denom/g;
-    return `${num}/${d}`;
-  }
   function formatResult(value){
-    const rounded = Math.round(value*16)/16;
-    const whole = Math.floor(Math.abs(rounded));
-    const fracPart = Math.abs(rounded) - whole;
-    let num = Math.round(fracPart*16);
-    let den = 16;
-    const g = gcd(num,den); num/=g; den/=g;
+    const r = Math.round(value*16)/16;
+    const w = Math.floor(Math.abs(r));
+    const f = Math.abs(r) - w;
+    let n = Math.round(f*16), d = 16, g = gcd(n,d); n/=g; d/=g;
+    let s = (d===1 || n===0) ? `${w}"` : (w ? `${w} ${n}/${d}"` : `${n}/${d}"`);
+    if (r<0) s = `-${s}`;
+    return { fraction:s, decimal:`${r.toFixed(4)}"` };
+  }
 
-    let fracStr = '';
-    if (den===1 || num===0) fracStr = `${whole}"`;
-    else if (whole!==0) fracStr = `${whole} ${num}/${den}"`;
-    else fracStr = `${num}/${den}"`;
-
-    if (rounded<0) fracStr = `-${fracStr}`;
-    const decStr = `${rounded.toFixed(4)}"`;
-    return { fractionResult: fracStr, decimalResult: decStr };
+  function updateInput(){
+    let s='';
+    tokens.forEach(t=>{
+      if (/^-?\d+\.\d+$/.test(t)) { const [w,f]=splitDec(t); s += f>0 ? `${w} ${fracFromDec(f)} ` : `${w} `; }
+      else s += `${t} `;
+    });
+    if (currentEntry) s += `${currentEntry} `;
+    inputLine.textContent = s.trim();
   }
 
   function evaluate(){
-    let exprTokens = [...tokens];
-    if (currentEntry !== '') exprTokens.push(currentEntry);
-    if (exprTokens.length===0) return null;
-    if (isOperator(exprTokens[exprTokens.length-1])) return null;
-
-    const expr = exprTokens.join(' ');
+    const expr = [...tokens, currentEntry].filter(Boolean);
+    if (!expr.length || isOp(expr.at(-1))) return;
     try{
-      const raw = math.evaluate(expr);
-      let num = typeof raw==='number' ? raw : raw.toNumber();
-      if (feetBaseValue!==null) num += feetBaseValue;
-      const formatted = formatResult(num);
-      fractionLine.textContent = formatted.fractionResult;
-      decimalLine.textContent  = formatted.decimalResult;
-      updateTape(num);
-      return { numericValue:num, formattedResult:formatted };
-    }catch(e){
+      const raw = math.evaluate(expr.join(' '));
+      let num = typeof raw === 'number' ? raw : raw.toNumber();
+      if (feetBase != null) num += feetBase;
+      const out = formatResult(num);
+      fractionLine.textContent = out.fraction;
+      decimalLine.textContent  = out.decimal;
+      drawTape(num);
+    }catch{
       fractionLine.textContent = '';
-      decimalLine.textContent = '';
-      return null;
+      decimalLine.textContent  = '';
     }
   }
+  const qEval = () => { clearTimeout(tmr); tmr = setTimeout(evaluate, 120); };
 
-  // Tape drawing
-  function updateTape(centerInches){
-    if (centerInches<0) centerInches = 0;
-    drawTicks(centerInches);
+  // Tape rendering
+  function drawTape(center){
+    if (center<0) center=0;
+    [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
+    const rect = tape.getBoundingClientRect();
+    const mid = rect.width/2;
+    const range = 3;
+    const start = Math.max(center - range/2, 0), end = center + range/2;
+    const a = Math.floor(start*16), b = Math.ceil(end*16);
+    for (let i=a;i<=b;i++){
+      const inches = i/16;
+      const x = (inches - center)*PPI + mid - 1.5;
+      const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
+      if (i%16===0){ el.classList.add('num'); const lbl=document.createElement('div'); lbl.className='tick-label'; lbl.textContent=inches.toFixed(0); lbl.style.left=(x+1.5)+'px'; tape.appendChild(lbl); }
+      else if (i%8===0) el.classList.add('lg'); else if (i%4===0) el.classList.add('med'); else el.classList.add('small');
+      tape.appendChild(el);
+    }
     sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
   }
-  function drawTicks(center){
-    // clear old ticks/labels
-    [...tape.querySelectorAll('.tick, .tick-label')].forEach(n=>n.remove());
-    const container = tape.getBoundingClientRect();
-    const midX = container.width/2;
-    const range = 3; // inches span
-    const startIn = Math.max(center - range/2, 0);
-    const endIn = center + range/2;
-    const startMark = Math.floor(startIn*16);
-    const endMark = Math.ceil(endIn*16);
 
-    for (let i = startMark; i <= endMark; i++){
-      const inches = i/16;
-      const x = (inches - center) * pixelsPerInch + midX - 1.5;
-      const tick = document.createElement('div');
-      tick.className = 'tick';
-      if (i % 16 === 0){
-        tick.classList.add('num');
-        const label = document.createElement('div');
-        label.className = 'tick-label'; label.textContent = inches.toFixed(0);
-        label.style.left = (x + 1.5)+'px';
-        tape.appendChild(label);
-      } else if (i % 8 === 0) tick.classList.add('lg');
-      else if (i % 4 === 0) tick.classList.add('med');
-      else tick.classList.add('small');
-      tick.style.left = x+'px';
-      tape.appendChild(tick);
-    }
-  }
-
-  // Event wiring
-  function queueEval(){
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(()=>{
-      const r = evaluate();
-      if (!r) return;
-    }, 180);
-  }
-
-  // Numbers
-  document.querySelectorAll('.btn.num').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      currentEntry += btn.dataset.val;
-      updateInputDisplay();
-      queueEval();
+  // Memory helpers
+  function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
+  function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
+  function refreshMemLabels(){
+    document.querySelectorAll('.btn.mem').forEach(btn=>{
+      const i=+btn.dataset.mem, v=memorySlots[i];
+      btn.textContent = v==null ? `M${i+1}` : formatResult(v).fraction.replace('"','');
     });
-  });
+  }
 
-  // Decimal
-  document.querySelector('.btn.decimal').addEventListener('click', ()=>{
+  // Bind numbers/decimal
+  document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
+    currentEntry += b.dataset.val; updateInput(); qEval();
+  }));
+  document.querySelector('.btn.dec[data-val="."]').addEventListener('click',()=>{
     if (currentEntry.includes('.')) return;
-    currentEntry = currentEntry==='' ? '0.' : currentEntry + '.';
-    updateInputDisplay();
-    queueEval();
+    currentEntry = currentEntry ? currentEntry+'.' : '0.';
+    updateInput(); qEval();
   });
 
   // Operators
-  document.querySelectorAll('.btn.operator[data-op]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const op = btn.dataset.op;
-      if (currentEntry!==''){
-        tokens.push(currentEntry); currentEntry='';
+  document.querySelectorAll('.btn.operator[data-op]').forEach(b=>b.addEventListener('click',()=>{
+    const op = b.dataset.op;
+    if (currentEntry){ tokens.push(currentEntry); currentEntry=''; }
+    if (!tokens.length && op !== '-') return;
+    if (isOp(tokens.at(-1))) tokens[tokens.length-1] = op;
+    else tokens.push(op);
+    updateInput(); qEval();
+  }));
+
+  // Backspace / Clear
+  document.querySelector('.btn.back').addEventListener('click',()=>{
+    if (currentEntry) currentEntry = currentEntry.slice(0,-1);
+    else if (tokens.length){
+      let last = tokens.at(-1);
+      if (isOp(last)) tokens.pop();
+      else {
+        last = last.slice(0,-1);
+        if (last) tokens[tokens.length-1]=last; else tokens.pop();
       }
-      if (tokens.length===0 && op!=='-') return;
-      if (isOperator(tokens.at(-1))) tokens[tokens.length-1]=op; else tokens.push(op);
-      updateInputDisplay();
-      queueEval();
-    });
+    }
+    updateInput(); evaluate();
+  });
+  document.querySelector('.btn.clear[data-action="clear"]').addEventListener('click',()=>{
+    tokens=[]; currentEntry=''; feetBase=null;
+    inputLine.textContent=''; fractionLine.textContent=''; decimalLine.textContent='';
+    drawTape(0);
   });
 
-  // Utility: Feet
-  document.getElementById('feetBtn').addEventListener('click', ()=>{
-    if (currentEntry!=='' && /^-?\d+$/.test(currentEntry)){
+  // Feet mode
+  document.getElementById('feetBtn').addEventListener('click',()=>{
+    if (currentEntry && isWhole(currentEntry)){
       const feet = parseInt(currentEntry,10);
-      feetBaseValue = feet * 12;
-      tokens = [];
-      currentEntry = '';
-      updateInputDisplay();
-      const formattedFeet = formatResult(feetBaseValue);
+      feetBase = feet * 12;  // inches
+      tokens=[]; currentEntry='';
+      inputLine.textContent='';
+      const out = formatResult(feetBase);
       fractionLine.textContent = `${feet}" base`;
-      decimalLine.textContent = formattedFeet.decimalResult;
-      updateTape(feetBaseValue);
+      decimalLine.textContent  = out.decimal;
+      drawTape(feetBase);
     } else {
       alert('Enter a whole number before pressing Feet.');
     }
   });
 
-  // Utility: Backspace
-  document.querySelector('.btn.back').addEventListener('click', ()=>{
-    if (currentEntry.length>0){
-      currentEntry = currentEntry.slice(0,-1);
-    } else if (tokens.length>0){
-      let last = tokens[tokens.length-1];
-      if (isOperator(last)) tokens.pop();
-      else {
-        last = last.slice(0,-1);
-        if (last==='') tokens.pop(); else tokens[tokens.length-1]=last;
-      }
-    }
-    updateInputDisplay();
-    evaluate();
-  });
-
-  // Utility: Clear
-  document.querySelector('.btn.clear[data-action="clear"]').addEventListener('click', ()=>{
-    tokens = []; currentEntry=''; feetBaseValue=null;
-    inputLine.textContent=''; fractionLine.textContent=''; decimalLine.textContent='';
-    updateTape(0);
-  });
-
-  // Memory: store on dblclick, insert on click
-  document.querySelectorAll('.btn.memory').forEach(btn=>{
-    // Insert on click
-    btn.addEventListener('click', ()=>{
-      const idx = parseInt(btn.dataset.mem, 10);
-      const val = memorySlots[idx];
-      if (val===null) return;
-      if (currentEntry!=='') tokens.push(currentEntry);
-      currentEntry = String(val);
-      updateInputDisplay();
-      evaluate();
+  // Memory buttons
+  document.querySelectorAll('.btn.mem').forEach(btn=>{
+    // Insert on tap
+    btn.addEventListener('click',()=>{
+      const i=+btn.dataset.mem, v=memorySlots[i]; if (v==null) return;
+      if (currentEntry) tokens.push(currentEntry);
+      currentEntry = String(v);
+      updateInput(); evaluate();
     });
-    // Store on double click
-    btn.addEventListener('dblclick', ()=>{
-      const idx = parseInt(btn.dataset.mem, 10);
-      const r = evaluate();
-      if (!r || r.numericValue===null) return;
-      if (memorySlots[idx]!==null){
-        const cur = formatResult(memorySlots[idx]).fractionResult;
-        if (!confirm(`M${idx+1} already has ${cur}. Replace?`)) return;
-      }
-      memorySlots[idx] = r.numericValue;
-      saveMemory(); updateMemoryLabels();
+    // Store on double-click
+    btn.addEventListener('dblclick',()=>{
+      const i=+btn.dataset.mem; const expr=[...tokens, currentEntry].filter(Boolean);
+      if (!expr.length || isOp(expr.at(-1))) return;
+      const raw = math.evaluate(expr.join(' '));
+      const val = typeof raw==='number' ? raw : raw.toNumber();
+      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResult(memorySlots[i]).fraction}. Replace?`) : true;
+      if (!confirmReplace) return;
+      memorySlots[i]= val + (feetBase||0);
+      saveMemory(); refreshMemLabels();
     });
-    // Long-press for touch
+    // Long-press → store (touch)
     let timer=null;
-    btn.addEventListener('touchstart', ()=>{
-      timer = setTimeout(()=>{
-        const idx = parseInt(btn.dataset.mem, 10);
-        const r = evaluate();
-        if (!r || r.numericValue===null) return;
-        if (memorySlots[idx]!==null){
-          const cur = formatResult(memorySlots[idx]).fractionResult;
-          if (!confirm(`M${idx+1} already has ${cur}. Replace?`)) return;
-        }
-        memorySlots[idx] = r.numericValue;
-        saveMemory(); updateMemoryLabels();
-      }, 600);
-    }, {passive:true});
-    btn.addEventListener('touchend', ()=>clearTimeout(timer), {passive:true});
+    btn.addEventListener('touchstart',()=>{ timer=setTimeout(()=>btn.dispatchEvent(new Event('dblclick')),600); }, {passive:true});
+    btn.addEventListener('touchend',()=>clearTimeout(timer), {passive:true});
   });
-
-  // Memory: MC
-  document.querySelector('.btn.clear[data-action="mc"]').addEventListener('click', ()=>{
+  document.querySelector('.btn.clear[data-action="mc"]').addEventListener('click',()=>{
     if (!confirm('Clear all memory slots?')) return;
-    memorySlots = [null,null,null,null];
-    saveMemory(); updateMemoryLabels();
+    memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
   });
 
   // Fractions
-  document.querySelectorAll('.btn.frac').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const value = btn.dataset.frac; // like "3/16"
-      if (currentEntry === ''){
-        currentEntry = value;
-      } else if (isWholeNumber(currentEntry)){
-        const whole = parseInt(currentEntry,10);
-        const [n,d] = value.split('/').map(Number);
-        if (d===0) return;
-        const combined = whole + (n/d);
-        tokens.push(combined.toString());
-        currentEntry = '';
-      } else if (isOperator(tokens.at(-1))){
-        currentEntry += value;
-      } else {
-        tokens.push(currentEntry); tokens.push('+'); currentEntry = value;
-      }
-      updateInputDisplay();
-      queueEval();
-    });
-  });
+  document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
+    const f=b.dataset.frac;
+    if (!currentEntry) currentEntry=f;
+    else if (isWhole(currentEntry)){
+      const [n,d]=f.split('/').map(Number);
+      const combined = parseInt(currentEntry,10) + (n/d);
+      tokens.push(String(combined)); currentEntry='';
+    } else if (isOp(tokens.at(-1))) {
+      currentEntry += f;
+    } else {
+      tokens.push(currentEntry); tokens.push('+'); currentEntry=f;
+    }
+    updateInput(); qEval();
+  }));
 
-  // Simple “menu” modal
-  const modal = document.getElementById('modal');
-  document.getElementById('menuBtn').addEventListener('click', ()=>{ modal.style.display='flex'; });
-  document.getElementById('closeModal').addEventListener('click', ()=>{ modal.style.display='none'; });
-  modal.addEventListener('click', (e)=>{ if (e.target===modal) modal.style.display='none'; });
+  // Modal
+  const modal=document.getElementById('modal');
+  document.getElementById('menuBtn').addEventListener('click',()=>{ modal.style.display='flex'; });
+  document.getElementById('closeModal').addEventListener('click',()=>{ modal.style.display='none'; });
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
 
-  // Prevent body scroll, but allow internal
-  document.addEventListener('touchmove', function(e){
-    if (e.target.closest('#resultsScroll') || e.target.closest('#modal')) return;
+  // Prevent body scroll, allow results scroll
+  document.addEventListener('touchmove', e=>{
+    if (e.target.closest('.history') || e.target.closest('#modal')) return;
     e.preventDefault();
   }, {passive:false});
 
   // Init
-  loadMemory();
+  function initTape(){ const r=tape.getBoundingClientRect(); if(!r.width){ requestAnimationFrame(initTape); return; } drawTape(0); }
   computeTile();
-  drawTicks(0);
-  // friendly demo placeholders
-  inputLine.textContent = '';
-  fractionLine.textContent = '';
-  decimalLine.textContent = '';
+  initTape();
+  loadMemory();
 
 })();
 </script>
