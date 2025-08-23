@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="responsive-mode">
 <head>
   <meta charset="UTF-8">
   <title>Calculator with Tape Measure & Memory</title>
@@ -12,6 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Inch Calc">
   <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="menu_style.css"/>
   <style>
     /* CSS Variables for consistency */
     :root {
@@ -72,6 +73,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+    .responsive-mode .calculator {
+      padding: var(--gap);
     }
     /* Tape Measure Display */
     .tape-measure-container {
@@ -340,8 +344,8 @@
   </style>
 </head>
 <body>
-  <div class="calculator-wrapper">
-    <div class="calculator">
+  <div class="calculator-wrapper calc-viewport">
+    <div class="calculator calc-board">
       <!-- Tape Measure Display -->
       <div class="tape-measure-container">
         <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
