@@ -9,7 +9,7 @@
 <link rel="icon" href="calcicon.png" type="image/png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="mobile-web-app-capable" content="yes" />
-$1
+<meta name="apple-mobile-web-app-title" content="Inch Calc" />
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#1f4d4d" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#0e2a2a" media="(prefers-color-scheme: dark)" />
@@ -598,7 +598,8 @@ $1
   "short_name": "Inch Calc",
   "start_url": ".",
   "scope": ".",
-  "display": "standalone",
+  $1
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#1f4d4d",
   "theme_color": "#1f4d4d",
   "description": "Tape & Memory calculator with inch fractions.",
@@ -615,6 +616,9 @@ $1
 const CACHE_NAME = 'inch-calc-v1-2025-08-23';
 const ASSETS = [
   './',
+  './tapemeasurememory.html', // add your actual filename here if different
+  './manifest.webmanifest',
+  './sw.js',
   './calcicon.png',
   './apple-touch-icon.png'
 ];
