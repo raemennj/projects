@@ -36,7 +36,9 @@
 
     --tape-min: 100px;
     --results-min: 60px;
-    --results-max: 160px;  /* set by JS */
+    
+
+    --results-fixed: 140px;  /* fixed results height, set by JS */
 
     /* theme */
     --card:#fff; --display-bg:#222; --display-text:#0f0;
@@ -51,7 +53,7 @@
     display:grid; gap:var(--gap);
     grid-template-rows:
       minmax(var(--tape-min), auto)
-      minmax(var(--results-min), auto)
+      var(--results-fixed)
       auto
       auto
       auto;
@@ -90,9 +92,11 @@
   /* ---------- Results (only scroll area) ---------- */
   .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); }
   .results .pad{ display:flex; flex-direction:column; gap:8px; }
-  .history{ max-height:var(--results-max); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
-  .row{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; line-height:1.25; white-space:normal; word-break:break-word; }
+  .history{ height:var(--history-fixed); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
+  $1
   .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
+  
+  #inputLine{ display:block; }
   .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(16px,2.2vw,22px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
 
   /* ---------- Memory (5×1 uniform) ---------- */
@@ -137,6 +141,16 @@
   .btn.clear,.btn.back{ background:var(--clear); color:#fff }
   .btn.mem{ background:var(--mem); color:#083f3f }
   .btn[disabled]{ opacity:.5; filter:saturate(.15) }
+
+  /* ---------- A11y & motion preferences ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .sweep::before{ animation:none !important; opacity:0 !important; }
+    .btn:active{ transform:none }
+  }
+  .btn:focus-visible{
+    outline:2px solid #0ea5a5;
+    outline-offset:2px;
+  }
 </style>
 </head>
 <body>
@@ -271,36 +285,39 @@
     setVar('--gap', gap + 'px');
 
     const tapeMin = cssNum('--tape-min', 100);
-    const resultsMin = cssNum('--results-min', 60);
 
-    // Height available for keypad stack (memory + console + fractions) minus the single grid gap above memory
-    const H_for_keypad = Math.max(0, H - tapeMin - resultsMin - gap);
+    // Measure fixed results height = padding*2 + 2 input lines + gap + 1 output line (+1px border)
+    const pad = gap; // matches --pad
+    const inputEl = document.getElementById('inputLine');
+    const outputEl = document.querySelector('.output');
+    const getLineHeightPx = (el) => {
+      const cs = getComputedStyle(el);
+      const lh = cs.lineHeight;
+      if (lh.endsWith && lh.endsWith('px')) return parseFloat(lh);
+      const fs = parseFloat(cs.fontSize) || 16;
+      const mult = parseFloat(lh) || 1.2;
+      return fs * mult;
+    };
+    const inputLH = getLineHeightPx(inputEl);
+    const outputLH = getLineHeightPx(outputEl);
+    const historyFixed = Math.ceil(inputLH * 2);
+    setVar('--history-fixed', historyFixed + 'px');
+    const resultsFixed = Math.ceil(pad*2 + historyFixed + 8 + outputLH + 1);
+    setVar('--results-fixed', resultsFixed + 'px');
 
-    // Keypad composition:
-    // rows = 1 (memory) + 4 (console) + 3 (fractions) = 8
-    // gaps:
-    //  - internal console row gaps: 3×gap
-    //  - internal fractions row gaps: 2×gap
-    //  - card gaps between memory/console & console/fractions: 2×gap
-    //  - panel paddings (top+bottom) for each of the three panels: 6×gap
+    // Keypad composition
     const ROWS = 8;
-    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // = 13 * gap
-
-    // Height-derived tile:
-    let tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
-
-    // Width-derived tile (inside panel padding left+right = 2×gap):
+    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap
     const W_inside = W - 2*gap;
-    let tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
 
+    // Height available for keypad stack (memory + console + fractions)
+    const H_for_keypad = Math.max(0, H - tapeMin - resultsFixed - 2*gap);
+
+    let tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
+    let tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
     let tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
 
-    // Compute results max height leftover (min 60)
-    const keypadHeight = ROWS*tile + GAP_BUDGET;
-    const resultsMax = Math.max(60, H_for_keypad - keypadHeight);
-
     setVar('--tile', tile + 'px');
-    setVar('--results-max', resultsMax + 'px');
   }
 
   const ro = new ResizeObserver(computeTile);
@@ -308,7 +325,7 @@
   window.addEventListener('resize', computeTile);
   window.addEventListener('orientationchange', () => setTimeout(computeTile, 60));
 
-  /* ====== Calculator logic (preserved) ====== */
+  /* ====== Calculator logic (preserved + fixes) ====== */
   const tape = document.getElementById('tape');
   const sweep = document.getElementById('sweep');
   const inputLine = document.getElementById('inputLine');
@@ -335,9 +352,9 @@
     const w = Math.floor(Math.abs(r));
     const f = Math.abs(r) - w;
     let n = Math.round(f*16), d = 16, g = gcd(n,d); n/=g; d/=g;
-    let s = (d===1 || n===0) ? `${w}"` : (w ? `${w} ${n}/${d}"` : `${n}/${d}"`);
+    let s = (d===1 || n===0) ? `${w}\"` : (w ? `${w} ${n}/${d}\"` : `${n}/${d}\"`);
     if (r<0) s = `-${s}`;
-    return { fraction:s, decimal:`${r.toFixed(4)}"` };
+    return { fraction:s, decimal:`${r.toFixed(4)}\"` };
   }
 
   function updateInput(){
@@ -348,6 +365,7 @@
     });
     if (currentEntry) s += `${currentEntry} `;
     inputLine.textContent = s.trim();
+    requestAnimationFrame(()=>{ const hist=document.getElementById('history'); if(hist) hist.scrollTop = hist.scrollHeight; });
   }
 
   function evaluate(){
@@ -445,8 +463,8 @@
       tokens=[]; currentEntry='';
       inputLine.textContent='';
       const out = formatResult(feetBase);
-      fractionLine.textContent = `${feet}" base`;
-      decimalLine.textContent  = out.decimal;
+      fractionLine.textContent = `${feet}\u2032 base`; // prime for feet
+      decimalLine.textContent  = out.decimal;          // shows inches decimal
       drawTape(feetBase);
     } else {
       alert('Enter a whole number before pressing Feet.');
@@ -483,17 +501,22 @@
     memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
   });
 
-  // Fractions
+  // Fractions (robust handler)
   document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
-    const f=b.dataset.frac;
-    if (!currentEntry) currentEntry=f;
-    else if (isWhole(currentEntry)){
-      const [n,d]=f.split('/').map(Number);
-      const combined = parseInt(currentEntry,10) + (n/d);
+    const f=b.dataset.frac;            // e.g., "1/16"
+    const [n,d]=f.split('/').map(Number);
+    const fVal = n/d;
+
+    if (!currentEntry) {
+      // starting with a pure fraction
+      currentEntry = f;
+    } else if (isWhole(currentEntry)) {
+      // whole number + fraction => combine to a single decimal token
+      const whole = parseInt(currentEntry,10);
+      const combined = whole + fVal;
       tokens.push(String(combined)); currentEntry='';
-    } else if (isOp(tokens.at(-1))) {
-      currentEntry += f;
     } else {
+      // anything else => push pending entry, then "+ fraction"
       tokens.push(currentEntry); tokens.push('+'); currentEntry=f;
     }
     updateInput(); qEval();
