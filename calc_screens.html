@@ -9,8 +9,12 @@
 <link rel="icon" href="calcicon.png" type="image/png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="Inch Calc" />
-
+$1
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1f4d4d" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0e2a2a" media="(prefers-color-scheme: dark)" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="application-name" content="Inch Calc" />
 <style>
   /* ---------- Reset ---------- */
   *,*::before,*::after{ box-sizing:border-box }
@@ -93,7 +97,6 @@
   .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); }
   .results .pad{ display:flex; flex-direction:column; gap:8px; }
   .history{ height:var(--history-fixed); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
-  $1
   .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
   
   #inputLine{ display:block; }
@@ -254,10 +257,16 @@
         <li>M1–M4: tap to insert; double-tap or long-press to store; MC clears memory.</li>
         <li>Only the results panel scrolls when content is long.</li>
       </ul>
-      <div style="text-align:right; margin-top:8px;">
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+        <button id="installBtn" style="background:#0ea5a5; color:#111; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; display:none;">Install</button>
         <button id="closeModal" style="background:#111; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
       </div>
     </div>
+  </div>
+
+  <div id="updateToast" style="position:fixed; left:50%; transform:translateX(-50%); bottom:12px; background:#111; color:#fff; padding:8px 12px; border-radius:8px; display:none; gap:8px; align-items:center; z-index:40;">
+    <span>Update available</span>
+    <button id="updateReload" style="background:#0ea5a5; color:#111; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;">Refresh</button>
   </div>
 
 <script>
@@ -540,7 +549,137 @@
   initTape();
   loadMemory();
 
+  /* PWA: Service Worker + Install */
+  let deferredPrompt = null;
+  if ('serviceWorker' in navigator){
+    window.addEventListener('load', async () => {
+      try{
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW && newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller){
+              const toast = document.getElementById('updateToast'); if (toast) toast.style.display='flex';
+            }
+          });
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+      }catch(e){ console.warn('SW registration failed', e); }
+    });
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('installBtn'); if (btn) btn.style.display='inline-block';
+    });
+  }
+
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice; // outcome not used here
+    deferredPrompt = null;
+    installBtn.style.display='none';
+  });
+
+  document.getElementById('updateReload')?.addEventListener('click', async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg?.waiting){ reg.waiting.postMessage('skipWaiting'); }
+  });
+
 })();
 </script>
 </body>
+<!-- ===== manifest.webmanifest (create this file in the same folder) ===== -->
+<!--
+{
+  "name": "Inch Calc",
+  "short_name": "Inch Calc",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#1f4d4d",
+  "theme_color": "#1f4d4d",
+  "description": "Tape & Memory calculator with inch fractions.",
+  "icons": [
+    {"src": "calcicon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "calcicon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any"}
+  ]
+}
+-->
+
+<!-- ===== sw.js (create this file in the same folder) ===== -->
+<!--
+const CACHE_NAME = 'inch-calc-v1-2025-08-23';
+const ASSETS = [
+  './',
+  './calcicon.png',
+  './apple-touch-icon.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const accept = req.headers.get('accept') || '';
+
+  // HTML (navigation): network-first
+  if (req.mode === 'navigate' || accept.includes('text/html')){
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  const sameOrigin = new URL(req.url).origin === self.location.origin;
+
+  // Same-origin assets: cache-first
+  if (sameOrigin){
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, copy));
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Cross-origin (e.g., CDN): network, fallback to cache
+  event.respondWith(
+    fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(req, copy));
+      return res;
+    }).catch(() => caches.match(req))
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
+});
+-->
+
 </html>
