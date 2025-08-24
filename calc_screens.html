@@ -245,21 +245,59 @@
   <!-- Minimal modal -->
   <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30;">
     <div style="background:#fffdee; color:#222; max-width:min(680px, 92vw); max-height:min(80vh, 700px); overflow:auto; border-radius:12px; padding:16px 18px; box-shadow:0 12px 40px rgba(0,0,0,.45);">
-      <h2 style="margin-top:0">Calculator Instructions</h2>
-      <ul>
-        <li>Enter numbers with the keypad; tap fractions for inch fractions.</li>
-        <li>Operators: + − × ÷ (orange rail on the right).</li>
-        <li>Feet Mode: enter a whole number, then tap <b>Feet</b>.</li>
-        <li>← removes last digit/operator; C clears everything.</li>
-        <li>M1–M4: tap to insert; double-tap or long-press to store; MC clears memory.</li>
-        <li>Only the results panel scrolls when content is long.</li>
+
+  <h2 class="cm-title">A tape-measure calculator for my friends.</h2>
+  <ul class="cm-list">
+    <li>
+      <div class="cm-sub">Combine inches, decimals, and fractions in a single calculation.</div>
+      <div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div>
+    </li>
+
+    <li>
+      <div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div>
+    </li>
+
+    <li>
+      <div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div>
+    </li>
+
+    <li>
+      <div class="cm-head">Results are solved and displayed automatically, in three ways:</div>
+      <ul class="cm-bullets">
+        <li>Red line on tape measure visually accurate in decimal</li>
+        <li>Left results window, rounded to the nearest 1/16″</li>
+        <li>Right results window, precise in decimal 00.000″</li>
       </ul>
+    </li>
+
+    <li>
+      <div class="cm-head">Memory slot stores four clearly labeled values:</div>
+      <ul class="cm-bullets">
+        <li>Long press to store new value as well as to replace an existing value</li>
+        <li>CM = Clear Memory, M1–M4 = Memory Slots</li>
+      </ul>
+    </li>
+
+    <li>
+      <div class="cm-head">Undo / Clear</div>
+      <ul class="cm-bullets">
+        <li>&larr; Undo numbers, fractions, and operators one character at a time</li>
+        <li><b>C</b> Clear entire results screen</li>
+      </ul>
+    </li>
+
+    <li>
+      <div class="cm-head">Feet button is Experimental and buggy at the moment.</div>
+    </li>
+  </ul>
+
+
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
         <button id="installBtn" style="background:#0ea5a5; color:#111; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; display:none;">Install</button>
         <button id="closeModal" style="background:#111; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
       </div>
     </div>
-  </div>
+  
 
   <div id="updateToast" style="position:fixed; left:50%; transform:translateX(-50%); bottom:12px; background:#111; color:#fff; padding:8px 12px; border-radius:8px; display:none; gap:8px; align-items:center; z-index:40;">
     <span>Update available</span>
