@@ -1,9 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
 <title>Inch Calc — Uniform Grid (420)</title>
 <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
-<link rel="icon"type="image/png" />
+<link rel="icon" type="image/png" href="calcicon-192.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="Inch Calc" />
@@ -36,8 +39,6 @@
     --pad: var(--gap);
 
     --tape-min: 100px;
-    --results-min: 60px;
-    
 
     --results-fixed: 140px;  /* fixed results height, set by JS */
 
@@ -95,9 +96,9 @@
   .results .pad{ display:flex; flex-direction:column; gap:8px; }
   .history{ height:var(--history-fixed); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
   .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
-  
+
   #inputLine{ display:block; }
-  .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(16px,2.2vw,22px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
+  .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(18px,2.9vw,26px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
 
   /* ---------- Memory (5×1 uniform) ---------- */
   .memory{ grid-area:memory }
@@ -207,7 +208,7 @@
         <button class="btn r3 c4" data-val="3">3</button>
 
         <button class="btn r4 c2" disabled></button>
-        <button class="btn r4 c3" data-val=".">0</button>
+        <button class="btn r4 c3" data-val="0">0</button>
         <button class="btn dec r4 c4" data-val=".">.</button>
 
         <!-- Operator rail (col 5) -->
@@ -311,12 +312,12 @@
     const resultsFixed = Math.ceil(pad*2 + historyFixed + 8 + outputLH + 1);
     setVar('--results-fixed', resultsFixed + 'px');
 
-    // Keypad composition
+    // Keypad composition (memory + console + fractions)
     const ROWS = 8;
-    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap
+    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // conservative spacing budget
     const W_inside = W - 2*gap;
 
-    // Height available for keypad stack (memory + console + fractions)
+    // Height available for keypad stack
     const H_for_keypad = Math.max(0, H - tapeMin - resultsFixed - 2*gap);
 
     let tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
@@ -345,7 +346,19 @@
   let currentEntry = '';
   let feetBase = null; // inches
   let tmr = null;
-  const PPI = 160;
+
+  // Measure CSS pixel-per-inch from the browser (96 on most engines)
+  function measurePPI(){
+    const div = document.createElement('div');
+    div.style.width = '1in';
+    div.style.position = 'absolute';
+    div.style.visibility = 'hidden';
+    document.body.appendChild(div);
+    const ppi = div.getBoundingClientRect().width;
+    div.remove();
+    return ppi || 96;
+  }
+  let PPI = 96; // fallback
 
   const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
   const isOp = t => ['+','-','*','/'].includes(t);
@@ -398,7 +411,8 @@
     [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
     const rect = tape.getBoundingClientRect();
     const mid = rect.width/2;
-    const range = 3;
+    const inchesVisible = rect.width / PPI; // fill full width with ticks
+    const range = Math.max(3, inchesVisible); // ensure enough density on small widths
     const start = Math.max(center - range/2, 0), end = center + range/2;
     const a = Math.floor(start*16), b = Math.ceil(end*16);
     for (let i=a;i<=b;i++){
@@ -424,7 +438,9 @@
 
   // Bind numbers/decimal
   document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
-    currentEntry += b.dataset.val; updateInput(); qEval();
+    const val = b.dataset.val;
+    if (val === '.') return; // handled by dedicated decimal button below
+    currentEntry += val; updateInput(); qEval();
   }));
   document.querySelector('.btn.dec[data-val="."]').addEventListener('click',()=>{
     if (currentEntry.includes('.')) return;
@@ -542,7 +558,9 @@
 
   // Init
   function initTape(){ const r=tape.getBoundingClientRect(); if(!r.width){ requestAnimationFrame(initTape); return; } drawTape(0); }
+  function initPPI(){ PPI = measurePPI(); }
   computeTile();
+  initPPI();
   initTape();
   loadMemory();
 
@@ -588,6 +606,7 @@
 })();
 </script>
 </body>
+
 <!-- ===== manifest.webmanifest (create this file in the same folder) ===== -->
 <!--
 {
@@ -595,7 +614,7 @@
   "short_name": "Inch Calc",
   "start_url": ".",
   "scope": ".",
-  $1
+  "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#1f4d4d",
   "theme_color": "#1f4d4d",
@@ -613,10 +632,12 @@
 const CACHE_NAME = 'inch-calc-v1-2025-08-23';
 const ASSETS = [
   './',
-  './tapemeasurememory.html', // add your actual filename here if different
+  './index.html', // or your actual filename if not index.html
   './manifest.webmanifest',
   './sw.js',
-  './calcicon.png',
+  './calcicon-192.png',
+  './calcicon-512.png',
+  './maskable-512.png',
   './apple-touch-icon.png'
 ];
 
