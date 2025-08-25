@@ -148,15 +148,15 @@
   }
   .btn:active{ transform:scale(.98) }
 
-  /* Role defaults (as before), but expressed as per-class defaults */
+  /* Role defaults */
   .btn.operator{ --_btn-bg: var(--op);  --_btn-fg:#111; }
-  .btn.frac    { --_btn-bg: var(--frac);--_btn-fg:#063c67; } /* will be overridden per-button by JS */
+  .btn.frac    { --_btn-bg: var(--frac);--_btn-fg:#063c67; }
   .btn.dec     { --_btn-bg: var(--dec); --_btn-fg:#0c3a10; }
   .btn.clear,
   .btn.back    { --_btn-bg: var(--clear); --_btn-fg:#fff; }
   .btn.mem     { --_btn-bg: var(--mem); --_btn-fg:#083f3f; }
 
-  /* Fraction-only hover/active use the per-button variables if provided, else auto shade */
+  /* Fraction-only hover/active use per-button vars if provided */
   .btn.frac:hover{
     --btn-bg: var(--btn-hover-bg, color-mix(in oklab, var(--btn-bg), white 12%));
   }
@@ -412,6 +412,9 @@
   const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
   const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
 
+  /* NEW: pretty symbols for history line */
+  const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
+
   function formatResult(value){
     const r = Math.round(value*16)/16;
     const w = Math.floor(Math.abs(r));
@@ -422,11 +425,18 @@
     return { fraction:s, decimal:`${r.toFixed(4)}\"` };
   }
 
+  /* UPDATED: renders × and ÷ (and proper minus) in the input/history */
   function updateInput(){
     let s='';
     tokens.forEach(t=>{
-      if (/^-?\d+\.\d+$/.test(t)) { const [w,f]=splitDec(t); s += f>0 ? `${w} ${fracFromDec(f)} ` : `${w} `; }
-      else s += `${t} `;
+      if (isOp(t)) {
+        s += `${prettyOp(t)} `;
+      } else if (/^-?\d+\.\d+$/.test(t)) {
+        const [w,f]=splitDec(t);
+        s += f>0 ? `${w} ${fracFromDec(f)} ` : `${w} `;
+      } else {
+        s += `${t} `;
+      }
     });
     if (currentEntry) s += `${currentEntry} `;
     inputLine.textContent = s.trim();
@@ -566,40 +576,30 @@
     memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
   });
 
-  /* ====== FRACTION BUTTON PALETTES (new) ======
-     - Give each fraction key its own base color/image via a single registry.
-     - Hover/active are auto-derived in CSS (color-mix), but you can override with hoverBg/activeBg.
-     - You can also set per-button text color (fg) and background image (img). */
-
-  // Put any custom overrides here. Only list the ones you want special.
+  /* ====== FRACTION BUTTON PALETTES ====== */
   const FRACTION_PALETTES = {
-    // Examples (delete/replace as you wish):
      '1/16': { bg: '#003d99', fg:'#fff' },
-     '1/8': { bg: '#80b3ff', fg:'#fff' },
+     '1/8': { bg: '#005ce6', fg:'#fff' },
      '3/16': { bg: '#1a75ff', fg:'#fff' },
-     '1/4': { bg: '#cce0ff', fg:'#003d99' },
+     '1/4': { bg: '#66a3ff', fg:'#003d99' },
      '5/16': { bg: '#1a75ff', fg:'#fff' },
-     '3/8': { bg: '#80b3ff', fg:'#fff' },
+     '3/8': { bg: '#005ce6', fg:'#fff' },
      '7/16': { bg: '#1a75ff', fg:'#fff' },
-     '1/2': { bg: '#cce0ff', fg:'#003d99' },
+     '1/2': { bg: '#66a3ff', fg:'#003d99' },
      '9/16': { bg: '#1a75ff', fg:'#fff' },
-     '5/8': { bg: '#80b3ff', fg:'#fff' },
+     '5/8': { bg: '#005ce6', fg:'#fff' },
      '11/16': { bg: '#1a75ff', fg:'#fff' },
-     '3/4': { bg: '#cce0ff', fg:'#003d99' },
+     '3/4': { bg: '#66a3ff', fg:'#003d99' },
      '13/16': { bg: '#1a75ff', fg:'#fff' },
-     '7/8': { bg: '#80b3ff', fg:'#fff' },
+     '7/8': { bg: '#005ce6', fg:'#fff' },
      '15/16': { bg: '#003d99', fg:'#fff' },
-    // '1/8' : { bg: '#5cc8ff', hoverBg:'#74d2ff', fg:'#111' },
-    // '1/2' : { bg: 'hsl(200 75% 45%)', activeBg:'hsl(200 75% 35%)', fg:'#fff' },
-     //'3/4' : { bg: '#ef476f', img:'linear-gradient(135deg,#fff2 0%,#0002 100%)', fg:'#fff' },
   };
 
-  // Fallback generator (smooth hue across 1/16 → 15/16; works for any n/d)
   function fallbackFor(frac){
     const [n,d] = frac.split('/').map(Number);
     if (!n || !d) return { bg: 'hsl(210 70% 50%)', fg:'#fff' };
-    const t = Math.max(0, Math.min(1, n/d));        // 0..1
-    const h = 210 + t * 120;                         // blue → magenta
+    const t = Math.max(0, Math.min(1, n/d));
+    const h = 210 + t * 120; /* blue → magenta */
     const s = 70, l = 50;
     return { bg: `hsl(${h} ${s}% ${l}%)`, fg:'#fff' };
   }
@@ -616,20 +616,20 @@
     });
   }
 
-  // Public API if you want to tweak live from console:
+  // Public API
   window.setFractionStyle = (fracKey, conf) => {
     FRACTION_PALETTES[fracKey] = { ...(FRACTION_PALETTES[fracKey]||{}), ...conf };
     applyFractionPalettes();
   };
 
-  // Fractions (input handling)
+  // Fractions input handling
   document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
-    const f=b.dataset.frac;            // e.g., "1/16"
+    const f=b.dataset.frac;
     const [n,d]=f.split('/').map(Number);
     const fVal = n/d;
 
     if (!currentEntry) {
-      currentEntry = f; // starting with a pure fraction
+      currentEntry = f;
     } else if (isWhole(currentEntry)) {
       const whole = parseInt(currentEntry,10);
       const combined = whole + fVal;
@@ -657,7 +657,7 @@
   computeTile();
   initTape();
   loadMemory();
-  applyFractionPalettes(); // <-- NEW: colorize fraction buttons
+  applyFractionPalettes();
 
   /* PWA: Service Worker + Install */
   let deferredPrompt = null;
