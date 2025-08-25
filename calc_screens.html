@@ -106,7 +106,7 @@
   .memory{ grid-area:memory }
   .memory-grid{ display:grid; gap:var(--gap);
     grid-template-columns:repeat(5, 1fr);
-    grid-template-rows:var(--tile);
+    grid-template-rows:repeat(1, var(--tile));
   }
 
   /* ---------- Console (one true grid 5×4) ---------- */
@@ -166,6 +166,12 @@
 
   .btn[disabled]{ opacity:.5; filter:saturate(.15) }
 
+  /* ---------- NEW: inner-shadow on button text ---------- */
+  .btn .btn-label{
+    line-height: 1;
+    filter: url(#textInnerShadow);
+  }
+
   /* ---------- A11y & motion preferences ---------- */
   @media (prefers-reduced-motion: reduce){
     .sweep::before{ animation:none !important; opacity:0 !important; }
@@ -178,6 +184,19 @@
 </style>
 </head>
 <body>
+
+  <!-- Hidden SVG filter that creates a true inner shadow inside glyphs -->
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="textInnerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur"/>
+      <feOffset dy="1" result="offset"/>
+      <!-- keep only the blur that lies inside the glyphs -->
+      <feComposite in="offset" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="inner"/>
+      <feFlood flood-color="black" flood-opacity="0.45" result="shade"/>
+      <feComposite in="shade" in2="inner" operator="in" result="shadow"/>
+      <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
+    </filter>
+  </svg>
 
   <div id="card" class="card">
 
@@ -212,8 +231,8 @@
     <div class="panel console pad">
       <div class="console-grid">
         <!-- Utility rail (col 1) -->
-        <button class="btn clear r1 c1" data-action="clear">C</button>
-        <button class="btn back  r2 c1" data-action="back">←</button>
+        <button class="btn back r1 c1" data-action="back">←</button>
+        <button class="btn clear  r2 c1" data-action="clear">C</button>
         <button class="btn       r3 c1" id="menuBtn">menu</button>
         <button class="btn operator r4 c1" id="feetBtn">Feet</button>
 
@@ -412,7 +431,7 @@
   const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
   const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
 
-  /* NEW: pretty symbols for history line */
+  /* pretty symbols for history line */
   const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
 
   function formatResult(value){
@@ -425,7 +444,7 @@
     return { fraction:s, decimal:`${r.toFixed(4)}\"` };
   }
 
-  /* UPDATED: renders × and ÷ (and proper minus) in the input/history */
+  /* Renders × and ÷ (and proper minus) in the input/history */
   function updateInput(){
     let s='';
     tokens.forEach(t=>{
@@ -484,10 +503,25 @@
   // Memory helpers
   function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
   function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
+
+  // NEW: ensure span label exists and update it
+  function ensureLabelSpan(btn){
+    let span = btn.querySelector('.btn-label');
+    if (!span){
+      span = document.createElement('span');
+      span.className = 'btn-label';
+      span.textContent = btn.textContent;
+      btn.replaceChildren(span);
+    }
+    return span;
+  }
+
   function refreshMemLabels(){
     document.querySelectorAll('.btn.mem').forEach(btn=>{
       const i=+btn.dataset.mem, v=memorySlots[i];
-      btn.textContent = v==null ? `M${i+1}` : formatResult(v).fraction.replace('"','');
+      const text = v==null ? `M${i+1}` : formatResult(v).fraction.replace('"','');
+      const span = ensureLabelSpan(btn);
+      span.textContent = text;
     });
   }
 
@@ -640,6 +674,22 @@
     updateInput(); qEval();
   }));
 
+  // Wrap labels so filter hits text glyphs (and keep spans for dynamic labels)
+  function wrapButtonText(){
+    document.querySelectorAll('.btn').forEach(btn=>{
+      const hasSpan = !!btn.querySelector('.btn-label');
+      if (!hasSpan){
+        const onlyText = btn.childNodes.length === 1 && btn.firstChild.nodeType === Node.TEXT_NODE;
+        if (onlyText){
+          const span = document.createElement('span');
+          span.className = 'btn-label';
+          span.textContent = btn.textContent;
+          btn.replaceChildren(span);
+        }
+      }
+    });
+  }
+
   // Modal
   const modal=document.getElementById('modal');
   document.getElementById('menuBtn').addEventListener('click',()=>{ modal.style.display='flex'; });
@@ -656,7 +706,8 @@
   function initTape(){ const r=tape.getBoundingClientRect(); if(!r.width){ requestAnimationFrame(initTape); return; } drawTape(0); }
   computeTile();
   initTape();
-  loadMemory();
+  loadMemory();            // will call refreshMemLabels(), which now preserves spans
+  wrapButtonText();        // ensure all buttons have a .btn-label span
   applyFractionPalettes();
 
   /* PWA: Service Worker + Install */
