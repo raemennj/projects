@@ -1,9 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
 <title>Inch Calc — Uniform Grid (420)</title>
 <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
-<link rel="icon"type="image/png" />
+<link rel="icon" type="image/png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="Inch Calc" />
@@ -31,18 +34,19 @@
 
   :root{
     --card-max: 420px;     /* designed scale cap */
-    --gap: 8px;           /* unified spacing, set by JS */
+    --gap: 8px;            /* unified spacing, set by JS */
     --tile: 56px;          /* unified button height, set by JS */
     --pad: var(--gap);
 
     --tape-min: 100px;
     --results-min: 60px;
-    
 
     --results-fixed: 140px;  /* fixed results height, set by JS */
 
-    /* theme */
+    /* theme tokens */
     --card:#fff; --display-bg:#222; --display-text:#0f0;
+
+    /* legacy role colors as defaults */
     --num:#fffacd; --op:#f9a825; --frac:#64b5f6; --dec:#a5d6a7;
     --clear:#e57373; --mem:#64b5f6;
   }
@@ -95,7 +99,6 @@
   .results .pad{ display:flex; flex-direction:column; gap:8px; }
   .history{ height:var(--history-fixed); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
   .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
-  
   #inputLine{ display:block; }
   .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(22px,3.1vw,32px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
 
@@ -124,22 +127,43 @@
     grid-template-rows:repeat(3, var(--tile));
   }
 
-  /* ---------- Buttons ---------- */
+  /* ---------- Buttons (now variable-driven) ---------- */
   .btn{
+    /* semantic, overridable per-button */
+    --btn-bg: var(--_btn-bg, var(--num));
+    --btn-fg: var(--_btn-fg, currentColor);
+    --btn-img: var(--_btn-img, none);
+
     width:100%; height:100%;
     display:grid; place-items:center;
     border:0; border-radius:5px;
     font-weight:600; font-size:clamp(14px, calc(var(--tile)*.42), 20px);
-    background:var(--num);
+    color:var(--btn-fg);
+    background-image: var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
+    background-repeat:no-repeat;
+    background-size:cover, auto;
     box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
     user-select:none; -webkit-tap-highlight-color:transparent;
+    transition: background-color .15s ease, transform .05s ease, box-shadow .15s ease, filter .15s ease;
   }
   .btn:active{ transform:scale(.98) }
-  .btn.operator{ background:var(--op); color:#111 }
-  .btn.frac{ background:var(--frac); color:#063c67 }
-  .btn.dec{ background:var(--dec); color:#0c3a10 }
-  .btn.clear,.btn.back{ background:var(--clear); color:#fff }
-  .btn.mem{ background:var(--mem); color:#083f3f }
+
+  /* Role defaults (as before), but expressed as per-class defaults */
+  .btn.operator{ --_btn-bg: var(--op);  --_btn-fg:#111; }
+  .btn.frac    { --_btn-bg: var(--frac);--_btn-fg:#063c67; } /* will be overridden per-button by JS */
+  .btn.dec     { --_btn-bg: var(--dec); --_btn-fg:#0c3a10; }
+  .btn.clear,
+  .btn.back    { --_btn-bg: var(--clear); --_btn-fg:#fff; }
+  .btn.mem     { --_btn-bg: var(--mem); --_btn-fg:#083f3f; }
+
+  /* Fraction-only hover/active use the per-button variables if provided, else auto shade */
+  .btn.frac:hover{
+    --btn-bg: var(--btn-hover-bg, color-mix(in oklab, var(--btn-bg), white 12%));
+  }
+  .btn.frac:active{
+    --btn-bg: var(--btn-active-bg, color-mix(in oklab, var(--btn-bg), black 10%));
+  }
+
   .btn[disabled]{ opacity:.5; filter:saturate(.15) }
 
   /* ---------- A11y & motion preferences ---------- */
@@ -291,13 +315,12 @@
     </li>
   </ul>
 
-
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
         <button id="installBtn" style="background:#0ea5a5; color:#111; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; display:none;">Install</button>
         <button id="closeModal" style="background:#111; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
       </div>
     </div>
-  
+  </div>
 
   <div id="updateToast" style="position:fixed; left:50%; transform:translateX(-50%); bottom:12px; background:#111; color:#fff; padding:8px 12px; border-radius:8px; display:none; gap:8px; align-items:center; z-index:40;">
     <span>Update available</span>
@@ -308,9 +331,7 @@
 (() => {
   'use strict';
 
-  /* ====== Uniform tile/gap solver ======
-     Memory 5×1, Console 5×4, Fractions 5×3
-     One tile height for all rows. Only Results scrolls. */
+  /* ====== Uniform tile/gap solver ====== */
   const MIN_TAP = 44;
   const MIN_GAP = 6, MAX_GAP = 12;
 
@@ -507,8 +528,8 @@
       tokens=[]; currentEntry='';
       inputLine.textContent='';
       const out = formatResult(feetBase);
-      fractionLine.textContent = `${feet}\u2032 base`; // prime for feet
-      decimalLine.textContent  = out.decimal;          // shows inches decimal
+      fractionLine.textContent = `${feet}\u2032 base`;
+      decimalLine.textContent  = out.decimal;
       drawTape(feetBase);
     } else {
       alert('Enter a whole number before pressing Feet.');
@@ -545,22 +566,61 @@
     memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
   });
 
-  // Fractions (robust handler)
+  /* ====== FRACTION BUTTON PALETTES (new) ======
+     - Give each fraction key its own base color/image via a single registry.
+     - Hover/active are auto-derived in CSS (color-mix), but you can override with hoverBg/activeBg.
+     - You can also set per-button text color (fg) and background image (img). */
+
+  // Put any custom overrides here. Only list the ones you want special.
+  const FRACTION_PALETTES = {
+    // Examples (delete/replace as you wish):
+    // '1/16': { bg: '#6b8afd', fg:'#fff' },
+    // '1/8' : { bg: '#5cc8ff', hoverBg:'#74d2ff', fg:'#111' },
+    // '1/2' : { bg: 'hsl(200 75% 45%)', activeBg:'hsl(200 75% 35%)', fg:'#fff' },
+    // '3/4' : { bg: '#ef476f', img:'linear-gradient(135deg,#fff2 0%,#0002 100%)', fg:'#fff' },
+  };
+
+  // Fallback generator (smooth hue across 1/16 → 15/16; works for any n/d)
+  function fallbackFor(frac){
+    const [n,d] = frac.split('/').map(Number);
+    if (!n || !d) return { bg: 'hsl(210 70% 50%)', fg:'#fff' };
+    const t = Math.max(0, Math.min(1, n/d));        // 0..1
+    const h = 210 + t * 120;                         // blue → magenta
+    const s = 70, l = 50;
+    return { bg: `hsl(${h} ${s}% ${l}%)`, fg:'#fff' };
+  }
+
+  function applyFractionPalettes(){
+    document.querySelectorAll('.btn.frac[data-frac]').forEach(el=>{
+      const key = el.getAttribute('data-frac');
+      const conf = { ...fallbackFor(key), ...(FRACTION_PALETTES[key]||{}) };
+      if (conf.bg) el.style.setProperty('--btn-bg', conf.bg);
+      if (conf.fg) el.style.setProperty('--btn-fg', conf.fg);
+      if (conf.img) el.style.setProperty('--btn-img', conf.img);
+      if (conf.hoverBg) el.style.setProperty('--btn-hover-bg', conf.hoverBg);
+      if (conf.activeBg) el.style.setProperty('--btn-active-bg', conf.activeBg);
+    });
+  }
+
+  // Public API if you want to tweak live from console:
+  window.setFractionStyle = (fracKey, conf) => {
+    FRACTION_PALETTES[fracKey] = { ...(FRACTION_PALETTES[fracKey]||{}), ...conf };
+    applyFractionPalettes();
+  };
+
+  // Fractions (input handling)
   document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
     const f=b.dataset.frac;            // e.g., "1/16"
     const [n,d]=f.split('/').map(Number);
     const fVal = n/d;
 
     if (!currentEntry) {
-      // starting with a pure fraction
-      currentEntry = f;
+      currentEntry = f; // starting with a pure fraction
     } else if (isWhole(currentEntry)) {
-      // whole number + fraction => combine to a single decimal token
       const whole = parseInt(currentEntry,10);
       const combined = whole + fVal;
       tokens.push(String(combined)); currentEntry='';
     } else {
-      // anything else => push pending entry, then "+ fraction"
       tokens.push(currentEntry); tokens.push('+'); currentEntry=f;
     }
     updateInput(); qEval();
@@ -583,6 +643,7 @@
   computeTile();
   initTape();
   loadMemory();
+  applyFractionPalettes(); // <-- NEW: colorize fraction buttons
 
   /* PWA: Service Worker + Install */
   let deferredPrompt = null;
@@ -613,7 +674,7 @@
   if (installBtn) installBtn.addEventListener('click', async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    await deferredPrompt.userChoice; // outcome not used here
+    await deferredPrompt.userChoice;
     deferredPrompt = null;
     installBtn.style.display='none';
   });
@@ -626,6 +687,7 @@
 })();
 </script>
 </body>
+
 <!-- ===== manifest.webmanifest (create this file in the same folder) ===== -->
 <!--
 {
@@ -633,7 +695,6 @@
   "short_name": "Inch Calc",
   "start_url": ".",
   "scope": ".",
-  $1
   "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#1f4d4d",
   "theme_color": "#1f4d4d",
