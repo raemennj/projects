@@ -11,8 +11,6 @@
          physical crafting process with accurate numerical backing. 
          This allows for projects to be completed with a higher  
          degree of precision, efficiency, and confidence.
-
-         
 -->
 
 <title>Segment Calculator</title>
@@ -216,7 +214,7 @@ body {
     max-width: 600px;
 }
 }
-/* ===== Tape (fixed 3\" zoom + classic styling) ===== */
+/* ===== Tape (fixed 3" zoom + classic styling) ===== */
 .tape-wrapper {
     width: 100%;
     background: lightyellow;
@@ -260,7 +258,8 @@ body {
     overflow: hidden;
     border-top: 1px solid #1b1b1b;
     border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px
+    border-bottom-right-radius: 12px;
+    touch-action: pan-y; /* keep vertical page scroll; capture horizontal swipes */
 }
 #tapeContainer svg {
     display: block;
@@ -563,7 +562,77 @@ const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = s
  document.getElementById('prevMark').addEventListener('click', ()=> gotoMark(currentMarkIndex-1));
  document.getElementById('nextMark').addEventListener('click', ()=> gotoMark(currentMarkIndex+1));
  window.addEventListener('resize', ()=> tape.draw());
- // (no zoom control — fixed 3\")
+ // (no zoom control — fixed 3")
+
+// ===== Swipe / Wheel / Keyboard navigation on the tape
+(() => {
+  const el = document.getElementById('tapeContainer');
+
+  // Keyboard left/right when the tape has focus
+  el.setAttribute('tabindex', '0');
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); gotoMark(currentMarkIndex - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); gotoMark(currentMarkIndex + 1); }
+  });
+
+  // Trackpad/mouse horizontal swipe (wheel) support with a short throttle
+  let lastWheel = 0;
+  el.addEventListener('wheel', (e) => {
+    // Only react to mostly-horizontal gestures
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    const now = performance.now();
+    if (now - lastWheel < 180) return; // throttle
+    lastWheel = now;
+    e.preventDefault();
+    if (e.deltaX > 0) gotoMark(currentMarkIndex + 1);
+    else              gotoMark(currentMarkIndex - 1);
+  }, { passive: false });
+
+  // Touch/mouse swipe with Pointer Events (plus a touch fallback)
+  const THRESH = 28; // px horizontal movement required to count as a swipe
+
+  function installPointerSwipe(target) {
+    let sx = 0, sy = 0, tracking = false, handled = false;
+
+    const onDown = (x, y, id) => {
+      sx = x; sy = y; tracking = true; handled = false;
+      target.setPointerCapture?.(id);
+    };
+
+    const onMove = (x, y, rawEvt) => {
+      if (!tracking || handled) return;
+      const dx = x - sx, dy = y - sy;
+      // Require mostly-horizontal + threshold
+      if (Math.abs(dx) < THRESH || Math.abs(dx) <= Math.abs(dy)) return;
+
+      handled = true; // one step per swipe
+      if (dx < 0) gotoMark(currentMarkIndex + 1);
+      else        gotoMark(currentMarkIndex - 1);
+      rawEvt.preventDefault(); // stop accidental page moves now that we handled it
+    };
+
+    const onUp = (id) => {
+      tracking = false; handled = false;
+      try { target.releasePointerCapture?.(id); } catch {}
+    };
+
+    if ('PointerEvent' in window) {
+      target.addEventListener('pointerdown', e => onDown(e.clientX, e.clientY, e.pointerId), { passive: true });
+      target.addEventListener('pointermove', e => onMove(e.clientX, e.clientY, e), { passive: false });
+      target.addEventListener('pointerup',   e => onUp(e.pointerId), { passive: true });
+      target.addEventListener('pointercancel', e => onUp(e.pointerId), { passive: true });
+    } else {
+      // iOS <13 fallback
+      target.addEventListener('touchstart', e => { const t = e.changedTouches[0]; onDown(t.clientX, t.clientY, 0); }, { passive: true });
+      target.addEventListener('touchmove',  e => { const t = e.changedTouches[0]; onMove(t.clientX, t.clientY, e); }, { passive: false });
+      target.addEventListener('touchend',   () => onUp(0), { passive: true });
+      target.addEventListener('touchcancel',() => onUp(0), { passive: true });
+    }
+  }
+
+  installPointerSwipe(el);
+})();
+
 // ===== Modal
 const modal = document.getElementById('instructionsModal');
 const showModalBtn = document.getElementById('showModalBtn');
