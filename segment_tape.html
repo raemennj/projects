@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <!-- 
          This web page is the sole creation and production of 
          raemenn jewall. 2023
@@ -12,11 +11,11 @@
          This allows for projects to be completed with a higher  
          degree of precision, efficiency, and confidence.
 -->
-
 <title>Segment Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 <style>
+/* (unchanged styles) */
 body {
     font-size: 18px;
     margin: 0;
@@ -201,18 +200,11 @@ input {
     max-height: calc(100vh - 40px);
     overflow-y: auto;
 }
-
 @media screen and (orientation:landscape) {
-.modal-content {
-    max-height: calc(100vh - 80px);
+.modal-content { max-height: calc(100vh - 80px); }
 }
-}
-
 @media (min-width: 601px) {
-body {
-    margin: 0 auto;
-    max-width: 600px;
-}
+body { margin: 0 auto; max-width: 600px; }
 }
 /* ===== Tape (fixed 3" zoom + classic styling) ===== */
 .tape-wrapper {
@@ -229,9 +221,7 @@ body {
     gap: 8px;
     padding: 8px 10px;
 }
-.tape-head .spacer {
-    flex: 1
-}
+.tape-head .spacer { flex: 1 }
 .tape-head .label {
     min-width: 140px;
     text-align: center;
@@ -248,9 +238,7 @@ body {
     font-family: "dunbar-tall", sans-serif;
     box-shadow: 0 1px 0 rgba(0,0,0,.06)
 }
-.tape-btn:active {
-    transform: translateY(1px)
-}
+.tape-btn:active { transform: translateY(1px) }
 #tapeContainer {
     width: 100%;
     height: 114px;
@@ -261,11 +249,7 @@ body {
     border-bottom-right-radius: 12px;
     touch-action: pan-y; /* keep vertical page scroll; capture horizontal swipes */
 }
-#tapeContainer svg {
-    display: block;
-    width: 100%;
-    height: 120px
-}
+#tapeContainer svg { display: block; width: 100%; height: 120px }
 .pill {
     display: inline-block;
     font-size: 18px;
@@ -276,9 +260,7 @@ body {
     padding: 4px 12px;
     line-height: 1
 }
-.pill small {
-    opacity: .9
-}
+.pill small { opacity: .9 }
 </style>
 </head>
 <body>
@@ -286,57 +268,59 @@ body {
 <!-- ===== Tape Measure (with zoom) ===== -->
 <div class="tape-wrapper" aria-label="Interactive tape measure">
   <div class="tape-head">
-    <button class="tape-btn" id="prevMark" aria-label="Previous mark">◀</button>
+    <button class="tape-btn" id="prevMark" aria-label="Previous mark" title="Click: previous • Long-press: first">◀</button>
     <div class="spacer"></div>
-    <div class="label pill" aria-live="polite"> <span id="markIndex">–</span> of <span id="markCount">0</span> &nbsp;·&nbsp;&nbsp;·&nbsp;&nbsp;·&nbsp;<span id="markFrac">—</span> <small>"</small> </div>
+    <div class="label pill" aria-live="polite">
+      <span id="markIndex">–</span> of <span id="markCount">0</span>
+      &nbsp;·&nbsp;&nbsp;·&nbsp;&nbsp;·&nbsp;<span id="markFrac">—</span> <small>"</small>
+    </div>
     <div class="spacer"></div>
-    <button class="tape-btn" id="nextMark" aria-label="Next mark">▶</button>
+    <button class="tape-btn" id="nextMark" aria-label="Next mark" title="Click: next • Long-press: last">▶</button>
   </div>
   <div id="tapeContainer" role="img" aria-label="Ruler with 1/16-inch ticks"></div>
 </div>
+
 <div class="tab-container">
   <div id="equalTab" class="tab active" tabindex="0" role="button" onclick="changeTab('equal')">Equal</div>
   <div id="nearTab" class="tab" tabindex="0" role="button" onclick="changeTab('near')">Near</div>
 </div>
+
 <form class="input-container">
   <div class="length">
-    <label for="length">Length:</label>
-    <br>
+    <label for="length">Length:</label><br>
     <input type="text" id="length">
   </div>
   <div class="burn">
-    <label for="endDistance">End allowance:</label>
-    <br>
+    <label for="endDistance">End allowance:</label><br>
     <input type="text" id="endDistance">
   </div>
   <div class="segmentType">
-    <label id="dynamicLabel" for="valueUsed">Segments:</label>
-    <br>
+    <label id="dynamicLabel" for="valueUsed">Segments:</label><br>
     <input type="text" id="valueUsed">
   </div>
 </form>
+
 <div class="resultsBG">
   <p id="segmentResult" role="text" aria-live="assertive" aria-label="Segment Length Result"></p>
   <p id="marksResult" role="text" aria-live="assertive" aria-label="Segment Marks (scrollable list)"></p>
 </div>
+
 <div class="readme-container">
   <button id="showModalBtn">Instructions</button>
   <div id="instructionsModal" class="modal">
-    <div class="modal-content"> Tap "Equal" for equal segments or "Near" for segments close to a target size. <br>
-      <br>
-      Fill the "Length" field with the total length of your material. <br>
-      <br>
-      Enter the distance you will leave at each end in the "End allowance" field. <br>
-      <br>
-      In the last field, enter the number of segments or the approximate size of each segment, depending on the chosen mode. <br>
-      <br>
-      <a href="calc_screens.html">Tape Measure Calculator</a> <br>
-      <br>
-      Tip: Swipe left or right instead of useing the ◀ ▶ buttons to step through the marks.<br>
-      <br>
-      <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span> </div>
+    <div class="modal-content">
+      Tap "Equal" for equal segments or "Near" for segments close to a target size. <br><br>
+      Fill the "Length" field with the total length of your material. <br><br>
+      Enter the distance you will leave at each end in the "End allowance" field. <br><br>
+      In the last field, enter the number of segments or the approximate size of each segment, depending on the chosen mode. <br><br>
+      <a href="calc_screens.html">Tape Measure Calculator</a> <br><br>
+      Tip: Swipe left or right instead of using the ◀ ▶ buttons to step through the marks. <br>
+      Long-press ◀ to jump to the first mark; long-press ▶ to jump to the last. <br><br>
+      <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
+    </div>
   </div>
 </div>
+
 <script>
 // ===== Helpers
 const gcd = (a, b) => b ? gcd(b, a % b) : a;
@@ -381,13 +365,13 @@ const tape = {
     let L = 0, R = totalLengthIn || 1;
     if (zoomMode === 'window' && marksDecimal.length){
       const center = marksDecimal[currentMarkIndex] ?? 0;
-      const w = Math.max(1/8, zoomWidth); // at least 1/8" window
+      const w = Math.max(1/8, zoomWidth);
       if ((totalLengthIn||0) > w){
         L = Math.max(0, Math.min(center - w/2, totalLengthIn - w));
         R = L + w;
       }
     }
-    this.winL = L; this.winR = Math.max(L + 1/16, R); // ensure non-zero width
+    this.winL = L; this.winR = Math.max(L + 1/16, R);
     return [this.winL, this.winR];
   },
   scaleX(x, w){
@@ -424,15 +408,13 @@ const tape = {
     const startF = Math.floor(L * 16);
     const endF   = Math.ceil(R * 16);
 
-    // gradient background (classic blade vibe)
+    // gradient background
     const defs = document.createElementNS(svgNS,'defs');
     const grad = document.createElementNS(svgNS,'linearGradient');
     grad.setAttribute('id','blade'); grad.setAttribute('x1','0'); grad.setAttribute('x2','0'); grad.setAttribute('y1','0'); grad.setAttribute('y2','1');
     const s1 = document.createElementNS(svgNS,'stop'); s1.setAttribute('offset','0%');  s1.setAttribute('stop-color','#fff6a6');
     const s2 = document.createElementNS(svgNS,'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#ffe06a');
     grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad); svg.appendChild(defs);
-
-    // repaint bg using gradient
     bg.setAttribute('fill','url(#blade)');
 
     for(let f=startF; f<=endF; f++){
@@ -447,7 +429,7 @@ const tape = {
       const tick = document.createElementNS(svgNS, 'line');
       tick.setAttribute('x1', x); tick.setAttribute('x2', x);
       tick.setAttribute('y1', y1); tick.setAttribute('y2', y2);
-      tick.setAttribute('stroke', '#000'); tick.setAttribute('stroke-width', (isInch? 1.5 : isHalf? 1.5 : 1.5));
+      tick.setAttribute('stroke', '#000'); tick.setAttribute('stroke-width', (isInch? 1.5 : 1.5));
       svg.appendChild(tick);
 
       if (isInch){
@@ -492,7 +474,7 @@ function drawMarker(){
 
   const tri = document.createElementNS('http://www.w3.org/2000/svg','polygon');
   const t = 8; // size
-//  tri.setAttribute('points', `${x},0 ${x-t},12 ${x+t},12`);
+  // tri.setAttribute('points', `${x},0 ${x-t},12 ${x+t},12`);
   tri.setAttribute('fill','#d91e18');
 
   g.appendChild(tri); g.appendChild(line);
@@ -548,21 +530,72 @@ const calculate = () => {
 let debounceTimer;
 const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(calculate, 200); };
 
+// ===== Button press helper (click vs long-press)
+function attachPress(btn, onClick, onLongPress){
+  const HOLD_MS = 500; // long-press threshold
+  let timer = null, longed = false;
+
+  const start = (e) => {
+    longed = false;
+    // prevent default to avoid ghost clicks / text selection on mobile
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    timer = setTimeout(() => {
+      longed = true;
+      onLongPress();
+      // optional haptic
+      if (navigator.vibrate) try { navigator.vibrate(12); } catch {}
+    }, HOLD_MS);
+  };
+  const clear = () => { if (timer) clearTimeout(timer); timer = null; };
+  const end = (e) => {
+    clear();
+    if (!longed) onClick();
+  };
+
+  if ('PointerEvent' in window){
+    btn.addEventListener('pointerdown', start, {passive:false});
+    btn.addEventListener('pointerup', end);
+    btn.addEventListener('pointerleave', clear);
+    btn.addEventListener('pointercancel', clear);
+  } else {
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('mouseup', end);
+    btn.addEventListener('mouseleave', clear);
+    btn.addEventListener('touchstart', start, {passive:false});
+    btn.addEventListener('touchend', end);
+    btn.addEventListener('touchcancel', clear);
+  }
+
+  // stop context menu on long-press (mobile)
+  btn.addEventListener('contextmenu', (e)=> e.preventDefault());
+}
+
 // ===== Listeners
 // tabs
- document.getElementById('equalTab').addEventListener('keydown', e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('equal'); }});
- document.getElementById('nearTab').addEventListener('keydown',  e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('near');  }});
- document.getElementById('equalTab').addEventListener('click', ()=> changeTab('equal'));
- document.getElementById('nearTab').addEventListener('click',  ()=> changeTab('near'));
+document.getElementById('equalTab').addEventListener('keydown', e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('equal'); }});
+document.getElementById('nearTab').addEventListener('keydown',  e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('near');  }});
+document.getElementById('equalTab').addEventListener('click', ()=> changeTab('equal'));
+document.getElementById('nearTab').addEventListener('click',  ()=> changeTab('near'));
+
 // inputs
- document.getElementById('length').addEventListener('input', debounceCalculate);
- document.getElementById('endDistance').addEventListener('input', debounceCalculate);
- document.getElementById('valueUsed').addEventListener('input', debounceCalculate);
-// tape nav + resize
- document.getElementById('prevMark').addEventListener('click', ()=> gotoMark(currentMarkIndex-1));
- document.getElementById('nextMark').addEventListener('click', ()=> gotoMark(currentMarkIndex+1));
- window.addEventListener('resize', ()=> tape.draw());
- // (no zoom control — fixed 3")
+document.getElementById('length').addEventListener('input', debounceCalculate);
+document.getElementById('endDistance').addEventListener('input', debounceCalculate);
+document.getElementById('valueUsed').addEventListener('input', debounceCalculate);
+
+// tape nav buttons: click vs long-press
+const prevBtn = document.getElementById('prevMark');
+const nextBtn = document.getElementById('nextMark');
+attachPress(prevBtn,
+  ()=> gotoMark(currentMarkIndex-1),            // click
+  ()=> gotoMark(0)                              // long-press → first
+);
+attachPress(nextBtn,
+  ()=> gotoMark(currentMarkIndex+1),            // click
+  ()=> gotoMark(Math.max(0, marksDecimal.length-1)) // long-press → last
+);
+
+// tape redraw on resize
+window.addEventListener('resize', ()=> tape.draw());
 
 // ===== Swipe / Wheel / Keyboard navigation on the tape
 (() => {
@@ -578,10 +611,9 @@ const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = s
   // Trackpad/mouse horizontal swipe (wheel) support with a short throttle
   let lastWheel = 0;
   el.addEventListener('wheel', (e) => {
-    // Only react to mostly-horizontal gestures
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     const now = performance.now();
-    if (now - lastWheel < 180) return; // throttle
+    if (now - lastWheel < 180) return;
     lastWheel = now;
     e.preventDefault();
     if (e.deltaX > 0) gotoMark(currentMarkIndex + 1);
@@ -589,8 +621,7 @@ const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = s
   }, { passive: false });
 
   // Touch/mouse swipe with Pointer Events (plus a touch fallback)
-  const THRESH = 28; // px horizontal movement required to count as a swipe
-
+  const THRESH = 28;
   function installPointerSwipe(target) {
     let sx = 0, sy = 0, tracking = false, handled = false;
 
@@ -602,13 +633,12 @@ const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = s
     const onMove = (x, y, rawEvt) => {
       if (!tracking || handled) return;
       const dx = x - sx, dy = y - sy;
-      // Require mostly-horizontal + threshold
       if (Math.abs(dx) < THRESH || Math.abs(dx) <= Math.abs(dy)) return;
 
       handled = true; // one step per swipe
       if (dx < 0) gotoMark(currentMarkIndex + 1);
       else        gotoMark(currentMarkIndex - 1);
-      rawEvt.preventDefault(); // stop accidental page moves now that we handled it
+      rawEvt.preventDefault();
     };
 
     const onUp = (id) => {
@@ -622,7 +652,6 @@ const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = s
       target.addEventListener('pointerup',   e => onUp(e.pointerId), { passive: true });
       target.addEventListener('pointercancel', e => onUp(e.pointerId), { passive: true });
     } else {
-      // iOS <13 fallback
       target.addEventListener('touchstart', e => { const t = e.changedTouches[0]; onDown(t.clientX, t.clientY, 0); }, { passive: true });
       target.addEventListener('touchmove',  e => { const t = e.changedTouches[0]; onMove(t.clientX, t.clientY, e); }, { passive: false });
       target.addEventListener('touchend',   () => onUp(0), { passive: true });
