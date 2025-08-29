@@ -94,7 +94,7 @@
   @keyframes sweep { 0%{left:100%;opacity:.6} 100%{left:-100%;opacity:0} }
   .sweep.animate::before{ animation:sweep .8s ease-in-out forwards; }
 
-  /* ---------- Results (only scroll area) ---------- */
+  /* ---------- Results ---------- */
   .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); }
   .results .pad{ display:flex; flex-direction:column; gap:8px; }
   .history{ height:var(--history-fixed); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
@@ -102,14 +102,14 @@
   #inputLine{ display:block; }
   .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(22px,3.1vw,32px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
 
-  /* ---------- Memory (5×1 uniform) ---------- */
+  /* ---------- Memory ---------- */
   .memory{ grid-area:memory }
   .memory-grid{ display:grid; gap:var(--gap);
     grid-template-columns:repeat(5, 1fr);
     grid-template-rows:repeat(1, var(--tile));
   }
 
-  /* ---------- Console (one true grid 5×4) ---------- */
+  /* ---------- Console (5×4) ---------- */
   .console{ grid-area:console }
   .console-grid{
     display:grid; gap:var(--gap);
@@ -119,7 +119,7 @@
   .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
   .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
 
-  /* ---------- Fractions (5×3 uniform) ---------- */
+  /* ---------- Fractions (5×3) ---------- */
   .fractions{ grid-area:fractions }
   .fract-grid{
     display:grid; gap:var(--gap);
@@ -127,9 +127,8 @@
     grid-template-rows:repeat(3, var(--tile));
   }
 
-  /* ---------- Buttons (now variable-driven) ---------- */
+  /* ---------- Buttons ---------- */
   .btn{
-    /* semantic, overridable per-button */
     --btn-bg: var(--_btn-bg, var(--num));
     --btn-fg: var(--_btn-fg, currentColor);
     --btn-img: var(--_btn-img, none);
@@ -148,7 +147,6 @@
   }
   .btn:active{ transform:scale(.98) }
 
-  /* Role defaults */
   .btn.operator{ --_btn-bg: var(--op);  --_btn-fg:#111; }
   .btn.frac    { --_btn-bg: var(--frac);--_btn-fg:#063c67; }
   .btn.dec     { --_btn-bg: var(--dec); --_btn-fg:#0c3a10; }
@@ -156,23 +154,12 @@
   .btn.back    { --_btn-bg: var(--clear); --_btn-fg:#fff; }
   .btn.mem     { --_btn-bg: var(--mem); --_btn-fg:#083f3f; }
 
-  /* Fraction-only hover/active use per-button vars if provided */
-  .btn.frac:hover{
-    --btn-bg: var(--btn-hover-bg, color-mix(in oklab, var(--btn-bg), white 12%));
-  }
-  .btn.frac:active{
-    --btn-bg: var(--btn-active-bg, color-mix(in oklab, var(--btn-bg), black 10%));
-  }
-
+  .btn.frac:hover{ --btn-bg: var(--btn-hover-bg, color-mix(in oklab, var(--btn-bg), white 12%)); }
+  .btn.frac:active{ --btn-bg: var(--btn-active-bg, color-mix(in oklab, var(--btn-bg), black 10%)); }
   .btn[disabled]{ opacity:.5; filter:saturate(.15) }
 
-  /* ---------- NEW: inner-shadow on button text ---------- */
-  .btn .btn-label{
-    line-height: 1;
-    filter: url(#textInnerShadow);
-  }
+  .btn .btn-label{ line-height: 1; filter: url(#textInnerShadow); }
 
-  /* ---------- A11y & motion preferences ---------- */
   @media (prefers-reduced-motion: reduce){
     .sweep::before{ animation:none !important; opacity:0 !important; }
     .btn:active{ transform:none }
@@ -190,7 +177,6 @@
     <filter id="textInnerShadow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur"/>
       <feOffset dy="1" result="offset"/>
-      <!-- keep only the blur that lies inside the glyphs -->
       <feComposite in="offset" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="inner"/>
       <feFlood flood-color="black" flood-opacity="0.45" result="shade"/>
       <feComposite in="shade" in2="inner" operator="in" result="shadow"/>
@@ -219,11 +205,11 @@
     <!-- Memory (5×1) -->
     <div class="panel memory pad">
       <div class="memory-grid">
-        <button class="btn clear" data-action="mc">MC</button>
-        <button class="btn mem" data-mem="0">M1</button>
-        <button class="btn mem" data-mem="1">M2</button>
-        <button class="btn mem" data-mem="2">M3</button>
-        <button class="btn mem" data-mem="3">M4</button>
+        <button class="btn clear" data-action="mc"><span class="btn-label">MC</span></button>
+        <button class="btn mem" data-mem="0"><span class="btn-label">M1</span></button>
+        <button class="btn mem" data-mem="1"><span class="btn-label">M2</span></button>
+        <button class="btn mem" data-mem="2"><span class="btn-label">M3</span></button>
+        <button class="btn mem" data-mem="3"><span class="btn-label">M4</span></button>
       </div>
     </div>
 
@@ -231,56 +217,56 @@
     <div class="panel console pad">
       <div class="console-grid">
         <!-- Utility rail (col 1) -->
-        <button class="btn back r1 c1" data-action="back">←</button>
-        <button class="btn clear  r2 c1" data-action="clear">C</button>
-        <button class="btn       r3 c1" id="menuBtn">menu</button>
-        <button class="btn operator r4 c1" id="feetBtn">Feet</button>
+        <button class="btn back r1 c1" data-action="back"><span class="btn-label">←</span></button>
+        <button class="btn clear  r2 c1" data-action="clear"><span class="btn-label">C</span></button>
+        <button class="btn       r3 c1" id="menuBtn"><span class="btn-label">menu</span></button>
+        <button class="btn operator r4 c1" id="feetBtn"><span class="btn-label">Foot</span></button>
 
         <!-- Numbers (cols 2–4) -->
-        <button class="btn r1 c2" data-val="7">7</button>
-        <button class="btn r1 c3" data-val="8">8</button>
-        <button class="btn r1 c4" data-val="9">9</button>
+        <button class="btn r1 c2" data-val="7"><span class="btn-label">7</span></button>
+        <button class="btn r1 c3" data-val="8"><span class="btn-label">8</span></button>
+        <button class="btn r1 c4" data-val="9"><span class="btn-label">9</span></button>
 
-        <button class="btn r2 c2" data-val="4">4</button>
-        <button class="btn r2 c3" data-val="5">5</button>
-        <button class="btn r2 c4" data-val="6">6</button>
+        <button class="btn r2 c2" data-val="4"><span class="btn-label">4</span></button>
+        <button class="btn r2 c3" data-val="5"><span class="btn-label">5</span></button>
+        <button class="btn r2 c4" data-val="6"><span class="btn-label">6</span></button>
 
-        <button class="btn r3 c2" data-val="1">1</button>
-        <button class="btn r3 c3" data-val="2">2</button>
-        <button class="btn r3 c4" data-val="3">3</button>
+        <button class="btn r3 c2" data-val="1"><span class="btn-label">1</span></button>
+        <button class="btn r3 c3" data-val="2"><span class="btn-label">2</span></button>
+        <button class="btn r3 c4" data-val="3"><span class="btn-label">3</span></button>
 
         <button class="btn r4 c2" disabled></button>
-        <button class="btn r4 c3" data-val="0">0</button>
-        <button class="btn dec r4 c4" data-val=".">.</button>
+        <button class="btn r4 c3" data-val="0"><span class="btn-label">0</span></button>
+        <button class="btn dec r4 c4" data-val="."><span class="btn-label">.</span></button>
 
         <!-- Operator rail (col 5) -->
-        <button class="btn operator r1 c5" data-op="+">+</button>
-        <button class="btn operator r2 c5" data-op="-">−</button>
-        <button class="btn operator r3 c5" data-op="*">×</button>
-        <button class="btn operator r4 c5" data-op="/">÷</button>
+        <button class="btn operator r1 c5" data-op="+"><span class="btn-label">+</span></button>
+        <button class="btn operator r2 c5" data-op="-"><span class="btn-label">−</span></button>
+        <button class="btn operator r3 c5" data-op="*"><span class="btn-label">×</span></button>
+        <button class="btn operator r4 c5" data-op="/"><span class="btn-label">÷</span></button>
       </div>
     </div>
 
     <!-- Fractions (5×3 uniform) -->
     <div class="panel fractions pad">
       <div class="fract-grid">
-        <button class="btn frac" data-frac="1/16">1/16</button>
-        <button class="btn frac" data-frac="1/8">1/8</button>
-        <button class="btn frac" data-frac="3/16">3/16</button>
-        <button class="btn frac" data-frac="1/4">1/4</button>
-        <button class="btn frac" data-frac="5/16">5/16</button>
+        <button class="btn frac" data-frac="1/16"><span class="btn-label">1/16</span></button>
+        <button class="btn frac" data-frac="1/8"><span class="btn-label">1/8</span></button>
+        <button class="btn frac" data-frac="3/16"><span class="btn-label">3/16</span></button>
+        <button class="btn frac" data-frac="1/4"><span class="btn-label">1/4</span></button>
+        <button class="btn frac" data-frac="5/16"><span class="btn-label">5/16</span></button>
 
-        <button class="btn frac" data-frac="3/8">3/8</button>
-        <button class="btn frac" data-frac="7/16">7/16</button>
-        <button class="btn frac" data-frac="1/2">1/2</button>
-        <button class="btn frac" data-frac="9/16">9/16</button>
-        <button class="btn frac" data-frac="5/8">5/8</button>
+        <button class="btn frac" data-frac="3/8"><span class="btn-label">3/8</span></button>
+        <button class="btn frac" data-frac="7/16"><span class="btn-label">7/16</span></button>
+        <button class="btn frac" data-frac="1/2"><span class="btn-label">1/2</span></button>
+        <button class="btn frac" data-frac="9/16"><span class="btn-label">9/16</span></button>
+        <button class="btn frac" data-frac="5/8"><span class="btn-label">5/8</span></button>
 
-        <button class="btn frac" data-frac="11/16">11/16</button>
-        <button class="btn frac" data-frac="3/4">3/4</button>
-        <button class="btn frac" data-frac="13/16">13/16</button>
-        <button class="btn frac" data-frac="7/8">7/8</button>
-        <button class="btn frac" data-frac="15/16">15/16</button>
+        <button class="btn frac" data-frac="11/16"><span class="btn-label">11/16</span></button>
+        <button class="btn frac" data-frac="3/4"><span class="btn-label">3/4</span></button>
+        <button class="btn frac" data-frac="13/16"><span class="btn-label">13/16</span></button>
+        <button class="btn frac" data-frac="7/8"><span class="btn-label">7/8</span></button>
+        <button class="btn frac" data-frac="15/16"><span class="btn-label">15/16</span></button>
       </div>
     </div>
   </div>
@@ -296,13 +282,8 @@
       <div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div>
     </li>
 
-    <li>
-      <div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div>
-    </li>
-
-    <li>
-      <div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div>
-    </li>
+    <li><div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div></li>
+    <li><div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div></li>
 
     <li>
       <div class="cm-head">Results are solved and displayed automatically, in three ways:</div>
@@ -329,9 +310,7 @@
       </ul>
     </li>
 
-    <li>
-      <div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div>
-    </li>
+    <li><div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div></li>
   </ul>
 
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
@@ -409,7 +388,7 @@
   window.addEventListener('resize', computeTile);
   window.addEventListener('orientationchange', () => setTimeout(computeTile, 60));
 
-  /* ====== Calculator logic (updated for Feet behavior) ====== */
+  /* ====== Calculator logic (Feet behavior + safe eval) ====== */
   const tape = document.getElementById('tape');
   const sweep = document.getElementById('sweep');
   const inputLine = document.getElementById('inputLine');
@@ -420,11 +399,15 @@
   let memorySlots = [null,null,null,null];
 
   let tokens = [];                 // raw tokens for math
-  let tokenDisplays = [];          // parallel: pretty display for tokens[i] if it's a ft/in measurement
+  let tokenDisplays = [];          // pretty display for measurement tokens
   let currentEntry = '';           // normal numeric entry (non-measure)
+  let tmr = null;
   const PPI = 160;
 
-  // Feet-builder state (active until finalized by an operator or explicit cancel)
+  // Keep last good output so UI never blanks mid-entry
+  let lastGood = { value: 0, fraction: '', decimal: '' };
+
+  // Feet-builder state (active until finalized by an operator)
   let measure = { active:false, feet:0, inches:0, inEntry:'' };
 
   const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
@@ -435,17 +418,7 @@
   const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
   const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
 
-  function roundToSixteenth(x){ return Math.round(x*16)/16; }
-
-  function formatInchesAsMixed(value){
-    const r = roundToSixteenth(Math.abs(value));
-    const w = Math.floor(r);
-    const f = r - w;
-    let n = Math.round(f*16), d = 16, g = gcd(n,d); n/=g; d/=g;
-    if (n===0) return `${w}″`;
-    if (w===0) return `${n}/${d}″`;
-    return `${w} ${n}/${d}″`;
-  }
+  const roundToSixteenth = (x)=> Math.round(x*16)/16;
 
   function formatResult(value){
     const r = roundToSixteenth(value);
@@ -464,7 +437,7 @@
   }
 
   function measureDisplay(){
-    // Builds "5′ 2 1/4″" (or just "5′" if no inches yet)
+    // "5′ 2 1/4″" (or just "5′" if no inches yet)
     const inVal = (measure.inEntry ? parseFloat(measure.inEntry) : 0) + measure.inches;
     const hasInches = inVal > 0;
     const feetStr = `${measure.feet}\u2032`;
@@ -482,11 +455,10 @@
     const total = measureTotal();
     const disp = measureDisplay();
     tokens.push(String(total));
-    tokenDisplays.push(disp); // keep pretty history
+    tokenDisplays.push(disp);
     measure = { active:false, feet:0, inches:0, inEntry:'' };
   }
 
-  /* Renders × and ÷ (and proper minus) in the input/history */
   function updateInput(){
     let s='';
     tokens.forEach((t, idx)=>{
@@ -517,27 +489,49 @@
     requestAnimationFrame(()=>{ const hist=document.getElementById('history'); if(hist) hist.scrollTop = hist.scrollHeight; });
   }
 
+  // SAFE evaluator: ignores trailing ops; keeps last good value visible
   function evaluate(){
-    // Build base expression from tokens + currentEntry
-    const expr = [...tokens];
+    let expr = [...tokens];
     if (currentEntry) expr.push(currentEntry);
+
+    // drop trailing operators like "+", "*", "÷"
+    while (expr.length && isOp(expr.at(-1))) expr.pop();
 
     try{
       let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
-      let num = typeof base === 'number' ? base : base.toNumber();
+      let num  = (typeof base === 'number' ? base : base.toNumber());
+
+      // add live preview from feet-builder
       if (measure.active) num += measureTotal();
 
       const out = formatResult(num);
+      lastGood = { value: num, fraction: out.fraction, decimal: out.decimal };
+
       fractionLine.textContent = out.fraction;
       decimalLine.textContent  = out.decimal;
       drawTape(num);
     }catch{
-      fractionLine.textContent = '';
-      decimalLine.textContent  = '';
+      // if the only thing we have is an active feet-builder, show that
+      if (measure.active && expr.length === 0){
+        const m = measureTotal();
+        const out = formatResult(m);
+        fractionLine.textContent = out.fraction;
+        decimalLine.textContent  = out.decimal;
+        drawTape(m);
+        return;
+      }
+      // otherwise, keep last good instead of blank
+      if (lastGood.decimal){
+        fractionLine.textContent = lastGood.fraction;
+        decimalLine.textContent  = lastGood.decimal;
+        drawTape(lastGood.value);
+      } else {
+        fractionLine.textContent = '';
+        decimalLine.textContent  = '';
+      }
     }
   }
   const qEval = () => { clearTimeout(tmr); tmr = setTimeout(evaluate, 120); };
-  let tmr = null;
 
   // Tape rendering
   function drawTape(center){
@@ -563,7 +557,6 @@
   function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
   function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
 
-  // ensure span label exists and update it
   function ensureLabelSpan(btn){
     let span = btn.querySelector('.btn-label');
     if (!span){
@@ -588,7 +581,7 @@
   document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
     const val = b.dataset.val;
     if (measure.active){
-      // Type inches while in feet-builder
+      // typing inches while in feet-builder
       measure.inEntry += val;
       updateInput(); qEval();
       return;
@@ -611,7 +604,7 @@
   document.querySelectorAll('.btn.operator[data-op]').forEach(b=>b.addEventListener('click',()=>{
     const op = b.dataset.op;
 
-    // If a measurement is open, finalize it first
+    // finalize open measurement first
     if (measure.active) finalizeMeasureToken();
 
     if (currentEntry){
@@ -623,7 +616,6 @@
 
     if (isOp(tokens.at(-1))){
       tokens[tokens.length-1] = op;
-      // display map stays aligned
     } else {
       tokens.push(op);
       tokenDisplays.push(undefined);
@@ -639,7 +631,6 @@
       } else if (measure.inches > 0){
         measure.inches = 0;
       } else {
-        // cancel feet-builder entirely
         measure = { active:false, feet:0, inches:0, inEntry:'' };
       }
       updateInput(); evaluate(); return;
@@ -668,7 +659,7 @@
 
   // ===== Feet behavior =====
   document.getElementById('feetBtn').addEventListener('click',()=>{
-    // If there's a decimal entry → decimal FEET immediate convert
+    // decimal entry → decimal FEET immediate convert
     if (isDec(currentEntry)){
       const ft = parseFloat(currentEntry);
       const total = ft * 12;
@@ -678,19 +669,17 @@
       updateInput(); qEval();
       return;
     }
-    // If there's a whole entry → enter feet-builder
+    // whole entry → enter feet-builder
     if (isWhole(currentEntry)){
       measure = { active:true, feet: parseInt(currentEntry,10), inches:0, inEntry:'' };
       currentEntry='';
       updateInput(); qEval();
       return;
     }
-    // If nothing sensible, nudge user softly (no blocking alert)
-    if (!currentEntry){
-      // no-op; user can type a number then press Feet
-      return;
-    }
-    // Fallback: treat as decimal feet anyway
+    // if empty, do nothing (waiting for feet number)
+    if (!currentEntry) return;
+
+    // fallback: parse whatever is there as decimal feet
     const ft = parseFloat(currentEntry);
     if (!Number.isNaN(ft)){
       const total = ft * 12;
@@ -713,9 +702,10 @@
     });
     // Store on double-click (or long-press)
     btn.addEventListener('dblclick',()=>{
-      // evaluate current + any active measurement
       let expr=[...tokens];
       if (currentEntry) expr.push(currentEntry);
+      // strip trailing ops for safety
+      while (expr.length && isOp(expr.at(-1))) expr.pop();
       let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
       let valNum = (typeof base==='number' ? base : base.toNumber()) + (measure.active ? measureTotal() : 0);
 
@@ -736,7 +726,7 @@
     memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
   });
 
-  /* ===== FRACTION BUTTON PALETTES (unchanged) ===== */
+  /* ===== FRACTION BUTTON PALETTES ===== */
   const FRACTION_PALETTES = {
      '1/16': { bg: '#003d99', fg:'#fff' },
      '1/8': { bg: '#005ce6', fg:'#fff' },
@@ -783,7 +773,7 @@
     const fVal = n/d;
 
     if (measure.active){
-      // combine the scratch inches entry with this fraction and add to inches
+      // combine scratch inches entry with this fraction and add to inches
       if (!measure.inEntry){
         measure.inches += fVal;
       } else {
@@ -803,13 +793,13 @@
       tokens.push(String(combined)); tokenDisplays.push(undefined); currentEntry='';
     } else {
       tokens.push(currentEntry); tokenDisplays.push(undefined);
-      tokens.push('+'); tokenDisplays.push(undefined);
+      tokens.push('+');         tokenDisplays.push(undefined);
       currentEntry=f;
     }
     updateInput(); qEval();
   }));
 
-  // Wrap labels so filter hits text glyphs (and keep spans for dynamic labels)
+  // Wrap labels so filter hits text glyphs
   function wrapButtonText(){
     document.querySelectorAll('.btn').forEach(btn=>{
       const hasSpan = !!btn.querySelector('.btn-label');
@@ -888,5 +878,97 @@
 </script>
 </body>
 
-<!-- ===== manifest.webmanifest (same as your comment block) ===== -->
+<!-- ===== manifest.webmanifest (create this file alongside) ===== -->
+<!--
+{
+  "name": "Inch Calc",
+  "short_name": "Inch Calc",
+  "start_url": ".",
+  "scope": ".",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#1f4d4d",
+  "theme_color": "#1f4d4d",
+  "description": "Tape & Memory calculator with inch fractions.",
+  "icons": [
+    {"src": "calcicon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "calcicon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any"}
+  ]
+}
+-->
+
+<!-- ===== sw.js (create this file alongside) ===== -->
+<!--
+const CACHE_NAME = 'inch-calc-v1-2025-08-23';
+const ASSETS = [
+  './',
+  './tapemeasurememory.html', // add your actual filename here if different
+  './manifest.webmanifest',
+  './sw.js',
+  './calcicon.png',
+  './apple-touch-icon.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const accept = req.headers.get('accept') || '';
+
+  // HTML (navigation): network-first
+  if (req.mode === 'navigate' || accept.includes('text/html')){
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  const sameOrigin = new URL(req.url).origin === self.location.origin;
+
+  // Same-origin assets: cache-first
+  if (sameOrigin){
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, copy));
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Cross-origin (e.g., CDN): network, fallback to cache
+  event.respondWith(
+    fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(req, copy));
+      return res;
+    }).catch(() => caches.match(req))
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
+});
+-->
 </html>
