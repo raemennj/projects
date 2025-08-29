@@ -15,7 +15,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
 <style>
-/* (unchanged styles) */
 body {
     font-size: 18px;
     margin: 0;
@@ -103,32 +102,19 @@ input {
 #segmentResult {
     text-align: center;
 }
-.length {
-    width: 33%;
+.length, .burn, .segmentType {
     float: left;
     text-align: center;
     padding-top: 15px;
     padding-bottom: 14px;
     background-color: lightblue;
     border-bottom: 1px solid #363636;
+}
+.length, .segmentType {
+    width: 33%;
 }
 .burn {
     width: 34%;
-    float: left;
-    text-align: center;
-    padding-top: 15px;
-    padding-bottom: 14px;
-    background-color: lightblue;
-    border-bottom: 1px solid #363636;
-}
-.segmentType {
-    width: 33%;
-    float: left;
-    text-align: center;
-    padding-top: 15px;
-    padding-bottom: 14px;
-    background-color: lightblue;
-    border-bottom: 1px solid #363636;
 }
 .resultsBG {
     text-align: center;
@@ -200,11 +186,18 @@ input {
     max-height: calc(100vh - 40px);
     overflow-y: auto;
 }
+
 @media screen and (orientation:landscape) {
-.modal-content { max-height: calc(100vh - 80px); }
+.modal-content {
+    max-height: calc(100vh - 80px);
 }
+}
+
 @media (min-width: 601px) {
-body { margin: 0 auto; max-width: 600px; }
+body {
+    margin: 0 auto;
+    max-width: 600px;
+}
 }
 /* ===== Tape (fixed 3" zoom + classic styling) ===== */
 .tape-wrapper {
@@ -221,7 +214,9 @@ body { margin: 0 auto; max-width: 600px; }
     gap: 8px;
     padding: 8px 10px;
 }
-.tape-head .spacer { flex: 1 }
+.tape-head .spacer {
+    flex: 1
+}
 .tape-head .label {
     min-width: 140px;
     text-align: center;
@@ -238,7 +233,9 @@ body { margin: 0 auto; max-width: 600px; }
     font-family: "dunbar-tall", sans-serif;
     box-shadow: 0 1px 0 rgba(0,0,0,.06)
 }
-.tape-btn:active { transform: translateY(1px) }
+.tape-btn:active {
+    transform: translateY(1px)
+}
 #tapeContainer {
     width: 100%;
     height: 114px;
@@ -247,9 +244,13 @@ body { margin: 0 auto; max-width: 600px; }
     border-top: 1px solid #1b1b1b;
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
-    touch-action: pan-y; /* keep vertical page scroll; capture horizontal swipes */
+    touch-action: pan-y;
 }
-#tapeContainer svg { display: block; width: 100%; height: 120px }
+#tapeContainer svg {
+    display: block;
+    width: 100%;
+    height: 120px
+}
 .pill {
     display: inline-block;
     font-size: 18px;
@@ -260,7 +261,9 @@ body { margin: 0 auto; max-width: 600px; }
     padding: 4px 12px;
     line-height: 1
 }
-.pill small { opacity: .9 }
+.pill small {
+    opacity: .9
+}
 </style>
 </head>
 <body>
@@ -268,71 +271,91 @@ body { margin: 0 auto; max-width: 600px; }
 <!-- ===== Tape Measure (with zoom) ===== -->
 <div class="tape-wrapper" aria-label="Interactive tape measure">
   <div class="tape-head">
-    <button class="tape-btn" id="prevMark" aria-label="Previous mark" title="Click: previous • Long-press: first">◀</button>
+    <button class="tape-btn" id="prevMark" aria-label="Previous mark" title="Previous">◀</button>
     <div class="spacer"></div>
-    <div class="label pill" aria-live="polite">
-      <span id="markIndex">–</span> of <span id="markCount">0</span>
-      &nbsp;·&nbsp;&nbsp;·&nbsp;&nbsp;·&nbsp;<span id="markFrac">—</span> <small>"</small>
-    </div>
+    <div class="label pill" aria-live="polite"> <span id="markIndex">–</span> of <span id="markCount">0</span> &nbsp;·&nbsp;&nbsp;·&nbsp;&nbsp;·&nbsp;<span id="markFrac">—</span> <small>"</small> </div>
     <div class="spacer"></div>
-    <button class="tape-btn" id="nextMark" aria-label="Next mark" title="Click: next • Long-press: last">▶</button>
+    <button class="tape-btn" id="nextMark" aria-label="Next mark" title="Next">▶</button>
   </div>
   <div id="tapeContainer" role="img" aria-label="Ruler with 1/16-inch ticks"></div>
 </div>
-
 <div class="tab-container">
   <div id="equalTab" class="tab active" tabindex="0" role="button" onclick="changeTab('equal')">Equal</div>
   <div id="nearTab" class="tab" tabindex="0" role="button" onclick="changeTab('near')">Near</div>
 </div>
-
 <form class="input-container">
   <div class="length">
-    <label for="length">Length:</label><br>
+    <label for="length">Length:</label>
+    <br>
     <input type="text" id="length">
   </div>
   <div class="burn">
-    <label for="endDistance">End allowance:</label><br>
+    <label for="endDistance">End allowance:</label>
+    <br>
     <input type="text" id="endDistance">
   </div>
   <div class="segmentType">
-    <label id="dynamicLabel" for="valueUsed">Segments:</label><br>
+    <label id="dynamicLabel" for="valueUsed">Segments:</label>
+    <br>
     <input type="text" id="valueUsed">
   </div>
 </form>
-
 <div class="resultsBG">
   <p id="segmentResult" role="text" aria-live="assertive" aria-label="Segment Length Result"></p>
   <p id="marksResult" role="text" aria-live="assertive" aria-label="Segment Marks (scrollable list)"></p>
 </div>
-
 <div class="readme-container">
   <button id="showModalBtn">Instructions</button>
   <div id="instructionsModal" class="modal">
-    <div class="modal-content">
-      Tap "Equal" for equal segments or "Near" for segments close to a target size. <br><br>
-      Fill the "Length" field with the total length of your material. <br><br>
-      Enter the distance you will leave at each end in the "End allowance" field. <br><br>
-      In the last field, enter the number of segments or the approximate size of each segment, depending on the chosen mode. <br><br>
-      <a href="calc_screens.html">Tape Measure Calculator</a> <br><br>
+    <div class="modal-content"> Tap "Equal" for equal segments or "Near" for segments close to a target size. <br>
+      <br>
+      Fill the "Length" field with the total length of your material. <br>
+      <br>
+      Enter the distance you will leave at each end in the "End allowance" field. <br>
+      <br>
+      In the last field, enter the number of segments or the approximate size of each segment, depending on the chosen mode. <br>
+      <br>
+      <a href="calc_screens.html">Tape Measure Calculator</a> <br>
+      <br>
       Tip: Swipe left or right instead of using the ◀ ▶ buttons to step through the marks. <br>
-      Long-press ◀ to jump to the first mark; long-press ▶ to jump to the last. <br><br>
-      <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
-    </div>
+      Long-press ◀ to jump to the first mark; long-press ▶ to jump to the last. <br>
+      <br>
+      <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span> </div>
   </div>
 </div>
-
 <script>
 // ===== Helpers
 const gcd = (a, b) => b ? gcd(b, a % b) : a;
-const toReadableFraction = x => {
+
+// UPDATED: avoids outputs like 21 1/1; carries to whole when n===d
+const toReadableFraction = (x, denom = 16) => {
   if (isNaN(x)) return '';
-  const whole = Math.floor(Math.abs(x)), fraction = Math.abs(x) - whole;
-  let [n, d] = [Math.round(fraction * 16), 16], div = gcd(n, d);
-  [n, d] = [n / div, d / div];
   const sign = x < 0 ? '-' : '';
-  return whole ? (n ? `${sign}${whole} &nbsp;&nbsp;<span class='factor'><sup>${n}</sup>/<sub>${d}</sub></span>` : `${sign}${whole}`)
-               : (n ? `${sign}<span class='factor'><sup>${n}</sup>/<sub>${d}</sub></span>` : '0');
+  const ax = Math.abs(x);
+
+  // small epsilon to dodge floating artifacts
+  let whole = Math.floor(ax + 1e-10);
+  const frac = ax - whole;
+
+  let n = Math.round(frac * denom);
+  let d = denom;
+
+  // carry 1 to the whole when rounding hits denom/denom
+  if (n === d) { whole += 1; n = 0; }
+
+  // reduce if needed
+  if (n !== 0) {
+    const div = gcd(n, d);
+    n /= div; d /= div;
+  }
+
+  if (n === 0) return sign + (whole ? String(whole) : '0');
+
+  return whole
+    ? `${sign}${whole} &nbsp;&nbsp;<span class='factor'><sup>${n}</sup>/<sub>${d}</sub></span>`
+    : `${sign}<span class='factor'><sup>${n}</sup>/<sub>${d}</sub></span>`;
 };
+
 const parseInput = input => {
   if (!input) return NaN;
   const s = String(input).trim();
@@ -389,26 +412,22 @@ const tape = {
     svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
     svg.setAttribute('role','img');
 
-    // background
     const bg = document.createElementNS(svgNS, 'rect');
     bg.setAttribute('x', 0); bg.setAttribute('y', 0);
     bg.setAttribute('width', w); bg.setAttribute('height', h);
     bg.setAttribute('fill', 'lightyellow');
     svg.appendChild(bg);
 
-    // baseline
     const base = document.createElementNS(svgNS, 'line');
     base.setAttribute('x1', this.left); base.setAttribute('x2', w - this.right);
     base.setAttribute('y1', h - this.bottom); base.setAttribute('y2', h - this.bottom);
     base.setAttribute('stroke', '#000'); base.setAttribute('stroke-width', 1);
     svg.appendChild(base);
 
-    // ticks within window
     const [L, R] = this.window();
     const startF = Math.floor(L * 16);
     const endF   = Math.ceil(R * 16);
 
-    // gradient background
     const defs = document.createElementNS(svgNS,'defs');
     const grad = document.createElementNS(svgNS,'linearGradient');
     grad.setAttribute('id','blade'); grad.setAttribute('x1','0'); grad.setAttribute('x2','0'); grad.setAttribute('y1','0'); grad.setAttribute('y2','1');
@@ -444,7 +463,6 @@ const tape = {
       }
     }
 
-    // subtle edge shading
     const shadeTop = document.createElementNS(svgNS,'rect');
     shadeTop.setAttribute('x',0); shadeTop.setAttribute('y',0);
     shadeTop.setAttribute('width',w); shadeTop.setAttribute('height',8);
@@ -473,14 +491,11 @@ function drawMarker(){
   line.setAttribute('stroke','#d91e18'); line.setAttribute('stroke-width','4');
 
   const tri = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-  const t = 8; // size
-  // tri.setAttribute('points', `${x},0 ${x-t},12 ${x+t},12`);
   tri.setAttribute('fill','#d91e18');
 
   g.appendChild(tri); g.appendChild(line);
   svg.appendChild(g);
 
-  // label update
   document.getElementById('markIndex').textContent = marksDecimal.length? (currentMarkIndex+1) : '–';
   document.getElementById('markCount').textContent = marksDecimal.length;
   const v = marksDecimal[currentMarkIndex] || 0;
@@ -495,7 +510,8 @@ function gotoMark(i){
 
 // ===== Main calculate (original + hook)
 const calculate = () => {
-  const [lengthInput, endDistanceInput, valueUsedInput] = [document.getElementById('length').value, document.getElementById('endDistance').value, document.getElementById('valueUsed').value];
+  const [lengthInput, endDistanceInput, valueUsedInput] =
+    [document.getElementById('length').value, document.getElementById('endDistance').value, document.getElementById('valueUsed').value];
   const method = document.querySelector('.tab.active').id.startsWith('equal') ? 'equal' : 'near';
   const [length, endDistance, valueUsed] = [parseInput(lengthInput), parseInput(endDistanceInput), parseInput(valueUsedInput)];
 
@@ -532,25 +548,20 @@ const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = s
 
 // ===== Button press helper (click vs long-press)
 function attachPress(btn, onClick, onLongPress){
-  const HOLD_MS = 500; // long-press threshold
+  const HOLD_MS = 900; // long-press threshold
   let timer = null, longed = false;
 
   const start = (e) => {
     longed = false;
-    // prevent default to avoid ghost clicks / text selection on mobile
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     timer = setTimeout(() => {
       longed = true;
       onLongPress();
-      // optional haptic
       if (navigator.vibrate) try { navigator.vibrate(12); } catch {}
     }, HOLD_MS);
   };
   const clear = () => { if (timer) clearTimeout(timer); timer = null; };
-  const end = (e) => {
-    clear();
-    if (!longed) onClick();
-  };
+  const end = () => { clear(); if (!longed) onClick(); };
 
   if ('PointerEvent' in window){
     btn.addEventListener('pointerdown', start, {passive:false});
@@ -565,8 +576,6 @@ function attachPress(btn, onClick, onLongPress){
     btn.addEventListener('touchend', end);
     btn.addEventListener('touchcancel', clear);
   }
-
-  // stop context menu on long-press (mobile)
   btn.addEventListener('contextmenu', (e)=> e.preventDefault());
 }
 
@@ -585,14 +594,8 @@ document.getElementById('valueUsed').addEventListener('input', debounceCalculate
 // tape nav buttons: click vs long-press
 const prevBtn = document.getElementById('prevMark');
 const nextBtn = document.getElementById('nextMark');
-attachPress(prevBtn,
-  ()=> gotoMark(currentMarkIndex-1),            // click
-  ()=> gotoMark(0)                              // long-press → first
-);
-attachPress(nextBtn,
-  ()=> gotoMark(currentMarkIndex+1),            // click
-  ()=> gotoMark(Math.max(0, marksDecimal.length-1)) // long-press → last
-);
+attachPress(prevBtn, ()=> gotoMark(currentMarkIndex-1), ()=> gotoMark(0));
+attachPress(nextBtn, ()=> gotoMark(currentMarkIndex+1), ()=> gotoMark(Math.max(0, marksDecimal.length-1)));
 
 // tape redraw on resize
 window.addEventListener('resize', ()=> tape.draw());
@@ -601,14 +604,12 @@ window.addEventListener('resize', ()=> tape.draw());
 (() => {
   const el = document.getElementById('tapeContainer');
 
-  // Keyboard left/right when the tape has focus
   el.setAttribute('tabindex', '0');
   el.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft')  { e.preventDefault(); gotoMark(currentMarkIndex - 1); }
     if (e.key === 'ArrowRight') { e.preventDefault(); gotoMark(currentMarkIndex + 1); }
   });
 
-  // Trackpad/mouse horizontal swipe (wheel) support with a short throttle
   let lastWheel = 0;
   el.addEventListener('wheel', (e) => {
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
@@ -620,7 +621,6 @@ window.addEventListener('resize', ()=> tape.draw());
     else              gotoMark(currentMarkIndex - 1);
   }, { passive: false });
 
-  // Touch/mouse swipe with Pointer Events (plus a touch fallback)
   const THRESH = 28;
   function installPointerSwipe(target) {
     let sx = 0, sy = 0, tracking = false, handled = false;
@@ -635,7 +635,7 @@ window.addEventListener('resize', ()=> tape.draw());
       const dx = x - sx, dy = y - sy;
       if (Math.abs(dx) < THRESH || Math.abs(dx) <= Math.abs(dy)) return;
 
-      handled = true; // one step per swipe
+      handled = true;
       if (dx < 0) gotoMark(currentMarkIndex + 1);
       else        gotoMark(currentMarkIndex - 1);
       rawEvt.preventDefault();
