@@ -1,984 +1,974 @@
 <!DOCTYPE html>
-<html lang="en" class="responsive-mode">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculator with Tape Measure & Memory</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="calcicon.png" type="image/png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Inch Calc">
-  <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="menu_style.css"/>
-  <style>
-    /* CSS Variables for consistency */
-    :root {
-      --background-color: darkslategrey;
-      --calculator-bg: #ffffff;
-      --accent-color: #f9a825;
-      --button-bg: lightyellow;
-      --button-hover: #d0d0d0;
-      --operator-bg: #f9a825;
-      --operator-hover: #f57f17;
-      --fraction-bg: #64b5f6;
-      --fraction-hover: #42a5f5;
-      --decimal-bg: #a5d6a7;
-      --decimal-hover: #81c784;
-      --clear-bg: #e57373;
-      --clear-hover: #ef5350;
-      --memory-bg: #64b5f6; /* memory recall buttons */
-      --pixels-per-inch: 160;
-      --shadow-animation-duration: 0.8s;
-      --tape-gradient: linear-gradient( to bottom,
-            rgba(189, 183, 107, 0.3) 0%,
-            rgba(255, 215, 0, 0.6) 6%,
-            #ffff00 25%,
-            #ffff00 75%,
-            rgba(189, 183, 107, 0.6) 98%,
-            rgba(255, 215, 0, 0.8) 100%
-          );
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Inch Calc — Uniform Grid (420)</title>
+<link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
+<link rel="icon" type="image/png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Inch Calc" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1f4d4d" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0e2a2a" media="(prefers-color-scheme: dark)" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="application-name" content="Inch Calc" />
+<style>
+  /* ---------- Reset ---------- */
+  *,*::before,*::after{ box-sizing:border-box }
+  html,body{ height:100% }
+  body{
+    margin:0; background:#1f4d4d; color:#111;
+    font-family:"aktiv-grotesk",-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; align-items:center; justify-content:center;
+    padding:
+      calc(env(safe-area-inset-top) + 10px)
+      calc(env(safe-area-inset-right) + 10px)
+      calc(env(safe-area-inset-bottom) + 10px)
+      calc(env(safe-area-inset-left) + 10px);
+    overflow:hidden; /* page never scrolls */
+  }
 
-    /* General Styles */
-    body {
-      font-size: 18px;
-      margin: 0;
-      padding: env(safe-area-inset-top) 5px env(safe-area-inset-bottom) env(safe-area-inset-left) 5px;
-      background-color: var(--background-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      user-select: none;
-      touch-action: none;
-      font-family: Arial, sans-serif;
-      position: relative;
-      overflow: hidden;
-    }
-    .calculator-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      height: 100vh;
-      padding-top: 2.5rem;
-    }
-    .calculator {
-      background: var(--calculator-bg);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      width: 420px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+  :root{
+    --card-max: 420px;     /* designed scale cap */
+    --gap: 8px;            /* unified spacing, set by JS */
+    --tile: 56px;          /* unified button height, set by JS */
+    --pad: var(--gap);
 
-    @media (max-width: 600px) {
-      .responsive-mode .calculator {
-        padding: var(--gap);
-      }
-=======
-    .responsive-mode .calculator {
-      padding: var(--gap);
+    --tape-min: 100px;
+    --results-min: 60px;
 
-    }
-    /* Tape Measure Display */
-    .tape-measure-container {
-      position: relative;
-      width: 100%;
-      height: 100px;
-      margin: 20px 0;
-      border: 1px solid #000;
-      border-radius: 5px;
-      overflow: hidden;
-      background: var(--tape-gradient);
-    }
-    .center-line {
-      position: absolute;
-      top: 32%;
-      left: 50%;
-      width: 5px;
-      height: 69%;
-      background-color: red;
-      transform: translateX(-30%);
-      z-index: 2;
-    }
-    .hidden {
-      display: none;
-    }
-    .tape-measure {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-    .tick {
-      position: absolute;
-      bottom: 0;
-      width: 3px;
-      background-color: black;
-    }
-    .tick.small {
-      height: 15px;
-    }
-    .tick.medium {
-      height: 30px;
-    }
-    .tick.large {
-      height: 50px;
-    }
-    .tick.number {
-      height: 70px;
-    }
-    .tick-label {
-      position: absolute;
-      bottom: 70px;
-      font-size: 1.3em;
-      transform: translateX(-50%);
-      text-align: center;
-      width: 50px;
-    }
-    .animation-overlay {
-      position: absolute;
-      top: 0;
-      left: 100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        120deg,
-        rgba(0, 0, 0, 0.1) 0%,
-        rgba(0, 0, 0, 0.3) 50%,
-        rgba(0, 0, 0, 0.1) 100%
-      );
-      pointer-events: none;
-      z-index: 1;
-      transform: skewX(20deg);
-      opacity: 0;
-    }
-    @keyframes shadowMove {
-      0% {
-        left: 100%;
-        opacity: 0.6;
-      }
-      100% {
-        left: -100%;
-        opacity: 0;
-      }
-    }
-    .animate-shadow {
-      animation: shadowMove var(--shadow-animation-duration) ease-in-out forwards;
-    }
-    /* Display Styles */
-    #display {
-      background: #222;
-      color: #0f0;
-      padding: 10px;
-      border-radius: 5px;
-      min-height: 80px;
-      margin-bottom: 10px;
-      word-wrap: break-word;
-      width: 100%;
-      box-sizing: border-box;
-      position: relative;
-    }
-    #input {
-      font-size: 1.2em;
-      letter-spacing: 0.2em;
-      font-family: monospace;
-    }
-    #result {
-      font-size: 1.5em;
-      margin-top: 5px;
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-    }
-    #fractionResult {
-      text-align: left;
-      font-weight: lighter;
-    }
-    #decimalResult {
-      text-align: right;
-      font-style: italic;
-      color: gray;
-    }
-    /* Memory Container */
-    .memory-container {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-gap: 10px;
-      margin-bottom: 10px;
-      width: 100%;
-    }
-    .memory-btn,
-    .memory-clear {
-      flex: 1;
-      margin: 0 0px;
-      padding: 10px;
-      font-size: 1em;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .memory-btn {
-      background: var(--memory-bg);
-      color: darkslategray;
-    }
-    /* MC button now uses the same clear colors as C */
-    .btn.memory-clear {
-      background: var(--clear-bg);
-      color: #fff;
-    }
-    /* Calculator Buttons Grid */
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-gap: 10px;
-      width: 100%;
-    }
-    .btn {
-      padding: 15px;
-      font-size: 1em;
-      border: none;
-      border-radius: 5px;
-      background: var(--button-bg);
-      color: darkslategray;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .btn:hover {
-      background: var(--button-hover);
-    }
-    /* Active state for all buttons */
-    .btn:active {
-      transform: scale(0.98);
-      transition: transform 0.1s ease-in-out;
-    }
-    .operator {
-      background: var(--operator-bg);
-      color: #fff;
-    }
-    .operator:hover {
-      background: var(--operator-hover);
-    }
-    .fraction {
-      background: var(--fraction-bg);
-      color: #fff;
-    }
-    .fraction:hover {
-      background: var(--fraction-hover);
-    }
-    .decimal {
-      background: var(--decimal-bg);
-      color: #fff;
-    }
-    .decimal:hover {
-      background: var(--decimal-hover);
-    }
-    .clear {
-      background: var(--clear-bg);
-      color: #fff;
-    }
-    .clear:hover {
-      background: var(--clear-hover);
-    }
-    .backspace {
-      background: var(--clear-bg);
-      color: #fff;
-    }
-    .backspace:hover {
-      background: #ffa726;
-    }
-    .empty-btn {
-      visibility: hidden;
-      pointer-events: none;
-      background: transparent;
-      border: none;
-    }
-    .menu-btn {
-      background: var(--memory-bg);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    .menu-btn:hover {
-      background: var(--fraction-hover);
-    }
-    @media (min-width: 601px) {
-      body {
-        margin: 0 auto;
-        max-width: 600px;
-      }
-    }
-    /* Modal Styles with smooth transitions */
-    .modal {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease-in-out;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.4);
-    }
-    .modal.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .modal-content {
-      background-color: lightyellow;
-      margin: 5% auto;
-      padding: 20px;
-      border-radius: 14px;
-      border: 1px solid #888;
-      width: 80%;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-    }
-    @media screen and (orientation:landscape) {
-      .modal-content {
-        max-height: calc(100vh - 80px);
-      }
-    }
-    .close-btn {
-      text-decoration: underline;
-      cursor: pointer;
-    }
-  </style>
+    --results-fixed: 140px;  /* fixed results height, set by JS */
+
+    /* theme tokens */
+    --card:#fff; --display-bg:#222; --display-text:#0f0;
+
+    /* legacy role colors as defaults */
+    --num:#fffacd; --op:#f9a825; --frac:#64b5f6; --dec:#a5d6a7;
+    --clear:#e57373; --mem:#64b5f6;
+  }
+
+  /* ---------- Card (stacked zones) ---------- */
+  .card{
+    width: clamp(320px, 100%, var(--card-max));
+    height:100%;
+    display:grid; gap:var(--gap);
+    grid-template-rows:
+      minmax(var(--tape-min), auto)
+      var(--results-fixed)
+      auto
+      auto
+      auto;
+    grid-template-areas:
+      "tape" "results" "memory" "console" "fractions";
+  }
+  .panel{
+    background:var(--card);
+    border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.15);
+    overflow:hidden;
+  }
+  .pad{ padding:var(--pad) }
+
+  /* ---------- Tape ---------- */
+  .tape{ grid-area:tape; position:relative; min-height:var(--tape-min); }
+  .tape-inner{ position:absolute; inset:0; border:1px solid #000;
+    background:linear-gradient(to bottom,
+      rgba(189,183,107,.3) 0%,
+      rgba(255,215,0,.6) 6%,
+      #ff0 25%,
+      #ff0 75%,
+      rgba(189,183,107,.6) 98%,
+      rgba(255,215,0,.8) 100%); }
+  .center-line{ position:absolute; top:29%; left:50.1%; width:5px; height:75%; background:red; transform:translateX(-50%); }
+  .tick{ position:absolute; bottom:0; width:3px; background:#000; }
+  .tick.small{height:15px} .tick.med{height:30px} .tick.lg{height:50px} .tick.num{height:70px}
+  .tick-label{ position:absolute; bottom:70px; width:50px; text-align:center; transform:translateX(-50%); font-size:1.05em; }
+  .sweep{ position:absolute; inset:0; pointer-events:none; }
+  .sweep::before{ content:""; position:absolute; left:100%; top:0; width:100%; height:100%;
+    background:linear-gradient(120deg, rgba(0,0,0,.08), rgba(0,0,0,.28) 50%, rgba(0,0,0,.08));
+    transform:skewX(20deg); opacity:0; }
+  @keyframes sweep { 0%{left:100%;opacity:.6} 100%{left:-100%;opacity:0} }
+  .sweep.animate::before{ animation:sweep .8s ease-in-out forwards; }
+
+  /* ---------- Results ---------- */
+  .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); }
+  .results .pad{ display:flex; flex-direction:column; gap:8px; }
+  .history{ height:var(--history-fixed); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
+  .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
+  #inputLine{ display:block; }
+  .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(22px,3.1vw,32px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
+
+  /* ---------- Memory ---------- */
+  .memory{ grid-area:memory }
+  .memory-grid{ display:grid; gap:var(--gap);
+    grid-template-columns:repeat(5, 1fr);
+    grid-template-rows:repeat(1, var(--tile));
+  }
+
+  /* ---------- Console (5×4) ---------- */
+  .console{ grid-area:console }
+  .console-grid{
+    display:grid; gap:var(--gap);
+    grid-template-columns:repeat(5, 1fr);
+    grid-template-rows:repeat(4, var(--tile));
+  }
+  .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
+  .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
+
+  /* ---------- Fractions (5×3) ---------- */
+  .fractions{ grid-area:fractions }
+  .fract-grid{
+    display:grid; gap:var(--gap);
+    grid-template-columns:repeat(5, 1fr);
+    grid-template-rows:repeat(3, var(--tile));
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    --btn-bg: var(--_btn-bg, var(--num));
+    --btn-fg: var(--_btn-fg, currentColor);
+    --btn-img: var(--_btn-img, none);
+
+    width:100%; height:100%;
+    display:grid; place-items:center;
+    border:0; border-radius:5px;
+    font-weight:600; font-size:clamp(14px, calc(var(--tile)*.42), 20px);
+    color:var(--btn-fg);
+    background-image: var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
+    background-repeat:no-repeat;
+    background-size:cover, auto;
+    box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
+    user-select:none; -webkit-tap-highlight-color:transparent;
+    transition: background-color .15s ease, transform .05s ease, box-shadow .15s ease, filter .15s ease;
+  }
+  .btn:active{ transform:scale(.98) }
+
+  .btn.operator{ --_btn-bg: var(--op);  --_btn-fg:#111; }
+  .btn.frac    { --_btn-bg: var(--frac);--_btn-fg:#063c67; }
+  .btn.dec     { --_btn-bg: var(--dec); --_btn-fg:#0c3a10; }
+  .btn.clear,
+  .btn.back    { --_btn-bg: var(--clear); --_btn-fg:#fff; }
+  .btn.mem     { --_btn-bg: var(--mem); --_btn-fg:#083f3f; }
+
+  .btn.frac:hover{ --btn-bg: var(--btn-hover-bg, color-mix(in oklab, var(--btn-bg), white 12%)); }
+  .btn.frac:active{ --btn-bg: var(--btn-active-bg, color-mix(in oklab, var(--btn-bg), black 10%)); }
+  .btn[disabled]{ opacity:.5; filter:saturate(.15) }
+
+  .btn .btn-label{ line-height: 1; filter: url(#textInnerShadow); }
+
+  @media (prefers-reduced-motion: reduce){
+    .sweep::before{ animation:none !important; opacity:0 !important; }
+    .btn:active{ transform:none }
+  }
+  .btn:focus-visible{
+    outline:2px solid #0ea5a5;
+    outline-offset:2px;
+  }
+</style>
 </head>
 <body>
-  <div class="calculator-wrapper calc-viewport">
-    <div class="calculator calc-board">
-      <!-- Tape Measure Display -->
-      <div class="tape-measure-container">
-        <div class="center-line hidden" id="centerLine" aria-hidden="true"></div>
-        <div class="tape-measure" id="tapeMeasure"></div>
-        <div class="animation-overlay"></div>
+
+  <!-- Hidden SVG filter that creates a true inner shadow inside glyphs -->
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="textInnerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur"/>
+      <feOffset dy="1" result="offset"/>
+      <feComposite in="offset" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="inner"/>
+      <feFlood flood-color="black" flood-opacity="0.45" result="shade"/>
+      <feComposite in="shade" in2="inner" operator="in" result="shadow"/>
+      <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
+    </filter>
+  </svg>
+
+  <div id="card" class="card">
+
+    <!-- Tape -->
+    <div class="panel tape">
+      <div class="tape-inner" id="tape">
+        <div class="center-line"></div>
+        <div class="sweep" id="sweep"></div>
       </div>
-      <!-- Calculator Display -->
-      <div id="display">
-        <div id="input" aria-live="polite"></div>
-        <div id="result">
-          <div id="fractionResult"></div>
-          <div id="decimalResult"></div>
-        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="panel results">
+      <div class="pad">
+        <div class="history" id="history"><div class="row input" id="inputLine"></div></div>
+        <div class="output"><div id="fractionLine"></div><div id="decimalLine"></div></div>
       </div>
-      <!-- Memory Buttons Row (now between display and main buttons) -->
-      <div class="memory-container">
-        <button class="btn memory-clear">MC</button>
-        <button class="btn memory-btn" data-slot="0">M1</button>
-        <button class="btn memory-btn" data-slot="1">M2</button>
-        <button class="btn memory-btn" data-slot="2">M3</button>
-        <button class="btn memory-btn" data-slot="3">M4</button>
+    </div>
+
+    <!-- Memory (5×1) -->
+    <div class="panel memory pad">
+      <div class="memory-grid">
+        <button class="btn clear" data-action="mc"><span class="btn-label">MC</span></button>
+        <button class="btn mem" data-mem="0"><span class="btn-label">M1</span></button>
+        <button class="btn mem" data-mem="1"><span class="btn-label">M2</span></button>
+        <button class="btn mem" data-mem="2"><span class="btn-label">M3</span></button>
+        <button class="btn mem" data-mem="3"><span class="btn-label">M4</span></button>
       </div>
-      <!-- Calculator Buttons -->
-      <div class="buttons">
-        <button class="btn clear" data-value="C">C</button>
-        <button class="btn" data-value="7">7</button>
-        <button class="btn" data-value="8">8</button>
-        <button class="btn" data-value="9">9</button>
-        <button class="btn operator" data-value="+">+</button>
+    </div>
 
-        <button class="btn backspace" data-value="backspace">←</button>
-        <button class="btn" data-value="4">4</button>
-        <button class="btn" data-value="5">5</button>
-        <button class="btn" data-value="6">6</button>
-        <button class="btn operator" data-value="-">−</button>
+    <!-- Console (5×4 uniform) -->
+    <div class="panel console pad">
+      <div class="console-grid">
+        <!-- Utility rail (col 1) -->
+        <button class="btn back r1 c1" data-action="back"><span class="btn-label">←</span></button>
+        <button class="btn clear  r2 c1" data-action="clear"><span class="btn-label">C</span></button>
+        <button class="btn       r3 c1" id="menuBtn"><span class="btn-label">menu</span></button>
+        <button class="btn operator r4 c1" id="feetBtn"><span class="btn-label">Foot</span></button>
 
-        <button class="btn menu-btn" id="showModalBtn" aria-label="Show Instructions">menu</button>
-        <button class="btn" data-value="1">1</button>
-        <button class="btn" data-value="2">2</button>
-        <button class="btn" data-value="3">3</button>
-        <button class="btn operator" data-value="×">×</button>
+        <!-- Numbers (cols 2–4) -->
+        <button class="btn r1 c2" data-val="7"><span class="btn-label">7</span></button>
+        <button class="btn r1 c3" data-val="8"><span class="btn-label">8</span></button>
+        <button class="btn r1 c4" data-val="9"><span class="btn-label">9</span></button>
 
-        <button class="btn operator" id="feetBtn">Feet</button>
-        <button class="btn empty-btn" aria-hidden="true"></button>
-        <button class="btn" data-value="0">0</button>
-        <button class="btn decimal" data-value=".">.</button>
-        <button class="btn operator" data-value="÷">÷</button>
+        <button class="btn r2 c2" data-val="4"><span class="btn-label">4</span></button>
+        <button class="btn r2 c3" data-val="5"><span class="btn-label">5</span></button>
+        <button class="btn r2 c4" data-val="6"><span class="btn-label">6</span></button>
 
-        <button class="btn fraction" data-value="1/16">1/16</button>
-        <button class="btn fraction" data-value="1/8">1/8</button>
-        <button class="btn fraction" data-value="3/16">3/16</button>
-        <button class="btn fraction" data-value="1/4">1/4</button>
-        <button class="btn fraction" data-value="5/16">5/16</button>
+        <button class="btn r3 c2" data-val="1"><span class="btn-label">1</span></button>
+        <button class="btn r3 c3" data-val="2"><span class="btn-label">2</span></button>
+        <button class="btn r3 c4" data-val="3"><span class="btn-label">3</span></button>
 
-        <button class="btn fraction" data-value="3/8">3/8</button>
-        <button class="btn fraction" data-value="7/16">7/16</button>
-        <button class="btn fraction" data-value="1/2">1/2</button>
-        <button class="btn fraction" data-value="9/16">9/16</button>
-        <button class="btn fraction" data-value="5/8">5/8</button>
+        <button class="btn r4 c2" disabled></button>
+        <button class="btn r4 c3" data-val="0"><span class="btn-label">0</span></button>
+        <button class="btn dec r4 c4" data-val="."><span class="btn-label">.</span></button>
 
-        <button class="btn fraction" data-value="11/16">11/16</button>
-        <button class="btn fraction" data-value="3/4">3/4</button>
-        <button class="btn fraction" data-value="13/16">13/16</button>
-        <button class="btn fraction" data-value="7/8">7/8</button>
-        <button class="btn fraction" data-value="15/16">15/16</button>
+        <!-- Operator rail (col 5) -->
+        <button class="btn operator r1 c5" data-op="+"><span class="btn-label">+</span></button>
+        <button class="btn operator r2 c5" data-op="-"><span class="btn-label">−</span></button>
+        <button class="btn operator r3 c5" data-op="*"><span class="btn-label">×</span></button>
+        <button class="btn operator r4 c5" data-op="/"><span class="btn-label">÷</span></button>
+      </div>
+    </div>
+
+    <!-- Fractions (5×3 uniform) -->
+    <div class="panel fractions pad">
+      <div class="fract-grid">
+        <button class="btn frac" data-frac="1/16"><span class="btn-label">1/16</span></button>
+        <button class="btn frac" data-frac="1/8"><span class="btn-label">1/8</span></button>
+        <button class="btn frac" data-frac="3/16"><span class="btn-label">3/16</span></button>
+        <button class="btn frac" data-frac="1/4"><span class="btn-label">1/4</span></button>
+        <button class="btn frac" data-frac="5/16"><span class="btn-label">5/16</span></button>
+
+        <button class="btn frac" data-frac="3/8"><span class="btn-label">3/8</span></button>
+        <button class="btn frac" data-frac="7/16"><span class="btn-label">7/16</span></button>
+        <button class="btn frac" data-frac="1/2"><span class="btn-label">1/2</span></button>
+        <button class="btn frac" data-frac="9/16"><span class="btn-label">9/16</span></button>
+        <button class="btn frac" data-frac="5/8"><span class="btn-label">5/8</span></button>
+
+        <button class="btn frac" data-frac="11/16"><span class="btn-label">11/16</span></button>
+        <button class="btn frac" data-frac="3/4"><span class="btn-label">3/4</span></button>
+        <button class="btn frac" data-frac="13/16"><span class="btn-label">13/16</span></button>
+        <button class="btn frac" data-frac="7/8"><span class="btn-label">7/8</span></button>
+        <button class="btn frac" data-frac="15/16"><span class="btn-label">15/16</span></button>
       </div>
     </div>
   </div>
 
-  <!-- Instructions Modal -->
-  <div id="instructionsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-content">
-      <h2 id="modalTitle">Calculator Instructions</h2>
-      <p>
-        Use this calculator to add, subtract, multiply, or divide fractions and decimals easily. You can also work with mixed numbers.
-      </p>
-      <p>
-        <strong>Instructions:</strong>
-        <ul>
-          <li>Enter numbers using the number buttons.</li>
-          <li>Click on fractions to add them to the calculation.</li>
-          <li>Use the operators (+, −, ×, ÷) to perform operations.</li>
-          <li>Press the decimal button to add a decimal point.</li>
-          <li>Click the backspace button to delete the last entry (removes one digit at a time).</li>
-          <li>Press 'C' to clear all entries.</li>
-          <li>Double-click or long press on a memory button (M1–M4) to store the current result.</li>
-          <li>Tap a memory button to append its value to the current expression.</li>
-          <li>Press MC to clear all memory slots.</li>
-          <li><a href="segmentcalc.html">Segment Calculator</a></li>
-        </ul>
-      </p>
-      <span class="close-btn" id="closeModalBtn" tabindex="0">Close</span>
+  <!-- Minimal modal -->
+  <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30;">
+    <div style="background:#fffdee; color:#222; max-width:min(680px, 92vw); max-height:min(80vh, 700px); overflow:auto; border-radius:12px; padding:16px 18px; box-shadow:0 12px 40px rgba(0,0,0,.45);">
+
+  <h2 class="cm-title">A tape-measure calculator for my friends.</h2>
+  <ul class="cm-list">
+    <li>
+      <div class="cm-sub">Combine inches, decimals, and fractions in a single calculation.</div>
+      <div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div>
+    </li>
+
+    <li><div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div></li>
+    <li><div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div></li>
+
+    <li>
+      <div class="cm-head">Results are solved and displayed automatically, in three ways:</div>
+      <ul class="cm-bullets">
+        <li>Red line on tape measure visually accurate in decimal</li>
+        <li>Left results window, rounded to the nearest 1/16″</li>
+        <li>Right results window, precise in decimal 00.000″</li>
+      </ul>
+    </li>
+
+    <li>
+      <div class="cm-head">Memory slot stores four clearly labeled values:</div>
+      <ul class="cm-bullets">
+        <li>Long press to store new value as well as to replace an existing value</li>
+        <li>CM = Clear Memory, M1–M4 = Memory Slots</li>
+      </ul>
+    </li>
+
+    <li>
+      <div class="cm-head">Undo / Clear</div>
+      <ul class="cm-bullets">
+        <li>&larr; Undo numbers, fractions, and operators one character at a time</li>
+        <li><b>C</b> Clear entire results screen</li>
+      </ul>
+    </li>
+
+    <li><div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div></li>
+  </ul>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+        <button id="installBtn" style="background:#0ea5a5; color:#111; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; display:none;">Install</button>
+        <button id="closeModal" style="background:#111; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
+      </div>
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const inputDisplay = document.getElementById('input');
-      const fractionResultDisplay = document.getElementById('fractionResult');
-      const decimalResultDisplay = document.getElementById('decimalResult');
-      const buttons = document.querySelectorAll('.btn');
-      const modal = document.getElementById('instructionsModal');
-      const showModalBtn = document.getElementById('showModalBtn');
-      const closeModalBtn = document.getElementById('closeModalBtn');
-      const centerLine = document.getElementById('centerLine');
-      const tapeMeasure = document.getElementById('tapeMeasure');
-      const tapeMeasureContainer = document.querySelector('.tape-measure-container');
+  <div id="updateToast" style="position:fixed; left:50%; transform:translateX(-50%); bottom:12px; background:#111; color:#fff; padding:8px 12px; border-radius:8px; display:none; gap:8px; align-items:center; z-index:40;">
+    <span>Update available</span>
+    <button id="updateReload" style="background:#0ea5a5; color:#111; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;">Refresh</button>
+  </div>
 
-      // Calculator state
-      let tokens = [];
-      let currentEntry = '';
-      let timeout = null;
-      let feetBaseValue = null;
+<script>
+(() => {
+  'use strict';
 
-      // Memory state and persistence
-      const MEMORY_KEY = 'calcMemorySlots';
-      let memorySlots = [null, null, null, null];
+  /* ====== Uniform tile/gap solver ====== */
+  const MIN_TAP = 44;
+  const MIN_GAP = 6, MAX_GAP = 12;
 
-      function loadMemorySlots() {
-        const stored = localStorage.getItem(MEMORY_KEY);
-        if (stored) {
-          memorySlots = JSON.parse(stored);
-        }
-        updateMemoryDisplay();
+  const setVar = (k,v) => document.documentElement.style.setProperty(k,v);
+  const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+  const cssNum = (name, fallback) => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const n = parseFloat(v); return Number.isFinite(n) ? n : fallback;
+  };
+
+  function computeTile(){
+    const card = document.getElementById('card');
+    const { width: W, height: H } = card.getBoundingClientRect();
+
+    let gap = clamp(Math.floor(Math.min(W,H) * 0.02), MIN_GAP, MAX_GAP);
+    setVar('--gap', gap + 'px');
+
+    const tapeMin = cssNum('--tape-min', 100);
+
+    // Measure fixed results height = padding*2 + 2 input lines + gap + 1 output line (+1px border)
+    const pad = gap; // matches --pad
+    const inputEl = document.getElementById('inputLine');
+    const outputEl = document.querySelector('.output');
+    const getLineHeightPx = (el) => {
+      const cs = getComputedStyle(el);
+      const lh = cs.lineHeight;
+      if (lh.endsWith && lh.endsWith('px')) return parseFloat(lh);
+      const fs = parseFloat(cs.fontSize) || 16;
+      const mult = parseFloat(lh) || 1.2;
+      return fs * mult;
+    };
+    const inputLH = getLineHeightPx(inputEl);
+    const outputLH = getLineHeightPx(outputEl);
+    const historyFixed = Math.ceil(inputLH * 2);
+    setVar('--history-fixed', historyFixed + 'px');
+    const resultsFixed = Math.ceil(pad*2 + historyFixed + 8 + outputLH + 1);
+    setVar('--results-fixed', resultsFixed + 'px');
+
+    // Keypad composition
+    const ROWS = 8;
+    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap
+    const W_inside = W - 2*gap;
+
+    // Height available for keypad stack (memory + console + fractions)
+    const H_for_keypad = Math.max(0, H - tapeMin - resultsFixed - 2*gap);
+
+    let tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
+    let tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
+    let tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
+
+    setVar('--tile', tile + 'px');
+  }
+
+  const ro = new ResizeObserver(computeTile);
+  ro.observe(document.getElementById('card'));
+  window.addEventListener('resize', computeTile);
+  window.addEventListener('orientationchange', () => setTimeout(computeTile, 60));
+
+  /* ====== Calculator logic (Feet behavior + safe eval) ====== */
+  const tape = document.getElementById('tape');
+  const sweep = document.getElementById('sweep');
+  const inputLine = document.getElementById('inputLine');
+  const fractionLine = document.getElementById('fractionLine');
+  const decimalLine = document.getElementById('decimalLine');
+
+  const MEMORY_KEY = 'calcMemorySlots_uniform420';
+  let memorySlots = [null,null,null,null];
+
+  let tokens = [];                 // raw tokens for math
+  let tokenDisplays = [];          // pretty display for measurement tokens
+  let currentEntry = '';           // normal numeric entry (non-measure)
+  let tmr = null;
+  const PPI = 160;
+
+  // Keep last good output so UI never blanks mid-entry
+  let lastGood = { value: 0, fraction: '', decimal: '' };
+
+  // Feet-builder state (active until finalized by an operator)
+  let measure = { active:false, feet:0, inches:0, inEntry:'' };
+
+  const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
+  const isOp = t => ['+','-','*','/'].includes(t);
+  const isWhole = s => /^-?\d+$/.test(s);
+  const isDec = s => /^-?\d+\.\d+$/.test(s);
+  const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
+  const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
+  const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
+
+  const roundToSixteenth = (x)=> Math.round(x*16)/16;
+
+  function formatResult(value){
+    const r = roundToSixteenth(value);
+    const sign = r<0 ? '-' : '';
+    const abs = Math.abs(r);
+    const w = Math.floor(abs);
+    const f = abs - w;
+    let n = Math.round(f*16), d = 16, g = gcd(n,d); n/=g; d/=g;
+    let s = (n===0) ? `${w}″` : (w ? `${w} ${n}/${d}″` : `${n}/${d}″`);
+    return { fraction: sign + s, decimal: `${r.toFixed(4)}″` };
+  }
+
+  function measureTotal(){
+    const scratchIn = measure.inEntry ? parseFloat(measure.inEntry) : 0;
+    return measure.feet*12 + measure.inches + scratchIn;
+  }
+
+  function measureDisplay(){
+    // "5′ 2 1/4″" (or just "5′" if no inches yet)
+    const inVal = (measure.inEntry ? parseFloat(measure.inEntry) : 0) + measure.inches;
+    const hasInches = inVal > 0;
+    const feetStr = `${measure.feet}\u2032`;
+    if (!hasInches) return feetStr;
+    const r = roundToSixteenth(inVal);
+    const w = Math.floor(r);
+    const f = r - w;
+    let n = Math.round(f*16), d = 16, g = gcd(n,d); n/=g; d/=g;
+    const inchStr = (n===0) ? `${w}″` : (w ? `${w} ${n}/${d}″` : `${n}/${d}″`);
+    return `${feetStr} ${inchStr}`;
+  }
+
+  function finalizeMeasureToken(){
+    if (!measure.active) return;
+    const total = measureTotal();
+    const disp = measureDisplay();
+    tokens.push(String(total));
+    tokenDisplays.push(disp);
+    measure = { active:false, feet:0, inches:0, inEntry:'' };
+  }
+
+  function updateInput(){
+    let s='';
+    tokens.forEach((t, idx)=>{
+      if (isOp(t)) {
+        s += `${prettyOp(t)} `;
+      } else if (tokenDisplays[idx]) {
+        s += `${tokenDisplays[idx]} `;
+      } else if (isDec(t)) {
+        const [w,f]=splitDec(t);
+        s += f>0 ? `${w} ${fracFromDec(f)} ` : `${w} `;
+      } else {
+        s += `${t} `;
       }
+    });
 
-      function saveMemorySlots() {
-        localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots));
+    if (measure.active){
+      s += measureDisplay() + ' ';
+    } else if (currentEntry){
+      if (isDec(currentEntry)){
+        const [w,f]=splitDec(currentEntry);
+        s += f>0 ? `${w} ${fracFromDec(f)} ` : `${w} `;
+      } else {
+        s += `${currentEntry} `;
       }
+    }
 
-      function updateMemoryDisplay() {
-        document.querySelectorAll('.memory-btn').forEach(btn => {
-          const slotIndex = parseInt(btn.getAttribute('data-slot'), 10);
-          const memValue = memorySlots[slotIndex];
-          if (memValue !== null) {
-            btn.textContent = formatResult(memValue).fractionResult;
-          } else {
-            btn.textContent = `M${slotIndex + 1}`;
-          }
-        });
-      }
+    inputLine.textContent = s.trim();
+    requestAnimationFrame(()=>{ const hist=document.getElementById('history'); if(hist) hist.scrollTop = hist.scrollHeight; });
+  }
 
-      loadMemorySlots();
+  // SAFE evaluator: ignores trailing ops; keeps last good value visible
+  function evaluate(){
+    let expr = [...tokens];
+    if (currentEntry) expr.push(currentEntry);
 
-      // Ensure math.js is loaded
-      if (typeof math === 'undefined') {
-        console.error('math.js is not loaded. Please check the script tag.');
+    // drop trailing operators like "+", "*", "÷"
+    while (expr.length && isOp(expr.at(-1))) expr.pop();
+
+    try{
+      let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
+      let num  = (typeof base === 'number' ? base : base.toNumber());
+
+      // add live preview from feet-builder
+      if (measure.active) num += measureTotal();
+
+      const out = formatResult(num);
+      lastGood = { value: num, fraction: out.fraction, decimal: out.decimal };
+
+      fractionLine.textContent = out.fraction;
+      decimalLine.textContent  = out.decimal;
+      drawTape(num);
+    }catch{
+      // if the only thing we have is an active feet-builder, show that
+      if (measure.active && expr.length === 0){
+        const m = measureTotal();
+        const out = formatResult(m);
+        fractionLine.textContent = out.fraction;
+        decimalLine.textContent  = out.decimal;
+        drawTape(m);
         return;
       }
-
-      // Main Calculator Buttons (excluding memory buttons)
-      buttons.forEach(button => {
-        button.addEventListener('click', () => {
-          const value = button.getAttribute('data-value');
-          // Skip memory buttons (handled separately)
-          if (button.id === "feetBtn") return;
-          if (button.classList.contains('memory-btn') || button.classList.contains('memory-clear')) {
-            return;
-          }
-          console.log(`Button clicked: ${value}`);
-
-          if (value === 'C') {
-            clearCalculator();
-            return;
-          }
-
-          if (value === 'backspace') {
-            handleBackspace();
-            return;
-          }
-
-          const isFraction = button.classList.contains('fraction');
-          const isOperator = button.classList.contains('operator');
-          const isDecimal = button.classList.contains('decimal');
-
-          if (!isOperator && !isFraction && !isDecimal) {
-            handleNumberInput(value);
-          } else if (isDecimal) {
-            handleDecimalInput();
-          } else if (isFraction) {
-            handleFractionInput(value);
-          } else if (isOperator) {
-            handleOperatorInput(value);
-          }
-
-          // Debounce evaluation
-          clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            const evaluation = evaluateExpression();
-            if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-              fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
-              decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
-              updateTapePosition(evaluation.numericValue);
-              centerLine.classList.remove('hidden');
-              console.log('Calculation successful');
-            } else {
-              fractionResultDisplay.textContent = '';
-              decimalResultDisplay.textContent = '';
-              centerLine.classList.add('hidden');
-              console.log('Calculation failed or incomplete');
-            }
-          }, 200);
-
-        });
-      });
-      // NEW: Feet Mode button
-      document.getElementById("feetBtn").addEventListener("click", () => {
-        if (currentEntry !== "" && /^-?\d+$/.test(currentEntry)) {
-          const feet = parseInt(currentEntry, 10);
-          feetBaseValue = feet * 12;
-          tokens = [];
-          currentEntry = "";
-          updateInputDisplay();
-          fractionResultDisplay.textContent = `${feet}" base`;
-          decimalResultDisplay.textContent = `${feetBaseValue.toFixed(2)}"`;
-          updateTapePosition(feetBaseValue);
-          centerLine.classList.remove("hidden");
-          console.log(`Feet mode: base ${feetBaseValue} in.`);
-        } else {
-          alert("Enter a whole number before pressing 'Feet'.");
-        }
-      });
-
-
-      // Memory Button Interactions
-
-      // 1. Storing a Memory Value (double-click for desktop, long press for mobile)
-      document.querySelectorAll('.memory-btn').forEach(btn => {
-        // Double-click event for desktops
-        btn.addEventListener('dblclick', () => {
-          const slot = parseInt(btn.getAttribute('data-slot'), 10);
-          const evaluation = evaluateExpression();
-          if (!evaluation || evaluation.numericValue === null) return;
-          if (memorySlots[slot] !== null) {
-            const currentFormatted = formatResult(memorySlots[slot]).fractionResult;
-            const confirmReplace = confirm(`Memory slot M${slot + 1} already contains ${currentFormatted}. Replace it?`);
-            if (!confirmReplace) return;
-          }
-          memorySlots[slot] = evaluation.numericValue;
-          saveMemorySlots();
-          updateMemoryDisplay();
-          console.log(`Stored value ${evaluation.numericValue} in memory slot M${slot + 1}`);
-        });
-
-        // Long press for mobile
-        let pressTimer;
-        btn.addEventListener('touchstart', (e) => {
-          pressTimer = setTimeout(() => {
-            const slot = parseInt(btn.getAttribute('data-slot'), 10);
-            const evaluation = evaluateExpression();
-            if (!evaluation || evaluation.numericValue === null) return;
-            if (memorySlots[slot] !== null) {
-              const currentFormatted = formatResult(memorySlots[slot]).fractionResult;
-              if (!confirm(`Memory slot M${slot + 1} already contains ${currentFormatted}. Replace it?`)) {
-                return;
-              }
-            }
-            memorySlots[slot] = evaluation.numericValue;
-            saveMemorySlots();
-            updateMemoryDisplay();
-            console.log(`Stored value ${evaluation.numericValue} in memory slot M${slot + 1}`);
-          }, 600);
-        });
-        btn.addEventListener('touchend', () => {
-          clearTimeout(pressTimer);
-        });
-      });
-
-      // 2. Inserting (Appending) a Memory Value on Single Tap/Click
-      document.querySelectorAll('.memory-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const slot = parseInt(btn.getAttribute('data-slot'), 10);
-          if (memorySlots[slot] === null) return;
-          const memString = memorySlots[slot].toString();
-          // Finalize any current input
-          if (currentEntry !== '') {
-            tokens.push(currentEntry);
-          }
-          currentEntry = memString;
-          updateInputDisplay();
-          console.log(`Appended memory value from M${slot + 1}`);
-          // Trigger evaluation automatically after memory insertion
-          clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            const evaluation = evaluateExpression();
-            if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-              fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
-              decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
-              updateTapePosition(evaluation.numericValue);
-              centerLine.classList.remove('hidden');
-            } else {
-              fractionResultDisplay.textContent = '';
-              decimalResultDisplay.textContent = '';
-              centerLine.classList.add('hidden');
-            }
-          }, 200);
-        });
-      });
-
-      // 3. Clearing Memory Slots with Confirmation
-      document.querySelector('.memory-clear').addEventListener('click', () => {
-        if (confirm("Are you sure you want to clear all memory slots?")) {
-          memorySlots = [null, null, null, null];
-          saveMemorySlots();
-          updateMemoryDisplay();
-          console.log('All memory slots cleared');
-        }
-      });
-
-      // Prevent default touch actions
-      document.addEventListener('touchmove', function(event) {
-        event.preventDefault();
-      }, { passive: false });
-      document.addEventListener('gesturestart', function(event) {
-        event.preventDefault();
-      });
-      document.addEventListener('gesturechange', function(event) {
-        event.preventDefault();
-      });
-      document.addEventListener('gestureend', function(event) {
-        event.preventDefault();
-      });
-
-      /* Calculator Helper Functions */
-      function clearCalculator() {
-        tokens = [];
-        currentEntry = '';
-        inputDisplay.textContent = '';
-        fractionResultDisplay.textContent = '';
-        decimalResultDisplay.textContent = '';
-        clearTimeout(timeout);
-        centerLine.classList.add('hidden');
-        feetBaseValue = null;
-        console.log('Calculator cleared');
+      // otherwise, keep last good instead of blank
+      if (lastGood.decimal){
+        fractionLine.textContent = lastGood.fraction;
+        decimalLine.textContent  = lastGood.decimal;
+        drawTape(lastGood.value);
+      } else {
+        fractionLine.textContent = '';
+        decimalLine.textContent  = '';
       }
+    }
+  }
+  const qEval = () => { clearTimeout(tmr); tmr = setTimeout(evaluate, 120); };
 
-      function handleBackspace() {
-        if (currentEntry.length > 0) {
-          // Remove the last character from the current entry
-          currentEntry = currentEntry.slice(0, -1);
-        } else if (tokens.length > 0) {
-          // Peek at the last token
-          let lastToken = tokens[tokens.length - 1];
-          if (isOperatorToken(lastToken)) {
-            // Remove the operator completely
-            tokens.pop();
-          } else {
-            // Remove one digit from the number
-            lastToken = lastToken.slice(0, -1);
-            if (lastToken === "") {
-              tokens.pop();
-            } else {
-              tokens[tokens.length - 1] = lastToken;
-            }
-          }
-        }
-        updateInputDisplay();
-        
-        // Update the solution immediately after backspacing.
-        const evaluation = evaluateExpression();
-        if (evaluation && evaluation.numericValue !== null && !isNaN(evaluation.numericValue)) {
-          fractionResultDisplay.textContent = evaluation.formattedResult.fractionResult;
-          decimalResultDisplay.textContent = evaluation.formattedResult.decimalResult;
-          updateTapePosition(evaluation.numericValue);
-          centerLine.classList.remove('hidden');
-        } else {
-          fractionResultDisplay.textContent = '';
-          decimalResultDisplay.textContent = '';
-          centerLine.classList.add('hidden');
-        }
-        console.log('Backspace pressed');
-      }
+  // Tape rendering
+  function drawTape(center){
+    if (center<0) center=0;
+    [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
+    const rect = tape.getBoundingClientRect();
+    const mid = rect.width/2;
+    const range = 3;
+    const start = Math.max(center - range/2, 0), end = center + range/2;
+    const a = Math.floor(start*16), b = Math.ceil(end*16);
+    for (let i=a;i<=b;i++){
+      const inches = i/16;
+      const x = (inches - center)*PPI + mid - 1.5;
+      const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
+      if (i%16===0){ el.classList.add('num'); const lbl=document.createElement('div'); lbl.className='tick-label'; lbl.textContent=inches.toFixed(0); lbl.style.left=(x+1.5)+'px'; tape.appendChild(lbl); }
+      else if (i%8===0) el.classList.add('lg'); else if (i%4===0) el.classList.add('med'); else el.classList.add('small');
+      tape.appendChild(el);
+    }
+    sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
+  }
 
-      function handleNumberInput(value) {
-        currentEntry += value;
-        updateInputDisplay();
-        console.log(`Current entry updated: ${currentEntry}`);
-      }
+  // Memory helpers
+  function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
+  function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
 
-      function handleDecimalInput() {
-        if (currentEntry.includes('.')) {
-          console.log('Decimal point already exists in the current entry');
-          return;
-        }
-        currentEntry = currentEntry === '' ? '0.' : currentEntry + '.';
-        updateInputDisplay();
-        console.log(`Decimal added: ${currentEntry}`);
-      }
+  function ensureLabelSpan(btn){
+    let span = btn.querySelector('.btn-label');
+    if (!span){
+      span = document.createElement('span');
+      span.className = 'btn-label';
+      span.textContent = btn.textContent;
+      btn.replaceChildren(span);
+    }
+    return span;
+  }
 
-      function handleFractionInput(value) {
-        if (currentEntry === '') {
-          currentEntry = value;
-        } else if (isWholeNumber(currentEntry)) {
-          const whole = parseInt(currentEntry, 10);
-          const [numerator, denominator] = value.split('/').map(Number);
-          if (denominator === 0) {
-            console.error('Denominator cannot be zero.');
-            return;
-          }
-          const fraction = numerator / denominator;
-          const combinedValue = whole + fraction;
-          tokens.push(combinedValue.toString());
-          currentEntry = '';
-        } else if (isOperatorToken(tokens[tokens.length - 1])) {
-          currentEntry += value;
-        } else {
-          tokens.push(currentEntry);
-          tokens.push('+');
-          currentEntry = value;
-        }
-        updateInputDisplay();
-        console.log(`Fraction input handled: ${value}`);
-      }
-
-      function handleOperatorInput(value) {
-        if (currentEntry !== '') {
-          tokens.push(currentEntry);
-          currentEntry = '';
-        }
-        if (tokens.length === 0 && value !== '-') {
-          console.log('Operator pressed without a preceding number');
-          return;
-        }
-        const lastToken = tokens[tokens.length - 1];
-        if (isOperatorToken(lastToken)) {
-          tokens[tokens.length - 1] = value;
-        } else {
-          tokens.push(value);
-        }
-        updateInputDisplay();
-        console.log(`Operator input handled: ${value}`);
-      }
-
-      function updateInputDisplay() {
-        let displayText = '';
-        tokens.forEach(token => {
-          if (isDecimalToken(token)) {
-            const [whole, fraction] = splitDecimal(token);
-            if (fraction > 0) {
-              displayText += `${whole} ${convertFraction(fraction)} `;
-            } else {
-              displayText += `${whole} `;
-            }
-          } else {
-            displayText += `${token} `;
-          }
-        });
-        if (currentEntry !== '') {
-          displayText += `${currentEntry} `;
-        }
-        inputDisplay.textContent = displayText.trim();
-        console.log(`Input display updated: ${displayText.trim()}`);
-      }
-
-      function isOperatorToken(token) {
-        return ['+', '-', '×', '÷'].includes(token);
-      }
-
-      function isWholeNumber(str) {
-        return /^-?\d+$/.test(str);
-      }
-
-      function isDecimalToken(token) {
-        return /^-?\d+\.\d+$/.test(token);
-      }
-
-      function splitDecimal(decimalStr) {
-        const parts = decimalStr.split('.');
-        const whole = parseInt(parts[0], 10);
-        const fraction = parseFloat('0.' + parts[1]);
-        return [whole, fraction];
-      }
-
-      function convertFraction(fractionDecimal) {
-        const denominator = 16;
-        let numerator = Math.round(fractionDecimal * denominator);
-        const gcd = greatestCommonDivisor(numerator, denominator);
-        numerator /= gcd;
-        const simplifiedDenom = denominator / gcd;
-        return `${numerator}/${simplifiedDenom}`;
-      }
-
-      function greatestCommonDivisor(a, b) {
-        a = Math.abs(a);
-        b = Math.abs(b);
-        if (!b) return a;
-        return greatestCommonDivisor(b, a % b);
-      }
-
-
-      function evaluateExpression() {
-        let exprTokens = [...tokens];
-        if (currentEntry !== '') exprTokens.push(currentEntry);
-        if (exprTokens.length === 0) return null;
-        if (isOperatorToken(exprTokens[exprTokens.length - 1])) return null;
-        const expr = exprTokens.join(' ').replace(/×/g, '*').replace(/÷/g, '/');
-        try {
-          const raw = math.evaluate(expr);
-          let numericValue = typeof raw === 'number' ? raw : raw.toNumber();
-          if (feetBaseValue !== null) numericValue += feetBaseValue;
-          const formatted = formatResult(numericValue);
-          fractionResultDisplay.textContent = formatted.fractionResult;
-          decimalResultDisplay.textContent = formatted.decimalResult;
-          updateTapePosition(numericValue);
-          centerLine.classList.remove('hidden');
-          return { numericValue, formattedResult: formatted };
-        } catch {
-          fractionResultDisplay.textContent = '';
-          decimalResultDisplay.textContent = '';
-          centerLine.classList.add('hidden');
-          return null;
-        }
-      }
-      function formatResult(value) {
-        console.log(`Formatting Value: ${value}`);
-        const roundedValue = Math.round(value * 16) / 16;
-        console.log(`Rounded Value (1/16 increments): ${roundedValue}`);
-        const whole = Math.floor(Math.abs(roundedValue));
-        const fractionalPart = Math.abs(roundedValue) - whole;
-        console.log(`Whole Number: ${whole}, Fractional Part: ${fractionalPart}`);
-        let numerator = Math.round(fractionalPart * 16);
-        let denominator = 16;
-        console.log(`Numerator before simplification: ${numerator}, Denom before simplification: ${denominator}`);
-        const gcd = greatestCommonDivisor(numerator, denominator);
-        numerator /= gcd;
-        denominator /= gcd;
-        console.log(`Numerator after simplification: ${numerator}, Denom after simplification: ${denominator}`);
-        let fractionResult = '';
-        if (denominator === 1 || numerator === 0) {
-          fractionResult = `${whole}"`;
-        } else if (whole !== 0) {
-          fractionResult = `${whole} ${numerator}/${denominator}"`;
-        } else {
-          fractionResult = `${numerator}/${denominator}"`;
-        }
-        if (roundedValue < 0) {
-          fractionResult = `-${fractionResult}`;
-        }
-        const decimalResult = `${roundedValue.toFixed(4)}"`;
-        console.log(`Final Fraction Result: ${fractionResult}, Final Decimal Result: ${decimalResult}`);
-        return { fractionResult, decimalResult };
-      }
-
-      function generateTickMarks(centerInches) {
-        console.log(`Generating tick marks centered at: ${centerInches} inches`);
-        tapeMeasure.innerHTML = '';
-        const containerWidth = tapeMeasureContainer.offsetWidth;
-        const centerLinePosition = containerWidth / 2;
-        const displayRangeInches = 3;
-        // Read pixels-per-inch from CSS variable:
-        const pixelsPerInch = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pixels-per-inch'), 10);
-        const tickWidth = 3;
-        const startInches = Math.max(centerInches - (displayRangeInches / 2), 0);
-        const endInches = centerInches + (displayRangeInches / 2);
-        const startMark = Math.floor(startInches * 16);
-        const endMark = Math.ceil(endInches * 16);
-        console.log(`Start Mark: ${startMark}, End Mark: ${endMark}`);
-        const fragment = document.createDocumentFragment();
-        for (let i = startMark; i <= endMark; i++) {
-          const tick = document.createElement('div');
-          tick.classList.add('tick');
-          const inches = i / 16;
-          const position = (inches - centerInches) * pixelsPerInch + centerLinePosition - (tickWidth / 2);
-          tick.style.left = position + 'px';
-          if (i % 16 === 0) {
-            tick.classList.add('number');
-            const label = document.createElement('div');
-            label.classList.add('tick-label');
-            label.innerText = inches.toFixed(0);
-            label.style.left = (position + tickWidth / 2) + 'px';
-            fragment.appendChild(label);
-          } else if (i % 8 === 0) {
-            tick.classList.add('large');
-          } else if (i % 4 === 0) {
-            tick.classList.add('medium');
-          } else {
-            tick.classList.add('small');
-          }
-          fragment.appendChild(tick);
-        }
-        tapeMeasure.appendChild(fragment);
-        console.log('Tick marks generated');
-      }
-
-      function updateTapePosition(measurementInInches) {
-        console.log(`Updating tape measure to: ${measurementInInches} inches`);
-        if (measurementInInches < 0) measurementInInches = 0;
-        generateTickMarks(measurementInInches);
-        triggerShadowAnimation();
-      }
-
-      function triggerShadowAnimation() {
-        const overlay = document.querySelector('.animation-overlay');
-        if (!overlay) {
-          console.error('Animation overlay not found!');
-          return;
-        }
-        overlay.classList.remove('animate-shadow');
-        // Force reflow to restart animation
-        void overlay.offsetWidth;
-        overlay.classList.add('animate-shadow');
-        overlay.addEventListener('animationend', () => {
-          overlay.classList.remove('animate-shadow');
-        }, { once: true });
-      }
-
-      // Modal functionality using the "show" class for smooth transitions
-      showModalBtn.addEventListener('click', () => {
-        modal.classList.add('show');
-        closeModalBtn.focus();
-        console.log('Instructions modal opened');
-      });
-      closeModalBtn.addEventListener('click', () => {
-        modal.classList.remove('show');
-        showModalBtn.focus();
-        console.log('Instructions modal closed');
-      });
-      window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-          modal.classList.remove('show');
-          showModalBtn.focus();
-          console.log('Instructions modal closed by clicking outside');
-        }
-      });
-      generateTickMarks(0);
+  function refreshMemLabels(){
+    document.querySelectorAll('.btn.mem').forEach(btn=>{
+      const i=+btn.dataset.mem, v=memorySlots[i];
+      const text = v==null ? `M${i+1}` : formatResult(v).fraction.replace('"','');
+      const span = ensureLabelSpan(btn);
+      span.textContent = text;
     });
-  </script>
+  }
+
+  // ===== Number / decimal entry =====
+  document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
+    const val = b.dataset.val;
+    if (measure.active){
+      // typing inches while in feet-builder
+      measure.inEntry += val;
+      updateInput(); qEval();
+      return;
+    }
+    currentEntry += val; updateInput(); qEval();
+  }));
+
+  document.querySelector('.btn.dec[data-val="."]').addEventListener('click',()=>{
+    if (measure.active){
+      if (!measure.inEntry.includes('.')) measure.inEntry = measure.inEntry ? (measure.inEntry + '.') : '0.';
+      updateInput(); qEval();
+      return;
+    }
+    if (currentEntry.includes('.')) return;
+    currentEntry = currentEntry ? currentEntry+'.' : '0.';
+    updateInput(); qEval();
+  });
+
+  // ===== Operators =====
+  document.querySelectorAll('.btn.operator[data-op]').forEach(b=>b.addEventListener('click',()=>{
+    const op = b.dataset.op;
+
+    // finalize open measurement first
+    if (measure.active) finalizeMeasureToken();
+
+    if (currentEntry){
+      tokens.push(currentEntry);
+      tokenDisplays.push(undefined);
+      currentEntry='';
+    }
+    if (!tokens.length && op !== '-') { updateInput(); qEval(); return; }
+
+    if (isOp(tokens.at(-1))){
+      tokens[tokens.length-1] = op;
+    } else {
+      tokens.push(op);
+      tokenDisplays.push(undefined);
+    }
+    updateInput(); qEval();
+  }));
+
+  // ===== Backspace / Clear =====
+  document.querySelector('.btn.back').addEventListener('click',()=>{
+    if (measure.active){
+      if (measure.inEntry){
+        measure.inEntry = measure.inEntry.slice(0,-1);
+      } else if (measure.inches > 0){
+        measure.inches = 0;
+      } else {
+        measure = { active:false, feet:0, inches:0, inEntry:'' };
+      }
+      updateInput(); evaluate(); return;
+    }
+
+    if (currentEntry){
+      currentEntry = currentEntry.slice(0,-1);
+    } else if (tokens.length){
+      let last = tokens.at(-1);
+      if (isOp(last)) {
+        tokens.pop(); tokenDisplays.pop();
+      } else {
+        last = last.slice(0,-1);
+        if (last) tokens[tokens.length-1]=last;
+        else { tokens.pop(); tokenDisplays.pop(); }
+      }
+    }
+    updateInput(); evaluate();
+  });
+
+  document.querySelector('.btn.clear[data-action="clear"]').addEventListener('click',()=>{
+    tokens=[]; tokenDisplays=[]; currentEntry=''; measure = { active:false, feet:0, inches:0, inEntry:'' };
+    inputLine.textContent=''; fractionLine.textContent=''; decimalLine.textContent='';
+    drawTape(0);
+  });
+
+  // ===== Feet behavior =====
+  document.getElementById('feetBtn').addEventListener('click',()=>{
+    // decimal entry → decimal FEET immediate convert
+    if (isDec(currentEntry)){
+      const ft = parseFloat(currentEntry);
+      const total = ft * 12;
+      tokens.push(String(total));
+      tokenDisplays.push(`${ft}\u2032`);
+      currentEntry='';
+      updateInput(); qEval();
+      return;
+    }
+    // whole entry → enter feet-builder
+    if (isWhole(currentEntry)){
+      measure = { active:true, feet: parseInt(currentEntry,10), inches:0, inEntry:'' };
+      currentEntry='';
+      updateInput(); qEval();
+      return;
+    }
+    // if empty, do nothing (waiting for feet number)
+    if (!currentEntry) return;
+
+    // fallback: parse whatever is there as decimal feet
+    const ft = parseFloat(currentEntry);
+    if (!Number.isNaN(ft)){
+      const total = ft * 12;
+      tokens.push(String(total));
+      tokenDisplays.push(`${ft}\u2032`);
+      currentEntry='';
+      updateInput(); qEval();
+    }
+  });
+
+  // ===== Memory buttons =====
+  document.querySelectorAll('.btn.mem').forEach(btn=>{
+    // Insert on tap
+    btn.addEventListener('click',()=>{
+      const i=+btn.dataset.mem, v=memorySlots[i]; if (v==null) return;
+      if (measure.active) finalizeMeasureToken();
+      if (currentEntry) tokens.push(currentEntry), tokenDisplays.push(undefined);
+      currentEntry = String(v);
+      updateInput(); evaluate();
+    });
+    // Store on double-click (or long-press)
+    btn.addEventListener('dblclick',()=>{
+      let expr=[...tokens];
+      if (currentEntry) expr.push(currentEntry);
+      // strip trailing ops for safety
+      while (expr.length && isOp(expr.at(-1))) expr.pop();
+      let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
+      let valNum = (typeof base==='number' ? base : base.toNumber()) + (measure.active ? measureTotal() : 0);
+
+      const i=+btn.dataset.mem;
+      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResult(memorySlots[i]).fraction}. Replace?`) : true;
+      if (!confirmReplace) return;
+      memorySlots[i]= valNum;
+      saveMemory(); refreshMemLabels();
+    });
+    // Long-press → store (touch)
+    let timer=null;
+    btn.addEventListener('touchstart',()=>{ timer=setTimeout(()=>btn.dispatchEvent(new Event('dblclick')),600); }, {passive:true});
+    btn.addEventListener('touchend',()=>clearTimeout(timer), {passive:true});
+  });
+
+  document.querySelector('.btn.clear[data-action="mc"]').addEventListener('click',()=>{
+    if (!confirm('Clear all memory slots?')) return;
+    memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
+  });
+
+  /* ===== FRACTION BUTTON PALETTES ===== */
+  const FRACTION_PALETTES = {
+     '1/16': { bg: '#003d99', fg:'#fff' },
+     '1/8': { bg: '#005ce6', fg:'#fff' },
+     '3/16': { bg: '#1a75ff', fg:'#fff' },
+     '1/4': { bg: '#66a3ff', fg:'#fff' },
+     '5/16': { bg: '#1a75ff', fg:'#fff' },
+     '3/8': { bg: '#005ce6', fg:'#fff' },
+     '7/16': { bg: '#1a75ff', fg:'#fff' },
+     '1/2': { bg: '#66a3ff', fg:'#fff' },
+     '9/16': { bg: '#1a75ff', fg:'#fff' },
+     '5/8': { bg: '#005ce6', fg:'#fff' },
+     '11/16': { bg: '#1a75ff', fg:'#fff' },
+     '3/4': { bg: '#66a3ff', fg:'#fff' },
+     '13/16': { bg: '#1a75ff', fg:'#fff' },
+     '7/8': { bg: '#005ce6', fg:'#fff' },
+     '15/16': { bg: '#003d99', fg:'#fff' },
+  };
+
+  function fallbackFor(frac){
+    const [n,d] = frac.split('/').map(Number);
+    if (!n || !d) return { bg: 'hsl(210 70% 50%)', fg:'#fff' };
+    const t = Math.max(0, Math.min(1, n/d));
+    const h = 210 + t * 120; /* blue → magenta */
+    const s = 70, l = 50;
+    return { bg: `hsl(${h} ${s}% ${l}%)`, fg:'#fff' };
+  }
+
+  function applyFractionPalettes(){
+    document.querySelectorAll('.btn.frac[data-frac]').forEach(el=>{
+      const key = el.getAttribute('data-frac');
+      const conf = { ...fallbackFor(key), ...(FRACTION_PALETTES[key]||{}) };
+      if (conf.bg) el.style.setProperty('--btn-bg', conf.bg);
+      if (conf.fg) el.style.setProperty('--btn-fg', conf.fg);
+      if (conf.img) el.style.setProperty('--btn-img', conf.img);
+      if (conf.hoverBg) el.style.setProperty('--btn-hover-bg', conf.hoverBg);
+      if (conf.activeBg) el.style.setProperty('--btn-active-bg', conf.activeBg);
+    });
+  }
+
+  // ===== Fractions input handling =====
+  document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
+    const f=b.dataset.frac;
+    const [n,d]=f.split('/').map(Number);
+    const fVal = n/d;
+
+    if (measure.active){
+      // combine scratch inches entry with this fraction and add to inches
+      if (!measure.inEntry){
+        measure.inches += fVal;
+      } else {
+        const base = parseFloat(measure.inEntry);
+        measure.inches += base + fVal;
+        measure.inEntry = '';
+      }
+      updateInput(); qEval();
+      return;
+    }
+
+    if (!currentEntry) {
+      currentEntry = f; // stand-alone fraction as current entry
+    } else if (isWhole(currentEntry)) {
+      const whole = parseInt(currentEntry,10);
+      const combined = whole + fVal;
+      tokens.push(String(combined)); tokenDisplays.push(undefined); currentEntry='';
+    } else {
+      tokens.push(currentEntry); tokenDisplays.push(undefined);
+      tokens.push('+');         tokenDisplays.push(undefined);
+      currentEntry=f;
+    }
+    updateInput(); qEval();
+  }));
+
+  // Wrap labels so filter hits text glyphs
+  function wrapButtonText(){
+    document.querySelectorAll('.btn').forEach(btn=>{
+      const hasSpan = !!btn.querySelector('.btn-label');
+      if (!hasSpan){
+        const onlyText = btn.childNodes.length === 1 && btn.firstChild.nodeType === Node.TEXT_NODE;
+        if (onlyText){
+          const span = document.createElement('span');
+          span.className = 'btn-label';
+          span.textContent = btn.textContent;
+          btn.replaceChildren(span);
+        }
+      }
+    });
+  }
+
+  // Modal
+  const modal=document.getElementById('modal');
+  document.getElementById('menuBtn').addEventListener('click',()=>{ modal.style.display='flex'; });
+  document.getElementById('closeModal').addEventListener('click',()=>{ modal.style.display='none'; });
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
+
+  // Prevent body scroll, allow results scroll
+  document.addEventListener('touchmove', e=>{
+    if (e.target.closest('.history') || e.target.closest('#modal')) return;
+    e.preventDefault();
+  }, {passive:false});
+
+  // Init
+  function initTape(){ const r=tape.getBoundingClientRect(); if(!r.width){ requestAnimationFrame(initTape); return; } drawTape(0); }
+  computeTile();
+  initTape();
+  loadMemory();
+  wrapButtonText();
+  applyFractionPalettes();
+
+  /* PWA: Service Worker + Install */
+  let deferredPrompt = null;
+  if ('serviceWorker' in navigator){
+    window.addEventListener('load', async () => {
+      try{
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW && newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller){
+              const toast = document.getElementById('updateToast'); if (toast) toast.style.display='flex';
+            }
+          });
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+      }catch(e){ console.warn('SW registration failed', e); }
+    });
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('installBtn'); if (btn) btn.style.display='inline-block';
+    });
+  }
+
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display='none';
+  });
+
+  document.getElementById('updateReload')?.addEventListener('click', async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg?.waiting){ reg.waiting.postMessage('skipWaiting'); }
+  });
+
+})();
+</script>
 </body>
+
+<!-- ===== manifest.webmanifest (create this file alongside) ===== -->
+<!--
+{
+  "name": "Inch Calc",
+  "short_name": "Inch Calc",
+  "start_url": ".",
+  "scope": ".",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#1f4d4d",
+  "theme_color": "#1f4d4d",
+  "description": "Tape & Memory calculator with inch fractions.",
+  "icons": [
+    {"src": "calcicon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "calcicon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any"}
+  ]
+}
+-->
+
+<!-- ===== sw.js (create this file alongside) ===== -->
+<!--
+const CACHE_NAME = 'inch-calc-v1-2025-08-23';
+const ASSETS = [
+  './',
+  './tapemeasurememory.html', // add your actual filename here if different
+  './manifest.webmanifest',
+  './sw.js',
+  './calcicon.png',
+  './apple-touch-icon.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const accept = req.headers.get('accept') || '';
+
+  // HTML (navigation): network-first
+  if (req.mode === 'navigate' || accept.includes('text/html')){
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  const sameOrigin = new URL(req.url).origin === self.location.origin;
+
+  // Same-origin assets: cache-first
+  if (sameOrigin){
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, copy));
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Cross-origin (e.g., CDN): network, fallback to cache
+  event.respondWith(
+    fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(req, copy));
+      return res;
+    }).catch(() => caches.match(req))
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
+});
+-->
 </html>
