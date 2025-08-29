@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <!-- 
          This web page is the sole creation and production of 
          raemenn jewall. 2023
@@ -11,6 +12,7 @@
          This allows for projects to be completed with a higher  
          degree of precision, efficiency, and confidence.
 -->
+
 <title>Segment Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
@@ -102,7 +104,8 @@ input {
 #segmentResult {
     text-align: center;
 }
-.length, .burn, .segmentType {
+.length {
+    width: 33%;
     float: left;
     text-align: center;
     padding-top: 15px;
@@ -110,11 +113,23 @@ input {
     background-color: lightblue;
     border-bottom: 1px solid #363636;
 }
-.length, .segmentType {
-    width: 33%;
-}
 .burn {
     width: 34%;
+    float: left;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 14px;
+    background-color: lightblue;
+    border-bottom: 1px solid #363636;
+}
+.segmentType {
+    width: 33%;
+    float: left;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 14px;
+    background-color: lightblue;
+    border-bottom: 1px solid #363636;
 }
 .resultsBG {
     text-align: center;
@@ -199,6 +214,7 @@ body {
     max-width: 600px;
 }
 }
+
 /* ===== Tape (fixed 3" zoom + classic styling) ===== */
 .tape-wrapper {
     width: 100%;
@@ -244,7 +260,7 @@ body {
     border-top: 1px solid #1b1b1b;
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
-    touch-action: pan-y;
+    touch-action: pan-y; /* keep vertical page scroll; capture horizontal swipes */
 }
 #tapeContainer svg {
     display: block;
@@ -264,6 +280,19 @@ body {
 .pill small {
     opacity: .9
 }
+
+/* ==== No-select & no-callout on controls ==== */
+.tape-btn, .tab, .pill, .label, #tapeContainer, .readme-container button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;            /* iOS long-press menu */
+  -webkit-tap-highlight-color: transparent; /* remove tap flash */
+  -ms-user-select: none;
+}
+.tape-btn { touch-action: manipulation; }   /* helps with double-tap zoom */
+
+/* (optional) re-enable selection for results text if you ever remove body{user-select:none}
+#marksResult, #segmentResult { -webkit-user-select: text; user-select: text; } */
 </style>
 </head>
 <body>
@@ -271,11 +300,11 @@ body {
 <!-- ===== Tape Measure (with zoom) ===== -->
 <div class="tape-wrapper" aria-label="Interactive tape measure">
   <div class="tape-head">
-    <button class="tape-btn" id="prevMark" aria-label="Previous mark" title="Previous">◀</button>
+    <button class="tape-btn" id="prevMark" aria-label="Previous mark" title="Click: previous • Long-press: first">◀</button>
     <div class="spacer"></div>
     <div class="label pill" aria-live="polite"> <span id="markIndex">–</span> of <span id="markCount">0</span> &nbsp;·&nbsp;&nbsp;·&nbsp;&nbsp;·&nbsp;<span id="markFrac">—</span> <small>"</small> </div>
     <div class="spacer"></div>
-    <button class="tape-btn" id="nextMark" aria-label="Next mark" title="Next">▶</button>
+    <button class="tape-btn" id="nextMark" aria-label="Next mark" title="Click: next • Long-press: last">▶</button>
   </div>
   <div id="tapeContainer" role="img" aria-label="Ruler with 1/16-inch ticks"></div>
 </div>
@@ -388,13 +417,13 @@ const tape = {
     let L = 0, R = totalLengthIn || 1;
     if (zoomMode === 'window' && marksDecimal.length){
       const center = marksDecimal[currentMarkIndex] ?? 0;
-      const w = Math.max(1/8, zoomWidth);
+      const w = Math.max(1/8, zoomWidth); // at least 1/8" window
       if ((totalLengthIn||0) > w){
         L = Math.max(0, Math.min(center - w/2, totalLengthIn - w));
         R = L + w;
       }
     }
-    this.winL = L; this.winR = Math.max(L + 1/16, R);
+    this.winL = L; this.winR = Math.max(L + 1/16, R); // ensure non-zero width
     return [this.winL, this.winR];
   },
   scaleX(x, w){
@@ -412,28 +441,34 @@ const tape = {
     svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
     svg.setAttribute('role','img');
 
+    // background
     const bg = document.createElementNS(svgNS, 'rect');
     bg.setAttribute('x', 0); bg.setAttribute('y', 0);
     bg.setAttribute('width', w); bg.setAttribute('height', h);
     bg.setAttribute('fill', 'lightyellow');
     svg.appendChild(bg);
 
+    // baseline
     const base = document.createElementNS(svgNS, 'line');
     base.setAttribute('x1', this.left); base.setAttribute('x2', w - this.right);
     base.setAttribute('y1', h - this.bottom); base.setAttribute('y2', h - this.bottom);
     base.setAttribute('stroke', '#000'); base.setAttribute('stroke-width', 1);
     svg.appendChild(base);
 
+    // ticks within window
     const [L, R] = this.window();
     const startF = Math.floor(L * 16);
     const endF   = Math.ceil(R * 16);
 
+    // gradient background (classic blade vibe)
     const defs = document.createElementNS(svgNS,'defs');
     const grad = document.createElementNS(svgNS,'linearGradient');
     grad.setAttribute('id','blade'); grad.setAttribute('x1','0'); grad.setAttribute('x2','0'); grad.setAttribute('y1','0'); grad.setAttribute('y2','1');
     const s1 = document.createElementNS(svgNS,'stop'); s1.setAttribute('offset','0%');  s1.setAttribute('stop-color','#fff6a6');
     const s2 = document.createElementNS(svgNS,'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#ffe06a');
     grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad); svg.appendChild(defs);
+
+    // repaint bg using gradient
     bg.setAttribute('fill','url(#blade)');
 
     for(let f=startF; f<=endF; f++){
@@ -463,6 +498,7 @@ const tape = {
       }
     }
 
+    // subtle edge shading
     const shadeTop = document.createElementNS(svgNS,'rect');
     shadeTop.setAttribute('x',0); shadeTop.setAttribute('y',0);
     shadeTop.setAttribute('width',w); shadeTop.setAttribute('height',8);
@@ -491,11 +527,14 @@ function drawMarker(){
   line.setAttribute('stroke','#d91e18'); line.setAttribute('stroke-width','4');
 
   const tri = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  const t = 8; // size
+//  tri.setAttribute('points', `${x},0 ${x-t},12 ${x+t},12`);
   tri.setAttribute('fill','#d91e18');
 
   g.appendChild(tri); g.appendChild(line);
   svg.appendChild(g);
 
+  // label update
   document.getElementById('markIndex').textContent = marksDecimal.length? (currentMarkIndex+1) : '–';
   document.getElementById('markCount').textContent = marksDecimal.length;
   const v = marksDecimal[currentMarkIndex] || 0;
@@ -510,8 +549,7 @@ function gotoMark(i){
 
 // ===== Main calculate (original + hook)
 const calculate = () => {
-  const [lengthInput, endDistanceInput, valueUsedInput] =
-    [document.getElementById('length').value, document.getElementById('endDistance').value, document.getElementById('valueUsed').value];
+  const [lengthInput, endDistanceInput, valueUsedInput] = [document.getElementById('length').value, document.getElementById('endDistance').value, document.getElementById('valueUsed').value];
   const method = document.querySelector('.tab.active').id.startsWith('equal') ? 'equal' : 'near';
   const [length, endDistance, valueUsed] = [parseInput(lengthInput), parseInput(endDistanceInput), parseInput(valueUsedInput)];
 
@@ -546,14 +584,21 @@ const calculate = () => {
 let debounceTimer;
 const debounceCalculate = () => { clearTimeout(debounceTimer); debounceTimer = setTimeout(calculate, 200); };
 
-// ===== Button press helper (click vs long-press)
+// ===== Button press helper (click vs long-press) + no-select cleanup + keyboard
 function attachPress(btn, onClick, onLongPress){
-  const HOLD_MS = 900; // long-press threshold
+  const HOLD_MS = 500; // long-press threshold
   let timer = null, longed = false;
+
+  const clearSelection = () => {
+    const sel = window.getSelection && window.getSelection();
+    if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    // legacy IE: if (document.selection) document.selection.empty();
+  };
 
   const start = (e) => {
     longed = false;
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault(); // avoid ghost click
+    clearSelection(); // nuke any existing text highlight (iOS/Android)
     timer = setTimeout(() => {
       longed = true;
       onLongPress();
@@ -576,52 +621,74 @@ function attachPress(btn, onClick, onLongPress){
     btn.addEventListener('touchend', end);
     btn.addEventListener('touchcancel', clear);
   }
+
+  // Keyboard support (Enter / Space to "click")
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  });
+
+  // Stop context menu on long-press
   btn.addEventListener('contextmenu', (e)=> e.preventDefault());
 }
 
 // ===== Listeners
 // tabs
-document.getElementById('equalTab').addEventListener('keydown', e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('equal'); }});
-document.getElementById('nearTab').addEventListener('keydown',  e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('near');  }});
-document.getElementById('equalTab').addEventListener('click', ()=> changeTab('equal'));
-document.getElementById('nearTab').addEventListener('click',  ()=> changeTab('near'));
+ document.getElementById('equalTab').addEventListener('keydown', e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('equal'); }});
+ document.getElementById('nearTab').addEventListener('keydown',  e=>{ if (e.key === 'Enter') { e.preventDefault(); changeTab('near');  }});
+ document.getElementById('equalTab').addEventListener('click', ()=> changeTab('equal'));
+ document.getElementById('nearTab').addEventListener('click',  ()=> changeTab('near'));
 
 // inputs
-document.getElementById('length').addEventListener('input', debounceCalculate);
-document.getElementById('endDistance').addEventListener('input', debounceCalculate);
-document.getElementById('valueUsed').addEventListener('input', debounceCalculate);
+ document.getElementById('length').addEventListener('input', debounceCalculate);
+ document.getElementById('endDistance').addEventListener('input', debounceCalculate);
+ document.getElementById('valueUsed').addEventListener('input', debounceCalculate);
 
 // tape nav buttons: click vs long-press
-const prevBtn = document.getElementById('prevMark');
-const nextBtn = document.getElementById('nextMark');
-attachPress(prevBtn, ()=> gotoMark(currentMarkIndex-1), ()=> gotoMark(0));
-attachPress(nextBtn, ()=> gotoMark(currentMarkIndex+1), ()=> gotoMark(Math.max(0, marksDecimal.length-1)));
+ const prevBtn = document.getElementById('prevMark');
+ const nextBtn = document.getElementById('nextMark');
+ attachPress(prevBtn,
+  ()=> gotoMark(currentMarkIndex-1),            // click
+  ()=> gotoMark(0)                              // long-press → first
+ );
+ attachPress(nextBtn,
+  ()=> gotoMark(currentMarkIndex+1),            // click
+  ()=> gotoMark(Math.max(0, marksDecimal.length-1)) // long-press → last
+ );
 
 // tape redraw on resize
-window.addEventListener('resize', ()=> tape.draw());
+ window.addEventListener('resize', ()=> tape.draw());
+ // (no zoom control — fixed 3")
 
 // ===== Swipe / Wheel / Keyboard navigation on the tape
 (() => {
   const el = document.getElementById('tapeContainer');
 
+  // Keyboard left/right when the tape has focus
   el.setAttribute('tabindex', '0');
   el.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft')  { e.preventDefault(); gotoMark(currentMarkIndex - 1); }
     if (e.key === 'ArrowRight') { e.preventDefault(); gotoMark(currentMarkIndex + 1); }
   });
 
+  // Trackpad/mouse horizontal swipe (wheel) support with a short throttle
   let lastWheel = 0;
   el.addEventListener('wheel', (e) => {
+    // Only react to mostly-horizontal gestures
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     const now = performance.now();
-    if (now - lastWheel < 180) return;
+    if (now - lastWheel < 180) return; // throttle
     lastWheel = now;
     e.preventDefault();
     if (e.deltaX > 0) gotoMark(currentMarkIndex + 1);
     else              gotoMark(currentMarkIndex - 1);
   }, { passive: false });
 
-  const THRESH = 28;
+  // Touch/mouse swipe with Pointer Events (plus a touch fallback)
+  const THRESH = 28; // px horizontal movement required to count as a swipe
+
   function installPointerSwipe(target) {
     let sx = 0, sy = 0, tracking = false, handled = false;
 
@@ -633,12 +700,13 @@ window.addEventListener('resize', ()=> tape.draw());
     const onMove = (x, y, rawEvt) => {
       if (!tracking || handled) return;
       const dx = x - sx, dy = y - sy;
+      // Require mostly-horizontal + threshold
       if (Math.abs(dx) < THRESH || Math.abs(dx) <= Math.abs(dy)) return;
 
-      handled = true;
+      handled = true; // one step per swipe
       if (dx < 0) gotoMark(currentMarkIndex + 1);
       else        gotoMark(currentMarkIndex - 1);
-      rawEvt.preventDefault();
+      rawEvt.preventDefault(); // stop accidental page moves now that we handled it
     };
 
     const onUp = (id) => {
@@ -652,6 +720,7 @@ window.addEventListener('resize', ()=> tape.draw());
       target.addEventListener('pointerup',   e => onUp(e.pointerId), { passive: true });
       target.addEventListener('pointercancel', e => onUp(e.pointerId), { passive: true });
     } else {
+      // iOS <13 fallback
       target.addEventListener('touchstart', e => { const t = e.changedTouches[0]; onDown(t.clientX, t.clientY, 0); }, { passive: true });
       target.addEventListener('touchmove',  e => { const t = e.changedTouches[0]; onMove(t.clientX, t.clientY, e); }, { passive: false });
       target.addEventListener('touchend',   () => onUp(0), { passive: true });
