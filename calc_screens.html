@@ -218,7 +218,9 @@
   }
 
   /* Feet peek visual */
-  #feetBtn.peek { box-shadow: 0 0 0 2px #0ea5a5 inset, 0 2px 8px rgba(0,0,0,.3); }
+  #feetBtn.peek {
+    box-shadow: 0 0 0 2px #0ea5a5 inset, 0 2px 8px rgba(0,0,0,.3);
+  }
 
   /* Memory “saved” confirmation flash */
   .btn.mem.saved {
@@ -248,31 +250,6 @@
     box-shadow:0 8px 24px rgba(0,0,0,.25);
     font-size:14px;
   }
-
-  /* ===== Memory Manager modal ===== */
-  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:50; }
-  .mm-card{
-    background:#fff; color:#222; max-width:min(720px, 94vw); max-height:min(80vh, 720px);
-    overflow:auto; border-radius:12px; padding:14px 14px 16px; box-shadow:0 12px 40px rgba(0,0,0,.45);
-  }
-  .mm-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
-  .mm-title{ font-size:18px; font-weight:800; margin:0; }
-  .mm-actions{ display:flex; gap:6px; flex-wrap:wrap; }
-  .mm-btn{
-    border:0; border-radius:8px; padding:8px 10px; font-weight:700; cursor:pointer;
-    background:#0ea5a5; color:#111;
-  }
-  .mm-btn.secondary{ background:#111; color:#fff; }
-  .mm-btn.warn{ background:#e57373; color:#fff; }
-  .mm-section{ background:#fffef5; border:1px solid #eee4; border-radius:10px; padding:10px; margin-top:8px; }
-  .mm-grid{ display:grid; grid-template-columns:1fr auto; gap:6px 8px; align-items:center; }
-  .mm-slot-label{ font-weight:700; }
-  .chip{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight:700; padding:3px 6px; border-radius:6px; background:#111; color:#bdfcb7; }
-  .mm-bank{ margin-top:10px; }
-  .mm-bank-item{ display:grid; grid-template-columns:1fr auto; gap:6px 8px; align-items:center; padding:6px; border-radius:8px; }
-  .mm-bank-item:nth-child(odd){ background:#f8fafc; }
-  .mm-bank-actions{ display:flex; gap:6px; flex-wrap:wrap; }
-  .mm-small{ font-size:12px; padding:6px 8px; border-radius:6px; }
 </style>
 </head>
 <body>
@@ -376,64 +353,52 @@
     </div>
   </div>
 
-  <!-- Help / menu modal (unchanged) -->
+  <!-- Minimal modal -->
   <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30;">
     <div style="background:#fffdee; color:#222; max-width:min(680px, 92vw); max-height:min(80vh, 700px); overflow:auto; border-radius:12px; padding:16px 18px; box-shadow:0 12px 40px rgba(0,0,0,.45);">
-      <h2 class="cm-title">A tape-measure calculator for my friends.</h2>
-      <ul class="cm-list">
-        <li>
-          <div class="cm-sub">Combine inches, decimals, and fractions in a single calculation.</div>
-          <div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div>
-        </li>
-        <li><div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div></li>
-        <li><div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div></li>
-        <li>
-          <div class="cm-head">Results are solved and displayed automatically, in three ways:</div>
-          <ul class="cm-bullets">
-            <li>Red line on tape measure visually accurate in decimal</li>
-            <li>Left results window, rounded to the nearest 1/16″</li>
-            <li>Right results window, precise in decimal 00.000″</li>
-          </ul>
-        </li>
-        <li>
-          <div class="cm-head">Memory slot stores four clearly labeled values:</div>
-          <ul class="cm-bullets">
-            <li>Long press to store new value as well as to replace an existing value</li>
-            <li>CM = Clear Memory, M1–M4 = Memory Slots</li>
-          </ul>
-        </li>
-        <li>
-          <div class="cm-head">Undo / Clear</div>
-          <ul class="cm-bullets">
-            <li>&larr; Undo numbers, fractions, and operators one character at a time</li>
-            <li><b>C</b> Clear entire results screen</li>
-          </ul>
-        </li>
-        <li><div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div></li>
+
+  <h2 class="cm-title">A tape-measure calculator for my friends.</h2>
+  <ul class="cm-list">
+    <li>
+      <div class="cm-sub">Combine inches, decimals, and fractions in a single calculation.</div>
+      <div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div>
+    </li>
+
+    <li><div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div></li>
+    <li><div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div></li>
+
+    <li>
+      <div class="cm-head">Results are solved and displayed automatically, in three ways:</div>
+      <ul class="cm-bullets">
+        <li>Red line on tape measure visually accurate in decimal</li>
+        <li>Left results window, rounded to the nearest 1/16″</li>
+        <li>Right results window, precise in decimal 00.000″</li>
       </ul>
+    </li>
+
+    <li>
+      <div class="cm-head">Memory slot stores four clearly labeled values:</div>
+      <ul class="cm-bullets">
+        <li>Long press to store new value as well as to replace an existing value</li>
+        <li>CM = Clear Memory, M1–M4 = Memory Slots</li>
+      </ul>
+    </li>
+
+    <li>
+      <div class="cm-head">Undo / Clear</div>
+      <ul class="cm-bullets">
+        <li>&larr; Undo numbers, fractions, and operators one character at a time</li>
+        <li><b>C</b> Clear entire results screen</li>
+      </ul>
+    </li>
+
+    <li><div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div></li>
+  </ul>
 
       <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
         <button id="installBtn" style="background:#0ea5a5; color:#111; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; display:none;">Install</button>
         <button id="closeModal" style="background:#111; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
       </div>
-    </div>
-  </div>
-
-  <!-- Memory Manager modal -->
-  <div id="memModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="mmTitle">
-    <div class="mm-card">
-      <div class="mm-head">
-        <h3 id="mmTitle" class="mm-title">Memory Manager</h3>
-        <div class="mm-actions">
-          <button class="mm-btn" data-mm="saveCurrent">Save current result</button>
-          <button class="mm-btn secondary" data-mm="clearSlots">Clear M1–M4</button>
-          <button class="mm-btn warn" data-mm="clearBank">Clear Bank</button>
-          <button class="mm-btn secondary" data-mm="close">Close</button>
-        </div>
-      </div>
-
-      <div class="mm-section" id="mmSlots"></div>
-      <div class="mm-section mm-bank" id="mmBank"></div>
     </div>
   </div>
 
@@ -515,9 +480,7 @@
   const decimalLine = document.getElementById('decimalLine');
 
   const MEMORY_KEY = 'calcMemorySlots_uniform420';
-  const BANK_KEY   = 'calcMemoryBank_uniform420';
   let memorySlots = [null,null,null,null];
-  let memoryBank  = []; // array of numbers (inches)
 
   let tokens = [];                 // raw tokens for math
   let tokenDisplays = [];          // pretty display for measurement tokens
@@ -691,4 +654,530 @@
       const inches = i/16;
       const x = (inches - center)*PPI + mid - 1.5;
       const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
-      if (i%16===0){ el
+      if (i%16===0){ el.classList.add('num'); const lbl=document.createElement('div'); lbl.className='tick-label'; lbl.textContent=inches.toFixed(0); lbl.style.left=(x+1.5)+'px'; tape.appendChild(lbl); }
+      else if (i%8===0) el.classList.add('lg'); else if (i%4===0) el.classList.add('med'); else el.classList.add('small');
+      tape.appendChild(el);
+    }
+    sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
+  }
+
+  // Memory helpers
+  function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
+  function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
+
+  function ensureLabelSpan(btn){
+    let span = btn.querySelector('.btn-label');
+    if (!span){
+      span = document.createElement('span');
+      span.className = 'btn-label';
+      span.textContent = btn.textContent;
+      btn.replaceChildren(span);
+    }
+    return span;
+  }
+
+  function formatResultInchOnlyLabel(v){
+    return formatResultInch(v).fraction.replace('"','');
+  }
+
+  function refreshMemLabels(){
+    document.querySelectorAll('.btn.mem').forEach(btn=>{
+      const i=+btn.dataset.mem, v=memorySlots[i];
+      const text = v==null ? `M${i+1}` : formatResultInchOnlyLabel(v);
+      const span = ensureLabelSpan(btn);
+      span.textContent = text;
+    });
+  }
+
+  // ===== Number / decimal entry =====
+  document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
+    const val = b.dataset.val;
+    if (measure.active){
+      measure.inEntry += val;
+      updateInput(); qEval();
+      return;
+    }
+    currentEntry += val; updateInput(); qEval();
+  }));
+
+  document.querySelector('.btn.dec[data-val="."]').addEventListener('click',()=>{
+    if (measure.active){
+      if (!measure.inEntry.includes('.')) measure.inEntry = measure.inEntry ? (measure.inEntry + '.') : '0.';
+      updateInput(); qEval();
+      return;
+    }
+    if (currentEntry.includes('.')) return;
+    currentEntry = currentEntry ? currentEntry+'.' : '0.';
+    updateInput(); qEval();
+  });
+
+  // ===== Operators =====
+  document.querySelectorAll('.btn.operator[data-op]').forEach(b=>b.addEventListener('click',()=>{
+    const op = b.dataset.op;
+    if (measure.active) finalizeMeasureToken();
+
+    if (currentEntry){
+      tokens.push(currentEntry);
+      tokenDisplays.push(undefined);
+      currentEntry='';
+    }
+    if (!tokens.length && op !== '-') { updateInput(); qEval(); return; }
+
+    if (isOp(tokens.at(-1))){
+      tokens[tokens.length-1] = op;
+    } else {
+      tokens.push(op);
+      tokenDisplays.push(undefined);
+    }
+    updateInput(); qEval();
+  }));
+
+  // ===== Backspace / Clear =====
+  document.querySelector('.btn.back').addEventListener('click',()=>{
+    if (measure.active){
+      if (measure.inEntry){
+        measure.inEntry = measure.inEntry.slice(0,-1);
+      } else if (measure.inches > 0){
+        measure.inches = 0;
+      } else {
+        measure = { active:false, feet:0, inches:0, inEntry:'' };
+      }
+      updateInput(); evaluate(); return;
+    }
+
+    if (currentEntry){
+      currentEntry = currentEntry.slice(0,-1);
+    } else if (tokens.length){
+      let last = tokens.at(-1);
+      if (isOp(last)) {
+        tokens.pop(); tokenDisplays.pop();
+      } else {
+        last = last.slice(0,-1);
+        if (last) tokens[tokens.length-1]=last;
+        else { tokens.pop(); tokenDisplays.pop(); }
+      }
+    }
+    updateInput(); evaluate();
+  });
+
+  document.querySelector('.btn.clear[data-action="clear"]').addEventListener('click',()=>{
+    tokens=[]; tokenDisplays=[]; currentEntry=''; measure = { active:false, feet:0, inches:0, inEntry:'' };
+    inputLine.textContent=''; fractionLine.textContent=''; decimalLine.textContent='';
+    drawTape(0);
+  });
+
+  // ===== Feet behavior (tap) =====
+  const feetBtn = document.getElementById('feetBtn');
+  feetBtn.addEventListener('click',()=>{
+    if (isDec(currentEntry)){
+      const ft = parseFloat(currentEntry);
+      const total = ft * 12;
+      tokens.push(String(total));
+      tokenDisplays.push(`${ft}\u2032`);
+      currentEntry='';
+      updateInput(); qEval();
+      return;
+    }
+    if (isWhole(currentEntry)){
+      measure = { active:true, feet: parseInt(currentEntry,10), inches:0, inEntry:'' };
+      currentEntry='';
+      updateInput(); qEval();
+      return;
+    }
+    if (!currentEntry) return;
+
+    const ft = parseFloat(currentEntry);
+    if (!Number.isNaN(ft)){
+      const total = ft * 12;
+      tokens.push(String(total));
+      tokenDisplays.push(`${ft}\u2032`);
+      currentEntry='';
+      updateInput(); qEval();
+    }
+  });
+
+  // ===== Memory buttons =====
+  document.querySelectorAll('.btn.mem').forEach(btn=>{
+    // Ripple also added globally—no change needed here
+
+    // Insert on tap
+    btn.addEventListener('click',()=>{
+      const i=+btn.dataset.mem, v=memorySlots[i]; if (v==null) return;
+      if (measure.active) finalizeMeasureToken();
+      if (currentEntry) tokens.push(currentEntry), tokenDisplays.push(undefined);
+      currentEntry = String(v);
+      updateInput(); evaluate();
+    });
+
+    // Store on double-click (or long-press)
+    btn.addEventListener('dblclick',()=>{
+      let expr=[...tokens];
+      if (currentEntry) expr.push(currentEntry);
+      while (expr.length && isOp(expr.at(-1))) expr.pop();
+      let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
+      let valNum = (typeof base==='number' ? base : base.toNumber()) + (measure.active ? measureTotal() : 0);
+
+      const i=+btn.dataset.mem;
+      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResultInchOnlyLabel(memorySlots[i])}. Replace?`) : true;
+      if (!confirmReplace) return;
+      memorySlots[i]= valNum;
+      saveMemory(); refreshMemLabels();
+
+      // Saved flash
+      btn.classList.add('saved');
+      setTimeout(() => btn.classList.remove('saved'), 480);
+    });
+
+    // Long-press → store (touch)
+    let lpTimer = null;
+    btn.addEventListener('touchstart', () => {
+      setHoldVisual(btn, true);
+      lpTimer = setTimeout(() => {
+        btn.dispatchEvent(new Event('dblclick'));
+      }, 600);
+    }, { passive: true });
+
+    function clearLP() {
+      clearTimeout(lpTimer);
+      setHoldVisual(btn, false);
+    }
+    btn.addEventListener('touchend', clearLP, { passive: true });
+    btn.addEventListener('touchcancel', clearLP, { passive: true });
+  });
+
+  document.querySelector('.btn.clear[data-action="mc"]').addEventListener('click',()=>{
+    if (!confirm('Clear all memory slots?')) return;
+    memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
+  });
+
+  /* ===== FRACTION BUTTON PALETTES ===== */
+  const FRACTION_PALETTES = {
+     '1/16': { bg: '#003d99', fg:'#fff' },
+     '1/8': { bg: '#005ce6', fg:'#fff' },
+     '3/16': { bg: '#1a75ff', fg:'#fff' },
+     '1/4': { bg: '#66a3ff', fg:'#fff' },
+     '5/16': { bg: '#1a75ff', fg:'#fff' },
+     '3/8': { bg: '#005ce6', fg:'#fff' },
+     '7/16': { bg: '#1a75ff', fg:'#fff' },
+     '1/2': { bg: '#66a3ff', fg:'#fff' },
+     '9/16': { bg: '#1a75ff', fg:'#fff' },
+     '5/8': { bg: '#005ce6', fg:'#fff' },
+     '11/16': { bg: '#1a75ff', fg:'#fff' },
+     '3/4': { bg: '#66a3ff', fg:'#fff' },
+     '13/16': { bg: '#1a75ff', fg:'#fff' },
+     '7/8': { bg: '#005ce6', fg:'#fff' },
+     '15/16': { bg: '#003d99', fg:'#fff' },
+  };
+
+  function fallbackFor(frac){
+    const [n,d] = frac.split('/').map(Number);
+    if (!n || !d) return { bg: 'hsl(210 70% 50%)', fg:'#fff' };
+    const t = Math.max(0, Math.min(1, n/d));
+    const h = 210 + t * 120; /* blue → magenta */
+    const s = 70, l = 50;
+    return { bg: `hsl(${h} ${s}% ${l}%)`, fg:'#fff' };
+  }
+
+  function applyFractionPalettes(){
+    document.querySelectorAll('.btn.frac[data-frac]').forEach(el=>{
+      const key = el.getAttribute('data-frac');
+      const conf = { ...fallbackFor(key), ...(FRACTION_PALETTES[key]||{}) };
+      if (conf.bg) el.style.setProperty('--btn-bg', conf.bg);
+      if (conf.fg) el.style.setProperty('--btn-fg', conf.fg);
+      if (conf.img) el.style.setProperty('--btn-img', conf.img);
+      if (conf.hoverBg) el.style.setProperty('--btn-hover-bg', conf.hoverBg);
+      if (conf.activeBg) el.style.setProperty('--btn-active-bg', conf.activeBg);
+    });
+  }
+
+  // ===== Fractions input handling =====
+  document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
+    const f=b.dataset.frac;
+    const [n,d]=f.split('/').map(Number);
+    const fVal = n/d;
+
+    if (measure.active){
+      if (!measure.inEntry){
+        measure.inches += fVal;
+      } else {
+        const base = parseFloat(measure.inEntry);
+        measure.inches += base + fVal;
+        measure.inEntry = '';
+      }
+      updateInput(); qEval();
+      return;
+    }
+
+    if (!currentEntry) {
+      currentEntry = f;
+    } else if (isWhole(currentEntry)) {
+      const whole = parseInt(currentEntry,10);
+      const combined = whole + fVal;
+      tokens.push(String(combined)); tokenDisplays.push(undefined); currentEntry='';
+    } else {
+      tokens.push(currentEntry); tokenDisplays.push(undefined);
+      tokens.push('+');         tokenDisplays.push(undefined);
+      currentEntry=f;
+    }
+    updateInput(); qEval();
+  }));
+
+  // ---- UI helpers: ripples / hold visuals / copy-to-clipboard / toasts
+  function attachRipples() {
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('pointerdown', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const maxDim = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = maxDim * 1.2 + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        btn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      });
+    });
+  }
+  function setHoldVisual(btn, on) { if (btn) btn.classList.toggle('hold', !!on); }
+
+  function showToast(msg='Copied', ms=900){
+    const toast = document.getElementById('copyToast');
+    if (!toast) return;
+    toast.querySelector('span').textContent = msg;
+    toast.style.display='flex';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>{ toast.style.display='none'; }, ms);
+  }
+  function enableClickCopy(selector){
+    document.querySelectorAll(selector).forEach(el=>{
+      el.style.cursor='pointer';
+      el.addEventListener('click', () => {
+        const sel = window.getSelection();
+        if (sel && sel.toString().length > 0) return; // let manual selection win
+        const text = (el.textContent || '').trim();
+        if (!text) return;
+        if (navigator.clipboard?.writeText){
+          navigator.clipboard.writeText(text).then(()=> showToast('Copied'));
+        } else {
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = text; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); showToast('Copied'); } catch {}
+          ta.remove();
+        }
+      });
+    });
+  }
+
+  // Block selection/callout on buttons only (not outputs/history)
+  document.addEventListener('selectstart', (e) => {
+    if (e.target.closest('.btn')) e.preventDefault();
+  }, { capture: true });
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.btn')) e.preventDefault();
+  }, { capture: true });
+
+  // Modal
+  const modal=document.getElementById('modal');
+  document.getElementById('menuBtn').addEventListener('click',()=>{ modal.style.display='flex'; });
+  document.getElementById('closeModal').addEventListener('click',()=>{ modal.style.display='none'; });
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
+
+  // Prevent body scroll, allow results/history/modal/output scroll/selection
+  document.addEventListener('touchmove', e=>{
+    if (e.target.closest('.history') || e.target.closest('.output') || e.target.closest('#modal')) return;
+    e.preventDefault();
+  }, {passive:false});
+
+  // === Feet Peek (hold) ===
+  (function enableFeetPeek(){
+    const DELAY_MS = 1000; // 1s hold
+    let holdTimer = null;
+    let peeking = false;
+    let suppressNextClick = false;
+
+    const start = () => {
+      clearTimeout(holdTimer);
+      setHoldVisual(feetBtn, true);
+      holdTimer = setTimeout(()=>{
+        peeking = true;
+        suppressNextClick = true;
+        displayMode = 'feet';
+        feetBtn.classList.add('peek');
+        evaluate();
+      }, DELAY_MS);
+    };
+    const end = () => {
+      clearTimeout(holdTimer);
+      setHoldVisual(feetBtn, false);
+      if (peeking){
+        peeking = false;
+        displayMode = 'inch';
+        feetBtn.classList.remove('peek');
+        evaluate();
+      }
+    };
+
+    feetBtn.addEventListener('pointerdown', start);
+    feetBtn.addEventListener('pointerup', end);
+    feetBtn.addEventListener('pointercancel', end);
+    feetBtn.addEventListener('mouseleave', end);
+
+    feetBtn.addEventListener('click', (e)=>{
+      if (suppressNextClick){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        suppressNextClick = false;
+      }
+    }, true);
+  })();
+
+  // Init
+  function initTape(){ const r=tape.getBoundingClientRect(); if(!r.width){ requestAnimationFrame(initTape); return; } drawTape(0); }
+  computeTile();
+  initTape();
+  loadMemory();
+
+  attachRipples();
+  applyFractionPalettes();
+  enableClickCopy('#fractionLine, #decimalLine');
+
+  /* PWA: Service Worker + Install */
+  let deferredPrompt = null;
+  if ('serviceWorker' in navigator){
+    window.addEventListener('load', async () => {
+      try{
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW && newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller){
+              const toast = document.getElementById('updateToast'); if (toast) toast.style.display='flex';
+            }
+          });
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+      }catch(e){ console.warn('SW registration failed', e); }
+    });
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('installBtn'); if (btn) btn.style.display='inline-block';
+    });
+  }
+
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display='none';
+  });
+
+  document.getElementById('updateReload')?.addEventListener('click', async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg?.waiting){ reg.waiting.postMessage('skipWaiting'); }
+  });
+
+})();
+</script>
+</body>
+
+<!-- ===== manifest.webmanifest (create this file alongside) ===== -->
+<!--
+{
+  "name": "Inch Calc",
+  "short_name": "Inch Calc",
+  "start_url": ".",
+  "scope": ".",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#1f4d4d",
+  "theme_color": "#1f4d4d",
+  "description": "Tape & Memory calculator with inch fractions.",
+  "icons": [
+    {"src": "calcicon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "calcicon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any"}
+  ]
+}
+-->
+
+<!-- ===== sw.js (create this file alongside) ===== -->
+<!--
+const CACHE_NAME = 'inch-calc-v1-2025-08-23';
+const ASSETS = [
+  './',
+  './tapemeasurememory.html',
+  './manifest.webmanifest',
+  './sw.js',
+  './calcicon.png',
+  './apple-touch-icon.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const accept = req.headers.get('accept') || '';
+
+  // HTML (navigation): network-first
+  if (req.mode === 'navigate' || accept.includes('text/html')){
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  const sameOrigin = new URL(req.url).origin === self.location.origin;
+
+  // Same-origin assets: cache-first
+  if (sameOrigin){
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, copy));
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Cross-origin (e.g., CDN): network, fallback to cache
+  event.respondWith(
+    fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(req, copy));
+      return res;
+    }).catch(() => caches.match(req))
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
+});
+-->
+</html>
