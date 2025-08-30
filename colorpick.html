@@ -3,420 +3,265 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-<title>Inch Calc — Color Mockup (1:1 Layout)</title>
+<title>Inch Calc — Simple Color Mockup (Fresh Build)</title>
 <style>
-  /* === Base + tokens === */
   :root{
-    --card-max: 420px;     /* match live app width */
-    --gap: 8px;            /* unified spacing */
-    --tile: 56px;          /* unified button height */
+    --card-max: 420px;
+    --gap: 8px;
+    --tile: 56px;
     --pad: var(--gap);
 
-    /* panels */
-    --bg: #0f1e1e;         /* page */
-    --card: #122525;       /* panels */
-    --ink: #e6f3f3;        /* text */
-    --muted:#9ababa;       
-    --outline:#6ad5b9;
-    --select: 2px dashed var(--outline);
+    --bg: #0e1b1b; --card:#122525; --ink:#e6f3f3; --muted:#9ababa; --ring:#6ad5b9;
   }
-
   *,*::before,*::after{ box-sizing:border-box }
   html,body{ height:100% }
-  html, body{ margin:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
-
+  html, body{ margin:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
   .wrap{ display:flex; justify-content:center; padding:12px; }
 
-  /* ---------- Card (stacked zones, mirroring live) ---------- */
-  .card{
-    width: clamp(320px, 100%, var(--card-max));
-    display:grid; gap:var(--gap);
-    grid-template-rows:
-      minmax(100px, auto)  /* tape */
-      140px                /* results */
-      auto                 /* memory/console/fractions group panel */;
-  }
-  .panel{
-    background:var(--card);
-    border-radius:10px;
-    box-shadow:0 8px 24px rgba(0,0,0,.22);
-    overflow:hidden;
-  }
+  /* Panels / layout */
+  .card{ width:clamp(320px,100%,var(--card-max)); display:grid; gap:var(--gap); grid-template-rows: minmax(80px,auto) 120px auto; }
+  .panel{ background:var(--card); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.22); overflow:hidden; }
   .pad{ padding:var(--pad) }
 
-  /* ---------- Tape (visual placeholder only) ---------- */
-  .tape{ position:relative; min-height:100px; }
-  .tape-inner{ position:absolute; inset:0; border:1px solid rgba(255,255,255,.08);
-    background:linear-gradient(to bottom, rgba(255,255,0,.25), rgba(255,255,0,.45)); }
-  .center-line{ position:absolute; top:16%; left:50.1%; width:5px; height:78%; background:#e33; transform:translateX(-50%); opacity:.6; }
+  .tape{ position:relative; min-height:80px; }
+  .tape::after{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(255,255,0,.25), rgba(255,255,0,.45)); border:1px solid rgba(255,255,255,.08); }
+  .center-line{ position:absolute; top:12%; left:50%; width:4px; height:76%; background:#e33; opacity:.6; transform:translateX(-50%); }
 
-  /* ---------- Results (non-functional preview) ---------- */
-  .results{ display:flex; flex-direction:column; }
   .results .pad{ display:flex; flex-direction:column; gap:8px; }
-  .history{ flex:0 0 44px; overflow:auto; font-size:14px; color:var(--muted); }
-  .output{ display:flex; justify-content:space-between; gap:8px; font-size:28px; color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.12); }
+  .history{ flex:0 0 40px; overflow:auto; font-size:14px; color:var(--muted); }
+  .output{ display:flex; justify-content:space-between; gap:8px; font-size:26px; color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.12); }
 
-  /* ---------- Inner group panel like live app ---------- */
   .io{ display:flex; flex-direction:column; gap:var(--gap); }
-
-  /* Memory (5×1) */
-  .memory-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(1, var(--tile)); }
-
-  /* Console (5×4) — exact grid */
-  .console-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(4, var(--tile)); }
+  .memory-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(1,var(--tile)); }
+  .console-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(4,var(--tile)); }
+  .fract-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(3,var(--tile)); }
   .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
   .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
 
-  /* Fractions (5×3) */
-  .fract-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(3, var(--tile)); }
+  .btn{ height:100%; width:100%; border:1px solid rgba(255,255,255,.12); border-radius:8px; background:#183232; color:var(--ink); display:grid; place-items:center; font-weight:700; font-size:clamp(14px, calc(var(--tile)*.42), 20px); letter-spacing:.25px; cursor:pointer; transition:transform .05s ease, box-shadow .15s ease, background-color .2s ease, color .2s ease; }
+  .btn:hover{ box-shadow:0 8px 22px rgba(0,0,0,.33) }
+  .btn:active{ transform:translateY(1px) }
+  .btn.is-selected{ outline:2px dashed var(--ring); outline-offset:2px }
+  .btn.operator{ border-color: rgba(255,180,80,.4) }
 
-  /* ---------- Buttons (paintable) ---------- */
-  .btn{
-    height:100%; width:100%;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:6px;
-    background:#153232; color:var(--ink);
-    display:grid; place-items:center; font-weight:700;
-    font-size:clamp(14px, calc(var(--tile)*.42), 20px);
-    letter-spacing:.25px;
-    user-select:none; -webkit-user-select:none;
-    cursor:pointer; position:relative;
-    transition:transform .05s ease, box-shadow .15s ease, background-color .2s ease, color .2s ease, border-color .2s ease;
-  }
-  .btn:hover{ box-shadow: 0 8px 22px rgba(0,0,0,.33); }
-  .btn:active{ transform: translateY(1px); }
-  .btn .btn-label{ line-height:1; filter: url(#textInnerShadow); }
+  /* Palette / controls */
+  .palette{ margin-top:12px; padding:10px; background:#0f2222; border:1px solid rgba(255,255,255,.08); border-radius:10px; display:grid; gap:10px; }
+  .row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .row label{ font-size:12px; color:var(--muted); white-space:nowrap }
+  .row input,.row select,.row button,.row textarea{ background:#0d1f1f; color:var(--ink); border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:8px; font:inherit }
+  .pill{ padding:6px 10px; border-radius:999px; font-size:12px }
+  .swatch{ width:34px; height:22px; border-radius:6px; border:1px solid rgba(255,255,255,.35) }
+  .help{ color:var(--muted); font-size:12px }
+  .spacer{ flex:1 }
+  .swatch-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(26px,1fr)); gap:6px; max-height:180px; overflow:auto; background:#0d1f1f; border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:8px }
+  .swatch-item{ width:100%; aspect-ratio:1/1; border-radius:6px; border:1px solid rgba(255,255,255,.35); cursor:pointer }
 
-  /* selection ring for painting */
-  .btn.is-selected{ outline: var(--select); outline-offset:2px; }
+  .status{ font-size:12px; color:var(--muted) }
 
-  /* role hints for quick-select */
-  .btn.operator{ border-color: rgba(255,150,60,.35); }
-
-  /* ---------- Palette / controls ---------- */
-  .palette{
-    margin-top:12px; padding:10px; background:#102222;
-    border:1px solid rgba(255,255,255,.08); border-radius:10px;
-    display:grid; gap:10px;
-  }
-  .controls{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-  .row{ display:flex; align-items:center; gap:8px; }
-  .row label{ white-space:nowrap; font-size:12px; color:var(--muted); }
-  .row select,.row input,.row button,.row textarea{ background:#0f1f1f; color:var(--ink); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px; font:inherit; width:100%; }
-  .pill{ padding:6px 10px; border-radius:999px; font-size:12px; }
-  .swatch{ width:36px; height:24px; border-radius:6px; border:1px solid rgba(255,255,255,.35); }
-  .help{ color:var(--muted); font-size:12px; }
-  .flex{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .spacer{ flex:1; }
-  .kbd{ background:#0d1919; border:1px solid rgba(255,255,255,.12); padding:2px 6px; border-radius:6px; font-size:11px; }
-
-  /* Swatch palette grid */
-  .swatch-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap:6px; max-height: 180px; overflow:auto; background:#0f1f1f; border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px; }
-  .swatch-item{ width:100%; aspect-ratio: 1 / 1; border-radius:6px; border:1px solid rgba(255,255,255,.35); cursor:pointer; }
-
-  @media (max-width: 460px){ .card{ width:100%; } }
+  @media (max-width:460px){ .card{ width:100% } }
 </style>
 </head>
 <body>
-  <!-- Hidden SVG filter to mimic inner-shadow glyphs like live app -->
-  <svg width="0" height="0" style="position:absolute">
-    <filter id="textInnerShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur"/>
-      <feOffset dy="1" result="offset"/>
-      <feComposite in="offset" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="inner"/>
-      <feFlood flood-color="black" flood-opacity="0.45" result="shade"/>
-      <feComposite in="shade" in2="inner" operator="in" result="shadow"/>
-      <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
-    </filter>
-  </svg>
-
   <div class="wrap">
     <div class="card" id="card">
-      <!-- Tape (visual only) -->
-      <div class="panel tape">
-        <div class="tape-inner">
-          <div class="center-line"></div>
-        </div>
-      </div>
+      <div class="panel tape"><div class="center-line"></div></div>
 
-      <!-- Results (non-functional) -->
       <div class="panel results">
         <div class="pad">
           <div class="history">42′ 1 3/16″ + 2 7/8″ − 9/16″</div>
-          <div class="output"><div id="fractionLine">42 3/16″</div><div id="decimalLine">42.1875″</div></div>
+          <div class="output"><div>42 3/16″</div><div>42.1875″</div></div>
         </div>
       </div>
 
-      <!-- Group panel: Memory + Console + Fractions -->
       <div class="panel pad">
         <div class="io">
-          <!-- Memory (5×1) -->
-          <div class="memory-grid" id="memory">
-            <button class="btn mem" data-key="mc"><span class="btn-label">MC</span></button>
-            <button class="btn mem" data-key="m1"><span class="btn-label">M1</span></button>
-            <button class="btn mem" data-key="m2"><span class="btn-label">M2</span></button>
-            <button class="btn mem" data-key="m3"><span class="btn-label">M3</span></button>
-            <button class="btn mem" data-key="m4"><span class="btn-label">M4</span></button>
+          <!-- Memory 5×1 -->
+          <div class="memory-grid">
+            <button class="btn mem" data-key="mc">MC</button>
+            <button class="btn mem" data-key="m1">M1</button>
+            <button class="btn mem" data-key="m2">M2</button>
+            <button class="btn mem" data-key="m3">M3</button>
+            <button class="btn mem" data-key="m4">M4</button>
           </div>
 
-          <!-- Console (5×4) exact layout -->
-          <div class="console-grid" id="console">
-            <!-- Utility rail (col 1) -->
-            <button class="btn func back r1 c1" data-key="back"><span class="btn-label">←</span></button>
-            <button class="btn func clear r2 c1" data-key="clear"><span class="btn-label">C</span></button>
-            <button class="btn func menu  r3 c1" data-key="menu"><span class="btn-label">menu</span></button>
-            <button class="btn func operator feet  r4 c1" id="feetBtn" data-key="feet"><span class="btn-label">Ft</span></button>
-
-            <!-- Numbers (cols 2–4) -->
-
-            <button class="btn num r1 c2" data-key="num-7"><span class="btn-label">7</span></button>
-            <button class="btn num r1 c3" data-key="num-8"><span class="btn-label">8</span></button>
-            <button class="btn num r1 c4" data-key="num-9"><span class="btn-label">9</span></button>
-
-            <button class="btn num r2 c2" data-key="num-4"><span class="btn-label">4</span></button>
-            <button class="btn num r2 c3" data-key="num-5"><span class="btn-label">5</span></button>
-            <button class="btn num r2 c4" data-key="num-6"><span class="btn-label">6</span></button>
-
-            <button class="btn num r3 c2" data-key="num-1"><span class="btn-label">1</span></button>
-            <button class="btn num r3 c3" data-key="num-2"><span class="btn-label">2</span></button>
-            <button class="btn num r3 c4" data-key="num-3"><span class="btn-label">3</span></button>
-
+          <!-- Console 5×4 -->
+          <div class="console-grid">
+            <!-- col 1 -->
+            <button class="btn back clearback r1 c1" data-key="back">←</button>
+            <button class="btn clear clearback r2 c1" data-key="clear">C</button>
+            <button class="btn func r3 c1" data-key="menu">menu</button>
+            <button class="btn operator r4 c1" data-key="feet">Ft</button>
+            <!-- nums 2–4 -->
+            <button class="btn num r1 c2" data-key="n7">7</button>
+            <button class="btn num r1 c3" data-key="n8">8</button>
+            <button class="btn num r1 c4" data-key="n9">9</button>
+            <button class="btn num r2 c2" data-key="n4">4</button>
+            <button class="btn num r2 c3" data-key="n5">5</button>
+            <button class="btn num r2 c4" data-key="n6">6</button>
+            <button class="btn num r3 c2" data-key="n1">1</button>
+            <button class="btn num r3 c3" data-key="n2">2</button>
+            <button class="btn num r3 c4" data-key="n3">3</button>
             <button class="btn r4 c2" data-key="blank"></button>
-            <button class="btn num r4 c3" data-key="num-0"><span class="btn-label">0</span></button>
-            <button class="btn num dec r4 c4" data-key="dot"><span class="btn-label">.</span></button>
-
-            <!-- Operator rail (col 5) -->
-            <button class="btn operator r1 c5" data-key="add"><span class="btn-label">+</span></button>
-            <button class="btn operator r2 c5" data-key="sub"><span class="btn-label">−</span></button>
-            <button class="btn operator r3 c5" data-key="mul"><span class="btn-label">×</span></button>
-            <button class="btn operator r4 c5" data-key="div"><span class="btn-label">÷</span></button>
+            <button class="btn num r4 c3" data-key="n0">0</button>
+            <button class="btn dec r4 c4" data-key="dot">.</button>
+            <!-- operator rail col 5 -->
+            <button class="btn operator r1 c5" data-key="add">+</button>
+            <button class="btn operator r2 c5" data-key="sub">−</button>
+            <button class="btn operator r3 c5" data-key="mul">×</button>
+            <button class="btn operator r4 c5" data-key="div">÷</button>
           </div>
 
-          <!-- Fractions (5×3) exact set/order -->
-          <div class="fract-grid" id="fractionsGrid">
-            <button class="btn frac" data-key="frac-1-16"><span class="btn-label">1/16</span></button>
-            <button class="btn frac" data-key="frac-1-8"><span class="btn-label">1/8</span></button>
-            <button class="btn frac" data-key="frac-3-16"><span class="btn-label">3/16</span></button>
-            <button class="btn frac" data-key="frac-1-4"><span class="btn-label">1/4</span></button>
-            <button class="btn frac" data-key="frac-5-16"><span class="btn-label">5/16</span></button>
-
-            <button class="btn frac" data-key="frac-3-8"><span class="btn-label">3/8</span></button>
-            <button class="btn frac" data-key="frac-7-16"><span class="btn-label">7/16</span></button>
-            <button class="btn frac" data-key="frac-1-2"><span class="btn-label">1/2</span></button>
-            <button class="btn frac" data-key="frac-9-16"><span class="btn-label">9/16</span></button>
-            <button class="btn frac" data-key="frac-5-8"><span class="btn-label">5/8</span></button>
-
-            <button class="btn frac" data-key="frac-11-16"><span class="btn-label">11/16</span></button>
-            <button class="btn frac" data-key="frac-3-4"><span class="btn-label">3/4</span></button>
-            <button class="btn frac" data-key="frac-13-16"><span class="btn-label">13/16</span></button>
-            <button class="btn frac" data-key="frac-7-8"><span class="btn-label">7/8</span></button>
-            <button class="btn frac" data-key="frac-15-16"><span class="btn-label">15/16</span></button>
+          <!-- Fractions 5×3 -->
+          <div class="fract-grid">
+            <button class="btn frac" data-key="f-1-16">1/16</button>
+            <button class="btn frac" data-key="f-1-8">1/8</button>
+            <button class="btn frac" data-key="f-3-16">3/16</button>
+            <button class="btn frac" data-key="f-1-4">1/4</button>
+            <button class="btn frac" data-key="f-5-16">5/16</button>
+            <button class="btn frac" data-key="f-3-8">3/8</button>
+            <button class="btn frac" data-key="f-7-16">7/16</button>
+            <button class="btn frac" data-key="f-1-2">1/2</button>
+            <button class="btn frac" data-key="f-9-16">9/16</button>
+            <button class="btn frac" data-key="f-5-8">5/8</button>
+            <button class="btn frac" data-key="f-11-16">11/16</button>
+            <button class="btn frac" data-key="f-3-4">3/4</button>
+            <button class="btn frac" data-key="f-13-16">13/16</button>
+            <button class="btn frac" data-key="f-7-8">7/8</button>
+            <button class="btn frac" data-key="f-15-16">15/16</button>
           </div>
         </div>
 
-        <!-- PALETTE / CONTROLS -->
-        <div class="palette" id="palette">
+        <!-- Palette / Controls -->
+        <div class="palette">
+          <div class="row"><div class="help">Select buttons, pick a <b>named CSS color</b>, then <b>Apply</b>. Or toggle <b>Paint on click</b> and just tap buttons.</div></div>
+
           <div class="row">
-            <div class="help">Select any button(s), choose a <b>named CSS color</b>, then Apply. Toggle <span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> (or re‑tap) to multi‑select. Enable <em>Paint on click</em> to tap‑to‑paint.</div>
+            <label for="colorName">Named color</label>
+            <input id="colorName" list="namedColors" placeholder="e.g., lightseagreen"/>
+            <datalist id="namedColors"></datalist>
+            <div class="swatch" id="swatch"></div>
+            <div class="spacer"></div>
+            <label for="colorSelect">Dropdown</label>
+            <select id="colorSelect"></select>
           </div>
-
-          <div class="controls">
-            <div class="row">
-              <label for="colorName">Named color</label>
-              <input id="colorName" list="namedColors" placeholder="e.g., lightseagreen" />
-              <datalist id="namedColors"></datalist>
-            </div>
-            <div class="row">
-              <label>Preview</label>
-              <div class="swatch" id="swatch"></div>
-            </div>
-          </div>
-
-          <!-- NEW: Dropdown + Palette toggle -->
-          <div class="controls">
-            <div class="row">
-              <label for="colorSelect">Dropdown</label>
-              <select id="colorSelect"></select>
-            </div>
-            <div class="row">
-              <button id="togglePalette" class="pill">Show palette</button>
-            </div>
-          </div>
-          <div id="swatchPalette" class="swatch-grid" hidden></div>
 
           <div class="row">
             <button id="apply" class="pill">Apply to selection</button>
-            <button id="togglePaint" class="pill">Paint on click: OFF</button>
+            <button id="paintToggle" class="pill">Paint on click: OFF</button>
             <div class="spacer"></div>
-            <select id="target" title="What to color?">
+            <select id="target">
               <option value="bg" selected>Button background</option>
               <option value="fg">Button text</option>
             </select>
           </div>
 
           <div class="row">
-            <label>Quick‑select group</label>
-            <div class="flex">
-              <button class="pill" data-select-group="num">Numbers</button>
-              <button class="pill" data-select-group="op">Operators</button>
-              <button class="pill" data-select-group="frac">Fractions</button>
-              <button class="pill" data-select-group="dec">Decimal</button>
-              <button class="pill" data-select-group="clearback">Clear/Back</button>
-              <button class="pill" data-select-group="mem">Memory</button>
-              <button class="pill" id="selectNone">Clear selection</button>
-            </div>
+            <button id="palToggle" class="pill">Show palette</button>
+          </div>
+          <div id="palGrid" class="swatch-grid" hidden></div>
+
+          <div class="row">
+            <label>Quick‑select</label>
+            <button class="pill" data-select-group="num">Numbers</button>
+            <button class="pill" data-select-group="op">Operators</button>
+            <button class="pill" data-select-group="frac">Fractions</button>
+            <button class="pill" data-select-group="dec">Decimal</button>
+            <button class="pill" data-select-group="clearback">Clear/Back</button>
+            <button class="pill" data-select-group="mem">Memory</button>
+            <button class="pill" id="clearSel">Clear selection</button>
           </div>
 
-          <div class="controls">
-            <div class="row"><button id="copyJSON">Copy scheme (JSON)</button></div>
-            <div class="row"><button id="copyCSS">Copy CSS variables</button></div>
-          </div>
-
-          <div class="controls">
-            <div class="row"><textarea id="importBox" rows="3" placeholder='Paste scheme JSON here to import'></textarea></div>
-            <div class="row">
-              <button id="importJSON">Import scheme</button>
-              <button id="resetTheme">Reset</button>
-            </div>
-          </div>
+          <div class="row status" id="status">Ready.</div>
         </div>
       </div>
     </div>
   </div>
 
 <script>
-// ====== Named CSS color list (147 names) ======
-const NAMED_COLORS = [
-  "aliceblue","antiquewhite","aqua","aquamarine","azure","beige","bisque","black","blanchedalmond","blue","blueviolet","brown","burlywood","cadetblue","chartreuse","chocolate","coral","cornflowerblue","cornsilk","crimson","cyan","darkblue","darkcyan","darkgoldenrod","darkgray","darkgreen","darkgrey","darkkhaki","darkmagenta","darkolivegreen","darkorange","darkorchid","darkred","darksalmon","darkseagreen","darkslateblue","darkslategray","darkslategrey","darkturquoise","darkviolet","deeppink","deepskyblue","dimgray","dimgrey","dodgerblue","firebrick","floralwhite","forestgreen","fuchsia","gainsboro","ghostwhite","gold","goldenrod","gray","green","greenyellow","grey","honeydew","hotpink","indianred","indigo","ivory","khaki","lavender","lavenderblush","lawngreen","lemonchiffon","lightblue","lightcoral","lightcyan","lightgoldenrodyellow","lightgray","lightgreen","lightgrey","lightpink","lightsalmon","lightseagreen","lightskyblue","lightslategray","lightslategrey","lightsteelblue","lightyellow","lime","limegreen","linen","magenta","maroon","mediumaquamarine","mediumblue","mediumorchid","mediumpurple","mediumseagreen","mediumslateblue","mediumspringgreen","mediumturquoise","mediumvioletred","midnightblue","mintcream","mistyrose","moccasin","navajowhite","navy","oldlace","olive","olivedrab","orange","orangered","orchid","palegoldenrod","palegreen","paleturquoise","palevioletred","papayawhip","peachpuff","peru","pink","plum","powderblue","purple","rebeccapurple","red","rosybrown","royalblue","saddlebrown","salmon","sandybrown","seagreen","seashell","sienna","silver","skyblue","slateblue","slategray","slategrey","snow","springgreen","steelblue","tan","teal","thistle","tomato","turquoise","violet","wheat","white","whitesmoke","yellow","yellowgreen"
-];
+// Fresh, minimal, robust implementation
+(function(){
+  const NAMED_COLORS = [
+    "aliceblue","antiquewhite","aqua","aquamarine","azure","beige","bisque","black","blanchedalmond","blue","blueviolet","brown","burlywood","cadetblue","chartreuse","chocolate","coral","cornflowerblue","cornsilk","crimson","cyan","darkblue","darkcyan","darkgoldenrod","darkgray","darkgreen","darkgrey","darkkhaki","darkmagenta","darkolivegreen","darkorange","darkorchid","darkred","darksalmon","darkseagreen","darkslateblue","darkslategray","darkslategrey","darkturquoise","darkviolet","deeppink","deepskyblue","dimgray","dimgrey","dodgerblue","firebrick","floralwhite","forestgreen","fuchsia","gainsboro","ghostwhite","gold","goldenrod","gray","green","greenyellow","grey","honeydew","hotpink","indianred","indigo","ivory","khaki","lavender","lavenderblush","lawngreen","lemonchiffon","lightblue","lightcoral","lightcyan","lightgoldenrodyellow","lightgray","lightgreen","lightgrey","lightpink","lightsalmon","lightseagreen","lightskyblue","lightslategray","lightslategrey","lightsteelblue","lightyellow","lime","limegreen","linen","magenta","maroon","mediumaquamarine","mediumblue","mediumorchid","mediumpurple","mediumseagreen","mediumslateblue","mediumspringgreen","mediumturquoise","mediumvioletred","midnightblue","mintcream","mistyrose","moccasin","navajowhite","navy","oldlace","olive","olivedrab","orange","orangered","orchid","palegoldenrod","palegreen","paleturquoise","palevioletred","papayawhip","peachpuff","peru","pink","plum","powderblue","purple","rebeccapurple","red","rosybrown","royalblue","saddlebrown","salmon","sandybrown","seagreen","seashell","sienna","silver","skyblue","slateblue","slategray","slategrey","snow","springgreen","steelblue","tan","teal","thistle","tomato","turquoise","violet","wheat","white","whitesmoke","yellow","yellowgreen"
+  ];
 
-const state = { selected: new Set(), paintOnClick: false, target: 'bg', scheme: {} };
+  const state = { selected: new Set(), paint: false, target: 'bg' };
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const status = $('#status');
 
-function allButtons(){ return Array.from(document.querySelectorAll('.btn')); }
-function setSelected(btn, on){ if(on){ btn.classList.add('is-selected'); state.selected.add(btn.dataset.key); } else { btn.classList.remove('is-selected'); state.selected.delete(btn.dataset.key); } }
-function clearSelection(){ allButtons().forEach(b=>b.classList.remove('is-selected')); state.selected.clear(); }
+  function setStatus(msg){ status.textContent = msg; }
 
-function applyColorToButton(btn, color, target){
-  const id = btn.dataset.key; if(!id) return;
-  if(!state.scheme[id]) state.scheme[id] = { };
-  if(target==='bg'){ btn.style.backgroundColor = color; state.scheme[id].bg = color; }
-  else { btn.style.color = color; state.scheme[id].fg = color; }
-}
-
-function applyToSelection(color){
-  const target = state.target;
-  const colorVal = color || document.getElementById('colorName').value.trim();
-  if(!colorVal) return;
-  allButtons().forEach(btn=>{ if(state.selected.has(btn.dataset.key)) applyColorToButton(btn, colorVal, target); });
-}
-
-function paintModeToggle(){ state.paintOnClick = !state.paintOnClick; document.getElementById('togglePaint').textContent = `Paint on click: ${state.paintOnClick? 'ON':'OFF'}`; }
-
-function copy(text){ navigator.clipboard.writeText(text).then(()=>{ const old=document.title; document.title='✓ Copied'; setTimeout(()=>document.title=old, 800); }); }
-function produceJSON(){ return JSON.stringify(state.scheme, null, 2); }
-function produceCSSVariables(){
-  const lines=[":root{"];
-  for(const [id,obj] of Object.entries(state.scheme)){
-    if(obj.bg) lines.push(`  --btn-${id}-bg: ${obj.bg};`);
-    if(obj.fg) lines.push(`  --btn-${id}-fg: ${obj.fg};`);
+  function populatePickers(){
+    const dl = $('#namedColors'); const sel = $('#colorSelect');
+    dl.innerHTML=''; sel.innerHTML='';
+    NAMED_COLORS.forEach(n=>{ const o=document.createElement('option'); o.value=n; dl.appendChild(o); });
+    NAMED_COLORS.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
   }
-  lines.push("}");
-  return lines.join("
-");
-}
-function importJSON(text){
-  try{
-    const obj=JSON.parse(text);
-    state.scheme=obj||{};
-    allButtons().forEach(btn=>{
-      const id=btn.dataset.key; const c=state.scheme[id];
-      btn.style.backgroundColor=c?.bg||''; btn.style.color=c?.fg||'';
-    });
-  }catch{ alert('Invalid JSON'); }
-}
-function resetTheme(){ state.scheme={}; allButtons().forEach(b=>{ b.style.backgroundColor=''; b.style.color=''; }); }
-function populateNamedColors(){
-  const dl=document.getElementById('namedColors');
-  const sel=document.getElementById('colorSelect');
-  dl.innerHTML=''; sel.innerHTML='';
-  NAMED_COLORS.forEach(n=>{
-    const opt=document.createElement('option'); opt.value=n; dl.appendChild(opt);
-    const o2=document.createElement('option'); o2.value=n; o2.textContent=n; sel.appendChild(o2);
-  });
-}
-function updateSwatch(){ const v=document.getElementById('colorName').value.trim(); document.getElementById('swatch').style.background = v || 'transparent'; }
 
-// Quick-select groups
-const GROUP_QUERIES = {
-  num: '.num',
-  op: '.operator',
-  frac: '.frac',
-  dec: '.dec',
-  clearback: '.clear, .back',
-  mem: '.mem'
-};
-function selectGroup(group){ clearSelection(); const qs = GROUP_QUERIES[group] || ('.' + group); document.querySelectorAll(qs).forEach(b=> setSelected(b,true)); }
+  function updateSwatch(){ const v=$('#colorName').value.trim(); $('#swatch').style.background=v||'transparent'; }
 
-// Palette builder
-function buildPalette(){
-  const grid = document.getElementById('swatchPalette');
-  grid.innerHTML = '';
-  NAMED_COLORS.forEach(n=>{
-    const b = document.createElement('button');
-    b.type='button'; b.className='swatch-item'; b.style.background = n; b.title = n;
-    b.addEventListener('click', ()=>{
-      document.getElementById('colorName').value = n; updateSwatch();
-      if(state.selected.size) applyToSelection(n);
-    });
-    grid.appendChild(b);
-  });
-}
+  function clearSelection(){ $$('.btn').forEach(b=>b.classList.remove('is-selected')); state.selected.clear(); setStatus('Selection cleared.'); }
 
-// Init
-populateNamedColors();
-
-// Event wiring
-const app = document.getElementById('card');
-app.addEventListener('click', (e)=>{
-  const t = e.target.closest('.btn');
-  if(!t) return;
-  if(state.paintOnClick){
-    const colorVal = document.getElementById('colorName').value.trim();
-    if(colorVal){ applyColorToButton(t, colorVal, state.target); }
-    return;
+  function toggleSelect(btn, multi){
+    if(!multi){ clearSelection(); }
+    const id=btn.dataset.key; if(!id){ return; }
+    const now = !btn.classList.contains('is-selected');
+    btn.classList.toggle('is-selected', now);
+    if(now) state.selected.add(id); else state.selected.delete(id);
+    setStatus(state.selected.size + ' selected');
   }
-  const multi = e.ctrlKey || e.metaKey || t.classList.contains('is-selected');
-  if(!multi) clearSelection();
-  setSelected(t, !t.classList.contains('is-selected'));
-});
 
-Array.from(document.querySelectorAll('[data-select-group]')).forEach(btn=> btn.addEventListener('click', ()=> selectGroup(btn.dataset.selectGroup)) );
-document.getElementById('selectNone').addEventListener('click', clearSelection);
+  function applyColor(color){
+    if(!color) return setStatus('Pick a color first.');
+    const target = state.target;
+    let count = 0;
+    $$('.btn').forEach(btn=>{
+      if(state.selected.has(btn.dataset.key)){
+        if(target==='bg') btn.style.backgroundColor = color; else btn.style.color = color;
+        count++;
+      }
+    });
+    setStatus(count ? `Applied ${color} to ${count} button${count>1?'s':''}.` : 'No buttons selected.');
+  }
 
-document.getElementById('apply').addEventListener('click', ()=> applyToSelection());
-document.getElementById('togglePaint').addEventListener('click', paintModeToggle);
-document.getElementById('target').addEventListener('change', (e)=> state.target = e.target.value);
-document.getElementById('colorName').addEventListener('input', updateSwatch);
+  function buildPalette(){
+    const grid = $('#palGrid'); grid.innerHTML='';
+    NAMED_COLORS.forEach(n=>{
+      const b=document.createElement('button'); b.type='button'; b.className='swatch-item'; b.title=n; b.style.background=n;
+      b.addEventListener('click', ()=>{ $('#colorName').value=n; updateSwatch(); if(state.paint){ applyColor(n); }});
+      grid.appendChild(b);
+    });
+  }
 
-document.getElementById('colorSelect').addEventListener('change', (e)=>{ document.getElementById('colorName').value = e.target.value; updateSwatch(); });
+  // Event wiring
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.btn');
+    if(btn){
+      if(state.paint){ const c=$('#colorName').value.trim(); if(c){ // paint on click
+        if(state.target==='bg') btn.style.backgroundColor = c; else btn.style.color = c; setStatus(`Painted ${btn.dataset.key} with ${c}`); return; }
+      }
+      const multi = e.ctrlKey || e.metaKey || btn.classList.contains('is-selected');
+      toggleSelect(btn, multi);
+    }
+  });
 
-document.getElementById('togglePalette').addEventListener('click', ()=>{
-  const grid = document.getElementById('swatchPalette');
-  const isHidden = grid.hasAttribute('hidden');
-  if(isHidden){ buildPalette(); grid.removeAttribute('hidden'); document.getElementById('togglePalette').textContent='Hide palette'; }
-  else { grid.setAttribute('hidden',''); document.getElementById('togglePalette').textContent='Show palette'; }
-});
+  $('#apply').addEventListener('click', ()=> applyColor($('#colorName').value.trim()));
+  $('#paintToggle').addEventListener('click', ()=>{ state.paint = !state.paint; $('#paintToggle').textContent = 'Paint on click: ' + (state.paint?'ON':'OFF'); setStatus('Paint mode ' + (state.paint?'on':'off')); });
+  $('#target').addEventListener('change', (e)=>{ state.target = e.target.value; setStatus('Target: ' + (state.target==='bg'?'background':'text')); });
 
-document.getElementById('copyJSON').addEventListener('click', ()=> copy(produceJSON()));
-document.getElementById('copyCSS').addEventListener('click', ()=> copy(produceCSSVariables()));
+  $('#colorName').addEventListener('input', updateSwatch);
+  $('#colorSelect').addEventListener('change', (e)=>{ $('#colorName').value=e.target.value; updateSwatch(); });
 
-document.getElementById('importJSON').addEventListener('click', ()=> importJSON(document.getElementById('importBox').value));
-document.getElementById('resetTheme').addEventListener('click', resetTheme);
+  $('#palToggle').addEventListener('click', ()=>{ const g=$('#palGrid'); if(g.hasAttribute('hidden')){ buildPalette(); g.removeAttribute('hidden'); $('#palToggle').textContent='Hide palette'; } else { g.setAttribute('hidden',''); $('#palToggle').textContent='Show palette'; } });
 
-// Seed a few accents so layout pops at first glance
-(function seed(){
-  const pairs = [ ['add','orangered'], ['sub','orange'], ['mul','gold'], ['div','yellowgreen'], ['feet','teal'], ['back','steelblue'], ['clear','indianred'] ];
-  pairs.forEach(([id,color])=>{ const b=document.querySelector(`[data-key="${id}"]`); if(b) applyColorToButton(b, color, 'bg'); });
+  // Quick-select groups (only roles sharing same code path)
+  const GROUPS = { num: '.num', op: '.operator', frac: '.frac', dec: '.dec', clearback: '.clearback', mem: '.mem' };
+  document.querySelectorAll('[data-select-group]').forEach(b=> b.addEventListener('click', ()=>{ clearSelection(); $$(GROUPS[b.dataset.selectGroup]||'').forEach(btn=>{ btn.classList.add('is-selected'); state.selected.add(btn.dataset.key); }); setStatus(state.selected.size + ' selected'); }) );
+  $('#clearSel').addEventListener('click', clearSelection);
+
+  // Boot
+  populatePickers(); updateSwatch();
+  setStatus('Ready. Buttons found: ' + $$('.btn').length);
 })();
 </script>
 </body>
