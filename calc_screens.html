@@ -168,6 +168,12 @@
     outline:2px solid #0ea5a5;
     outline-offset:2px;
   }
+
+  /* Visual hint while peeking */
+  #feetBtn.peek {
+    box-shadow: 0 0 0 2px #0ea5a5 inset, 0 2px 6px rgba(0,0,0,.25);
+    filter: saturate(1.2) brightness(1.05);
+  }
 </style>
 </head>
 <body>
@@ -410,17 +416,22 @@
   // Feet-builder state (active until finalized by an operator)
   let measure = { active:false, feet:0, inches:0, inEntry:'' };
 
+  // === Display mode: 'inch' (default) or 'feet' during peek ===
+  let displayMode = 'inch';
+
   const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
   const isOp = t => ['+','-','*','/'].includes(t);
   const isWhole = s => /^-?\d+$/.test(s);
   const isDec = s => /^-?\d+\.\d+$/.test(s);
   const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
   const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
+
   const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
 
   const roundToSixteenth = (x)=> Math.round(x*16)/16;
 
-  function formatResult(value){
+  // ---------- Result formatters ----------
+  function formatResultInch(value){
     const r = roundToSixteenth(value);
     const sign = r<0 ? '-' : '';
     const abs = Math.abs(r);
@@ -429,6 +440,43 @@
     let n = Math.round(f*16), d = 16, g = gcd(n,d); n/=g; d/=g;
     let s = (n===0) ? `${w}″` : (w ? `${w} ${n}/${d}″` : `${n}/${d}″`);
     return { fraction: sign + s, decimal: `${r.toFixed(4)}″` };
+  }
+
+  function formatResultFeet(value){
+    // show feet-inches (1/16″) on left, decimal feet on right
+    const r = roundToSixteenth(value);
+    const sign = r<0 ? '-' : '';
+    let abs = Math.abs(r);
+
+    let feet = Math.floor(abs / 12);
+    let inchesR = roundToSixteenth(abs - feet*12);
+
+    let wholeIn = Math.floor(inchesR);
+    let fracIn = inchesR - wholeIn;
+    let n = Math.round(fracIn*16), d = 16, g = gcd(n,d); n/=g; d/=g;
+
+    // normalize rollovers like 11 16/16 -> 12"
+    if (n === 16){ wholeIn += 1; n = 0; d = 16; }
+    if (wholeIn >= 12){ feet += 1; wholeIn -= 12; }
+
+    let inchStr = '';
+    if (wholeIn === 0 && n === 0){
+      inchStr = ''; // exactly N′
+    } else if (n === 0){
+      inchStr = ` ${wholeIn}″`;
+    } else if (wholeIn === 0){
+      inchStr = ` ${n}/${d}″`;
+    } else {
+      inchStr = ` ${wholeIn} ${n}/${d}″`;
+    }
+
+    const left = `${sign}${feet}′${inchStr}`;
+    const right = `${(sign ? -1 : 1) * (abs/12).toFixed(4)}′`;
+    return { fraction: left, decimal: right };
+  }
+
+  function formatResult(value){
+    return displayMode === 'feet' ? formatResultFeet(value) : formatResultInch(value);
   }
 
   function measureTotal(){
@@ -571,7 +619,7 @@
   function refreshMemLabels(){
     document.querySelectorAll('.btn.mem').forEach(btn=>{
       const i=+btn.dataset.mem, v=memorySlots[i];
-      const text = v==null ? `M${i+1}` : formatResult(v).fraction.replace('"','');
+      const text = v==null ? `M${i+1}` : formatResultInch(v).fraction.replace('"','');
       const span = ensureLabelSpan(btn);
       span.textContent = text;
     });
@@ -657,8 +705,9 @@
     drawTape(0);
   });
 
-  // ===== Feet behavior =====
-  document.getElementById('feetBtn').addEventListener('click',()=>{
+  // ===== Feet behavior (tap) =====
+  const feetBtn = document.getElementById('feetBtn');
+  feetBtn.addEventListener('click',()=>{
     // decimal entry → decimal FEET immediate convert
     if (isDec(currentEntry)){
       const ft = parseFloat(currentEntry);
@@ -710,7 +759,7 @@
       let valNum = (typeof base==='number' ? base : base.toNumber()) + (measure.active ? measureTotal() : 0);
 
       const i=+btn.dataset.mem;
-      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResult(memorySlots[i]).fraction}. Replace?`) : true;
+      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResultInch(memorySlots[i]).fraction}. Replace?`) : true;
       if (!confirmReplace) return;
       memorySlots[i]= valNum;
       saveMemory(); refreshMemLabels();
@@ -826,6 +875,49 @@
     if (e.target.closest('.history') || e.target.closest('#modal')) return;
     e.preventDefault();
   }, {passive:false});
+
+  // === Feet Peek (hold) ===
+  (function enableFeetPeek(){
+    const DELAY_MS = 1000; // 1 second hold
+    let holdTimer = null;
+    let peeking = false;
+    let suppressNextClick = false;
+
+    const start = () => {
+      clearTimeout(holdTimer);
+      holdTimer = setTimeout(()=>{
+        peeking = true;
+        suppressNextClick = true;   // prevent the tap behavior from firing after a hold
+        displayMode = 'feet';
+        feetBtn.classList.add('peek');
+        evaluate();
+      }, DELAY_MS);
+    };
+    const end = () => {
+      clearTimeout(holdTimer);
+      if (peeking){
+        peeking = false;
+        displayMode = 'inch';
+        feetBtn.classList.remove('peek');
+        evaluate();
+      }
+    };
+
+    // Pointer events = works for mouse + touch
+    feetBtn.addEventListener('pointerdown', start);
+    feetBtn.addEventListener('pointerup', end);
+    feetBtn.addEventListener('pointercancel', end);
+    feetBtn.addEventListener('mouseleave', end);
+
+    // Cancel the click that follows a long press
+    feetBtn.addEventListener('click', (e)=>{
+      if (suppressNextClick){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        suppressNextClick = false;
+      }
+    }, true);
+  })();
 
   // Init
   function initTape(){ const r=tape.getBoundingClientRect(); if(!r.width){ requestAnimationFrame(initTape); return; } drawTape(0); }
