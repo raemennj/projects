@@ -19,6 +19,14 @@
   /* ---------- Reset ---------- */
   *,*::before,*::after{ box-sizing:border-box }
   html,body{ height:100% }
+
+  /* Global: disable selection everywhere... */
+  html, body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
   body{
     margin:0; background:#1f4d4d; color:#111;
     font-family:"aktiv-grotesk",-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
@@ -102,6 +110,12 @@
   #inputLine{ display:block; }
   .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(22px,3.1vw,32px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
 
+  /* Re-enable selection for history and outputs */
+  .history, .output, .output * {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
   /* ---------- Memory ---------- */
   .memory{ grid-area:memory }
   .memory-grid{ display:grid; gap:var(--gap);
@@ -142,8 +156,10 @@
     background-repeat:no-repeat;
     background-size:cover, auto;
     box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
-    user-select:none; -webkit-tap-highlight-color:transparent;
+    -webkit-tap-highlight-color:transparent;
     transition: background-color .15s ease, transform .05s ease, box-shadow .15s ease, filter .15s ease;
+    position: relative; overflow: hidden;     /* for ripples */
+    touch-action: manipulation;                /* snappier taps */
   }
   .btn:active{ transform:scale(.98) }
 
@@ -158,7 +174,14 @@
   .btn.frac:active{ --btn-bg: var(--btn-active-bg, color-mix(in oklab, var(--btn-bg), black 10%)); }
   .btn[disabled]{ opacity:.5; filter:saturate(.15) }
 
+  /* Button text should never select / show callout */
+  .btn, .btn .btn-label{
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
   .btn .btn-label{ line-height: 1; filter: url(#textInnerShadow); }
+  .btn .btn-label::selection{ background: transparent; color: inherit; }
 
   @media (prefers-reduced-motion: reduce){
     .sweep::before{ animation:none !important; opacity:0 !important; }
@@ -169,10 +192,63 @@
     outline-offset:2px;
   }
 
-  /* Visual hint while peeking */
+  /* --- Press ripple --- */
+  .ripple {
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: .35;
+    background: rgba(255,255,255,.65);
+    animation: ripple .45s ease-out forwards;
+  }
+  @keyframes ripple {
+    to { transform: translate(-50%, -50%) scale(14); opacity: 0; }
+  }
+
+
+  /* --- Hold arming pulse --- */
+  .btn.hold {
+    box-shadow: 0 0 0 0 rgba(14,165,165,.55);
+    animation: pulseRing 1s ease-out infinite;
+  }
+  @keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0   rgba(14,165,165,.55); }
+    100% { box-shadow: 0 0 0 12px rgba(14,165,165,0); }
+  }
+
+  /* Feet peek visual */
   #feetBtn.peek {
-    box-shadow: 0 0 0 2px #0ea5a5 inset, 0 2px 6px rgba(0,0,0,.25);
-    filter: saturate(1.2) brightness(1.05);
+    box-shadow: 0 0 0 2px #0ea5a5 inset, 0 2px 8px rgba(0,0,0,.3);
+  }
+
+  /* Memory “saved” confirmation flash */
+  .btn.mem.saved {
+    --btn-bg: color-mix(in oklab, var(--mem), #22c55e 46%);
+    box-shadow: 0 0 0 2px #22c55e inset, 0 0 16px rgba(34,197,94,.35);
+    animation: pop .16s ease;
+  }
+  .btn.mem.saved::after {
+    content: "✓";
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 800;
+    font-size: 1.1em;
+    color: #063;
+    opacity: .95;
+    pointer-events: none;
+  }
+  @keyframes pop { from { transform: scale(.97); } to { transform: scale(1); } }
+
+  /* Copy toast */
+  #copyToast {
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom:12px; background:#111; color:#fff;
+    padding:8px 12px; border-radius:8px; display:none;
+    gap:8px; align-items:center; z-index:45;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+    font-size:14px;
   }
 </style>
 </head>
@@ -204,7 +280,7 @@
     <div class="panel results">
       <div class="pad">
         <div class="history" id="history"><div class="row input" id="inputLine"></div></div>
-        <div class="output"><div id="fractionLine"></div><div id="decimalLine"></div></div>
+        <div class="output"><div id="fractionLine" title="Tap to copy"></div><div id="decimalLine" title="Tap to copy"></div></div>
       </div>
     </div>
 
@@ -326,10 +402,12 @@
     </div>
   </div>
 
-  <div id="updateToast" style="position:fixed; left:50%; transform:translateX(-50%); bottom:12px; background:#111; color:#fff; padding:8px 12px; border-radius:8px; display:none; gap:8px; align-items:center; z-index:40;">
+  <div id="updateToast" style="position:fixed; left:50%; transform:translateX(-50%); bottom:48px; background:#111; color:#fff; padding:8px 12px; border-radius:8px; display:none; gap:8px; align-items:center; z-index:40;">
     <span>Update available</span>
     <button id="updateReload" style="background:#0ea5a5; color:#111; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;">Refresh</button>
   </div>
+
+  <div id="copyToast"><span>Copied</span></div>
 
 <script>
 (() => {
@@ -416,7 +494,7 @@
   // Feet-builder state (active until finalized by an operator)
   let measure = { active:false, feet:0, inches:0, inEntry:'' };
 
-  // === Display mode: 'inch' (default) or 'feet' during peek ===
+  // Display mode: 'inch' (default) or 'feet' during peek
   let displayMode = 'inch';
 
   const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
@@ -425,9 +503,7 @@
   const isDec = s => /^-?\d+\.\d+$/.test(s);
   const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
   const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
-
   const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
-
   const roundToSixteenth = (x)=> Math.round(x*16)/16;
 
   // ---------- Result formatters ----------
@@ -443,32 +519,23 @@
   }
 
   function formatResultFeet(value){
-    // show feet-inches (1/16″) on left, decimal feet on right
     const r = roundToSixteenth(value);
     const sign = r<0 ? '-' : '';
     let abs = Math.abs(r);
-
     let feet = Math.floor(abs / 12);
     let inchesR = roundToSixteenth(abs - feet*12);
-
     let wholeIn = Math.floor(inchesR);
     let fracIn = inchesR - wholeIn;
     let n = Math.round(fracIn*16), d = 16, g = gcd(n,d); n/=g; d/=g;
 
-    // normalize rollovers like 11 16/16 -> 12"
     if (n === 16){ wholeIn += 1; n = 0; d = 16; }
     if (wholeIn >= 12){ feet += 1; wholeIn -= 12; }
 
     let inchStr = '';
-    if (wholeIn === 0 && n === 0){
-      inchStr = ''; // exactly N′
-    } else if (n === 0){
-      inchStr = ` ${wholeIn}″`;
-    } else if (wholeIn === 0){
-      inchStr = ` ${n}/${d}″`;
-    } else {
-      inchStr = ` ${wholeIn} ${n}/${d}″`;
-    }
+    if (wholeIn === 0 && n === 0) inchStr = '';
+    else if (n === 0)            inchStr = ` ${wholeIn}″`;
+    else if (wholeIn === 0)      inchStr = ` ${n}/${d}″`;
+    else                         inchStr = ` ${wholeIn} ${n}/${d}″`;
 
     const left = `${sign}${feet}′${inchStr}`;
     const right = `${(sign ? -1 : 1) * (abs/12).toFixed(4)}′`;
@@ -485,7 +552,6 @@
   }
 
   function measureDisplay(){
-    // "5′ 2 1/4″" (or just "5′" if no inches yet)
     const inVal = (measure.inEntry ? parseFloat(measure.inEntry) : 0) + measure.inches;
     const hasInches = inVal > 0;
     const feetStr = `${measure.feet}\u2032`;
@@ -537,19 +603,15 @@
     requestAnimationFrame(()=>{ const hist=document.getElementById('history'); if(hist) hist.scrollTop = hist.scrollHeight; });
   }
 
-  // SAFE evaluator: ignores trailing ops; keeps last good value visible
+  // SAFE evaluator
   function evaluate(){
     let expr = [...tokens];
     if (currentEntry) expr.push(currentEntry);
-
-    // drop trailing operators like "+", "*", "÷"
     while (expr.length && isOp(expr.at(-1))) expr.pop();
 
     try{
       let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
       let num  = (typeof base === 'number' ? base : base.toNumber());
-
-      // add live preview from feet-builder
       if (measure.active) num += measureTotal();
 
       const out = formatResult(num);
@@ -559,7 +621,6 @@
       decimalLine.textContent  = out.decimal;
       drawTape(num);
     }catch{
-      // if the only thing we have is an active feet-builder, show that
       if (measure.active && expr.length === 0){
         const m = measureTotal();
         const out = formatResult(m);
@@ -568,7 +629,6 @@
         drawTape(m);
         return;
       }
-      // otherwise, keep last good instead of blank
       if (lastGood.decimal){
         fractionLine.textContent = lastGood.fraction;
         decimalLine.textContent  = lastGood.decimal;
@@ -616,10 +676,14 @@
     return span;
   }
 
+  function formatResultInchOnlyLabel(v){
+    return formatResultInch(v).fraction.replace('"','');
+  }
+
   function refreshMemLabels(){
     document.querySelectorAll('.btn.mem').forEach(btn=>{
       const i=+btn.dataset.mem, v=memorySlots[i];
-      const text = v==null ? `M${i+1}` : formatResultInch(v).fraction.replace('"','');
+      const text = v==null ? `M${i+1}` : formatResultInchOnlyLabel(v);
       const span = ensureLabelSpan(btn);
       span.textContent = text;
     });
@@ -629,7 +693,6 @@
   document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
     const val = b.dataset.val;
     if (measure.active){
-      // typing inches while in feet-builder
       measure.inEntry += val;
       updateInput(); qEval();
       return;
@@ -651,8 +714,6 @@
   // ===== Operators =====
   document.querySelectorAll('.btn.operator[data-op]').forEach(b=>b.addEventListener('click',()=>{
     const op = b.dataset.op;
-
-    // finalize open measurement first
     if (measure.active) finalizeMeasureToken();
 
     if (currentEntry){
@@ -708,7 +769,6 @@
   // ===== Feet behavior (tap) =====
   const feetBtn = document.getElementById('feetBtn');
   feetBtn.addEventListener('click',()=>{
-    // decimal entry → decimal FEET immediate convert
     if (isDec(currentEntry)){
       const ft = parseFloat(currentEntry);
       const total = ft * 12;
@@ -718,17 +778,14 @@
       updateInput(); qEval();
       return;
     }
-    // whole entry → enter feet-builder
     if (isWhole(currentEntry)){
       measure = { active:true, feet: parseInt(currentEntry,10), inches:0, inEntry:'' };
       currentEntry='';
       updateInput(); qEval();
       return;
     }
-    // if empty, do nothing (waiting for feet number)
     if (!currentEntry) return;
 
-    // fallback: parse whatever is there as decimal feet
     const ft = parseFloat(currentEntry);
     if (!Number.isNaN(ft)){
       const total = ft * 12;
@@ -741,6 +798,8 @@
 
   // ===== Memory buttons =====
   document.querySelectorAll('.btn.mem').forEach(btn=>{
+    // Ripple also added globally—no change needed here
+
     // Insert on tap
     btn.addEventListener('click',()=>{
       const i=+btn.dataset.mem, v=memorySlots[i]; if (v==null) return;
@@ -749,25 +808,41 @@
       currentEntry = String(v);
       updateInput(); evaluate();
     });
+
     // Store on double-click (or long-press)
     btn.addEventListener('dblclick',()=>{
       let expr=[...tokens];
       if (currentEntry) expr.push(currentEntry);
-      // strip trailing ops for safety
       while (expr.length && isOp(expr.at(-1))) expr.pop();
       let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
       let valNum = (typeof base==='number' ? base : base.toNumber()) + (measure.active ? measureTotal() : 0);
 
       const i=+btn.dataset.mem;
-      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResultInch(memorySlots[i]).fraction}. Replace?`) : true;
+      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResultInchOnlyLabel(memorySlots[i])}. Replace?`) : true;
       if (!confirmReplace) return;
       memorySlots[i]= valNum;
       saveMemory(); refreshMemLabels();
+
+      // Saved flash
+      btn.classList.add('saved');
+      setTimeout(() => btn.classList.remove('saved'), 480);
     });
+
     // Long-press → store (touch)
-    let timer=null;
-    btn.addEventListener('touchstart',()=>{ timer=setTimeout(()=>btn.dispatchEvent(new Event('dblclick')),600); }, {passive:true});
-    btn.addEventListener('touchend',()=>clearTimeout(timer), {passive:true});
+    let lpTimer = null;
+    btn.addEventListener('touchstart', () => {
+      setHoldVisual(btn, true);
+      lpTimer = setTimeout(() => {
+        btn.dispatchEvent(new Event('dblclick'));
+      }, 600);
+    }, { passive: true });
+
+    function clearLP() {
+      clearTimeout(lpTimer);
+      setHoldVisual(btn, false);
+    }
+    btn.addEventListener('touchend', clearLP, { passive: true });
+    btn.addEventListener('touchcancel', clearLP, { passive: true });
   });
 
   document.querySelector('.btn.clear[data-action="mc"]').addEventListener('click',()=>{
@@ -822,7 +897,6 @@
     const fVal = n/d;
 
     if (measure.active){
-      // combine scratch inches entry with this fraction and add to inches
       if (!measure.inEntry){
         measure.inches += fVal;
       } else {
@@ -835,7 +909,7 @@
     }
 
     if (!currentEntry) {
-      currentEntry = f; // stand-alone fraction as current entry
+      currentEntry = f;
     } else if (isWhole(currentEntry)) {
       const whole = parseInt(currentEntry,10);
       const combined = whole + fVal;
@@ -848,21 +922,62 @@
     updateInput(); qEval();
   }));
 
-  // Wrap labels so filter hits text glyphs
-  function wrapButtonText(){
-    document.querySelectorAll('.btn').forEach(btn=>{
-      const hasSpan = !!btn.querySelector('.btn-label');
-      if (!hasSpan){
-        const onlyText = btn.childNodes.length === 1 && btn.firstChild.nodeType === Node.TEXT_NODE;
-        if (onlyText){
-          const span = document.createElement('span');
-          span.className = 'btn-label';
-          span.textContent = btn.textContent;
-          btn.replaceChildren(span);
-        }
-      }
+  // ---- UI helpers: ripples / hold visuals / copy-to-clipboard / toasts
+  function attachRipples() {
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('pointerdown', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        const maxDim = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = maxDim * 1.2 + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        btn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      });
     });
   }
+  function setHoldVisual(btn, on) { if (btn) btn.classList.toggle('hold', !!on); }
+
+  function showToast(msg='Copied', ms=900){
+    const toast = document.getElementById('copyToast');
+    if (!toast) return;
+    toast.querySelector('span').textContent = msg;
+    toast.style.display='flex';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>{ toast.style.display='none'; }, ms);
+  }
+  function enableClickCopy(selector){
+    document.querySelectorAll(selector).forEach(el=>{
+      el.style.cursor='pointer';
+      el.addEventListener('click', () => {
+        const sel = window.getSelection();
+        if (sel && sel.toString().length > 0) return; // let manual selection win
+        const text = (el.textContent || '').trim();
+        if (!text) return;
+        if (navigator.clipboard?.writeText){
+          navigator.clipboard.writeText(text).then(()=> showToast('Copied'));
+        } else {
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = text; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); showToast('Copied'); } catch {}
+          ta.remove();
+        }
+      });
+    });
+  }
+
+  // Block selection/callout on buttons only (not outputs/history)
+  document.addEventListener('selectstart', (e) => {
+    if (e.target.closest('.btn')) e.preventDefault();
+  }, { capture: true });
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.btn')) e.preventDefault();
+  }, { capture: true });
 
   // Modal
   const modal=document.getElementById('modal');
@@ -870,24 +985,25 @@
   document.getElementById('closeModal').addEventListener('click',()=>{ modal.style.display='none'; });
   modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
 
-  // Prevent body scroll, allow results scroll
+  // Prevent body scroll, allow results/history/modal/output scroll/selection
   document.addEventListener('touchmove', e=>{
-    if (e.target.closest('.history') || e.target.closest('#modal')) return;
+    if (e.target.closest('.history') || e.target.closest('.output') || e.target.closest('#modal')) return;
     e.preventDefault();
   }, {passive:false});
 
   // === Feet Peek (hold) ===
   (function enableFeetPeek(){
-    const DELAY_MS = 1000; // 1 second hold
+    const DELAY_MS = 1000; // 1s hold
     let holdTimer = null;
     let peeking = false;
     let suppressNextClick = false;
 
     const start = () => {
       clearTimeout(holdTimer);
+      setHoldVisual(feetBtn, true);
       holdTimer = setTimeout(()=>{
         peeking = true;
-        suppressNextClick = true;   // prevent the tap behavior from firing after a hold
+        suppressNextClick = true;
         displayMode = 'feet';
         feetBtn.classList.add('peek');
         evaluate();
@@ -895,6 +1011,7 @@
     };
     const end = () => {
       clearTimeout(holdTimer);
+      setHoldVisual(feetBtn, false);
       if (peeking){
         peeking = false;
         displayMode = 'inch';
@@ -903,13 +1020,11 @@
       }
     };
 
-    // Pointer events = works for mouse + touch
     feetBtn.addEventListener('pointerdown', start);
     feetBtn.addEventListener('pointerup', end);
     feetBtn.addEventListener('pointercancel', end);
     feetBtn.addEventListener('mouseleave', end);
 
-    // Cancel the click that follows a long press
     feetBtn.addEventListener('click', (e)=>{
       if (suppressNextClick){
         e.preventDefault();
@@ -924,8 +1039,10 @@
   computeTile();
   initTape();
   loadMemory();
-  wrapButtonText();
+
+  attachRipples();
   applyFractionPalettes();
+  enableClickCopy('#fractionLine, #decimalLine');
 
   /* PWA: Service Worker + Install */
   let deferredPrompt = null;
@@ -994,7 +1111,7 @@
 const CACHE_NAME = 'inch-calc-v1-2025-08-23';
 const ASSETS = [
   './',
-  './tapemeasurememory.html', // add your actual filename here if different
+  './tapemeasurememory.html',
   './manifest.webmanifest',
   './sw.js',
   './calcicon.png',
