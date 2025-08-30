@@ -126,6 +126,7 @@
   /* ---------- Console (5×4) ---------- */
   .console{ grid-area:console }
   .console-grid{
+	margin-top: 8px;  
     display:grid; gap:var(--gap);
     grid-template-columns:repeat(5, 1fr);
     grid-template-rows:repeat(4, var(--tile));
@@ -136,6 +137,7 @@
   /* ---------- Fractions (5×3) ---------- */
   .fractions{ grid-area:fractions }
   .fract-grid{
+	margin-top: 8px;  
     display:grid; gap:var(--gap);
     grid-template-columns:repeat(5, 1fr);
     grid-template-rows:repeat(3, var(--tile));
@@ -293,10 +295,7 @@
         <button class="btn mem" data-mem="2"><span class="btn-label">M3</span></button>
         <button class="btn mem" data-mem="3"><span class="btn-label">M4</span></button>
       </div>
-    </div>
 
-    <!-- Console (5×4 uniform) -->
-    <div class="panel console pad">
       <div class="console-grid">
         <!-- Utility rail (col 1) -->
         <button class="btn back r1 c1" data-action="back"><span class="btn-label">←</span></button>
@@ -327,10 +326,7 @@
         <button class="btn operator r3 c5" data-op="*"><span class="btn-label">×</span></button>
         <button class="btn operator r4 c5" data-op="/"><span class="btn-label">÷</span></button>
       </div>
-    </div>
 
-    <!-- Fractions (5×3 uniform) -->
-    <div class="panel fractions pad">
       <div class="fract-grid">
         <button class="btn frac" data-frac="1/16"><span class="btn-label">1/16</span></button>
         <button class="btn frac" data-frac="1/8"><span class="btn-label">1/8</span></button>
