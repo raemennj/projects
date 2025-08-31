@@ -2,7 +2,7 @@
   "name": "Calculator with Tape Measure",
   "short_name": "Inch Calc",
   "description": "A tool to convert decimal inches to inch fractions.",
-  "start_url": "/projects/tapemeasurememory.html",
+  "start_url": "/projects/calc_screens.html",
   "display": "standalone",
   "orientation": "portrait",
   "icons": [
@@ -20,3 +20,4 @@
   "theme_color": "#ffffff",
   "background_color": "#000000"
 }
+
