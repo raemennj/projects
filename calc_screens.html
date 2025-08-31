@@ -47,8 +47,9 @@
     --pad: var(--gap);
 
     --tape-min: 100px;
-    --results-min: 140px;  /* minimum results height (computed precisely by JS) */
-    --history-min: 40px;   /* minimum history window (computed precisely by JS) */
+    --results-min: 140px;  /* computed precisely by JS */
+    --history-min: 40px;   /* computed precisely by JS */
+    --output-min: 40px;    /* computed precisely by JS */
 
     /* theme tokens */
     --card:#fff; --display-bg:#222; --display-text:#0f0;
@@ -65,7 +66,7 @@
     display:grid; gap:var(--gap);
     grid-template-rows:
       minmax(var(--tape-min), auto)      /* tape stays at top */
-      minmax(var(--results-min), 1fr)    /* results flex row */
+      minmax(var(--results-min), 1fr)    /* results flex row (expands/contracts) */
       auto                                /* memory */
       auto                                /* console */
       auto;                               /* fractions */
@@ -106,7 +107,6 @@
   .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); min-height:0; }
   .results .pad{ display:flex; flex-direction:column; gap:8px; height:100%; }
   .history{
-    /* was height:var(--history-fixed); */
     min-height: var(--history-min);
     flex: 1 1 auto;
     max-height: 100%;
@@ -115,7 +115,12 @@
   }
   .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
   #inputLine{ display:block; }
-  .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(22px,3.1vw,32px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
+  .output{
+    display:flex; justify-content:space-between; gap:8px;
+    font-size:clamp(22px,3.1vw,32px); color:#bdfcb7;
+    padding-top:6px; border-top:1px solid rgba(255,255,255,.1);
+    min-height: var(--output-min); /* reserve space so divider is stable */
+  }
 
   /* Re-enable selection for history and outputs */
   .history, .output, .output * {
@@ -486,10 +491,11 @@
 
     const tapeMin = cssNum('--tape-min', 100);
 
-    // Measure minimum results height = padding*2 + 2 input lines + gap + 1 output line (+1px border)
+    // Measure minimum results height parts
     const pad = gap;
-    const inputEl = document.getElementById('inputLine');
+    const inputEl  = document.getElementById('inputLine');
     const outputEl = document.querySelector('.output');
+
     const getLineHeightPx = (el) => {
       const cs = getComputedStyle(el);
       const lh = cs.lineHeight;
@@ -498,16 +504,26 @@
       const mult = parseFloat(lh) || 1.2;
       return fs * mult;
     };
-    const inputLH = getLineHeightPx(inputEl);
-    const outputLH = getLineHeightPx(outputEl);
+
+    const inputLH   = getLineHeightPx(inputEl);
+    const outputLH  = getLineHeightPx(outputEl);
+    const outputPad = parseFloat(getComputedStyle(outputEl).paddingTop) || 0;
+
     const historyMin = Math.ceil(inputLH * 2);
     setVar('--history-min', historyMin + 'px');
-    const resultsMin = Math.ceil(pad*2 + historyMin + 8 + outputLH + 1);
+
+    // Reserve at least one output line + its top padding so divider is stable
+    const outputMin = Math.ceil(outputPad + outputLH);
+    setVar('--output-min', outputMin + 'px');
+
+    // Results panel minimum = padding*2 + history + (fixed 8px gap between rows) + output + 1px divider
+    const INTER_ROW_GAP = 8;
+    const resultsMin = Math.ceil(pad*2 + historyMin + INTER_ROW_GAP + outputMin + 1);
     setVar('--results-min', resultsMin + 'px');
 
     // Keypad composition (8 rows total: 1 mem + 4 console + 3 fractions)
     const ROWS = 8;
-    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap
+    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap across memory/console/fractions stacks
     const W_inside = W - 2*gap;
 
     // Available height for keypad if results uses only its MIN
@@ -679,6 +695,7 @@
     // If ANY feet are present in the expression, show explicit inches (″) on inch-only terms
     const feetPresent = arr.some(n => n.type==='num' && typeof n.display==='string' && n.display.includes('′'));
     const markInches = (txt) => {
+
       if (!feetPresent) return txt;
       if (!txt) return txt;
       if (txt.includes('′') || txt.includes('″')) return txt;
@@ -798,6 +815,7 @@
     const a = Math.floor(start*16), b = Math.ceil(end*16);
     for (let i=a;i<=b;i++){
       const inches = i/16;
+
       const x = (inches - center)*PPI + mid - 1.5;
       const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
       if (i%16===0){ el.classList.add('num'); const lbl=document.createElement('div'); lbl.className='tick-label'; lbl.textContent=inches.toFixed(0); lbl.style.left=(x+1.5)+'px'; tape.appendChild(lbl); }
@@ -1373,6 +1391,7 @@
 
 <!-- ===== manifest.webmanifest (create this file alongside) ===== -->
 <!--
+
 {
   "name": "Inch Calc",
   "short_name": "Inch Calc",
