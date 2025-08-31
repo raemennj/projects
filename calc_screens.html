@@ -211,7 +211,7 @@
   /* --- Hold arming pulse --- */
   .btn.hold {
     box-shadow: 0 0 0 0 rgba(14,165,165,.55);
-    animation: pulseRing 1s ease-out infinite;
+    animation: pulseRing 1s ease-out infinite.
   }
   @keyframes pulseRing {
     0%   { box-shadow: 0 0 0 0   rgba(14,165,165,.55); }
@@ -456,13 +456,10 @@
     const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap
     const W_inside = W - 2*gap;
 
-    // Height available for keypad stack (memory + console + fractions)
     const H_for_keypad = Math.max(0, H - tapeMin - resultsFixed - 2*gap);
-
-    let tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
-    let tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
-    let tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
-
+    const tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
+    const tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
+    const tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
     setVar('--tile', tile + 'px');
   }
 
@@ -590,7 +587,7 @@
       else arr.push({type:'num', value:t, display: tokenDisplayAt(i,t)});
     }
 
-    // Append the "in-progress" entry for preview
+    // Append the live entry (measure or number)
     if (measure.active){
       arr.push({type:'num', value: String(measureTotal()), display: measureDisplay()});
     } else if (currentEntry){
@@ -664,16 +661,36 @@
 
   function updateInput(){ renderHistory(); }
 
-  // SAFE evaluator
+  // ====== Fixed evaluator: applies pending operator to live entry/measure ======
   function evaluate(){
-    let expr = [...tokens];
-    if (currentEntry) expr.push(currentEntry);
-    while (expr.length && isOp(expr.at(-1))) expr.pop();
+    // Start with raw tokens and maybe a trailing operator
+    let exprTokens = [...tokens];
+    let pendingOp = null;
+    if (exprTokens.length && isOp(exprTokens.at(-1))) {
+      pendingOp = exprTokens.pop(); // hold the trailing op
+    }
+
+    const left = exprTokens.join(' ');
+    const liveMeasure = measure.active ? String(measureTotal()) : null;
+    const liveEntry   = (!measure.active && currentEntry) ? currentEntry : null;
+
+    let preview = '';
+
+    if (pendingOp && (liveMeasure || liveEntry)) {
+      // correct: "... A <op> <live>"
+      preview = (left ? left + ' ' : '') + pendingOp + ' ' + (liveMeasure ?? liveEntry);
+    } else if (liveMeasure) {
+      // nice preview when only a measure is being typed
+      preview = left ? `${left} + ${liveMeasure}` : liveMeasure;
+    } else if (liveEntry) {
+      preview = left ? `${left} ${liveEntry}` : liveEntry;
+    } else {
+      preview = left;
+    }
 
     try{
-      let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
-      let num  = (typeof base === 'number' ? base : base.toNumber());
-      if (measure.active) num += measureTotal();
+      let val = preview.trim() ? math.evaluate(preview) : 0;
+      let num = (typeof val === 'number') ? val : val.toNumber();
 
       const out = formatResult(num);
       lastGood = { value: num, fraction: out.fraction, decimal: out.decimal };
@@ -681,8 +698,9 @@
       fractionLine.textContent = out.fraction;
       decimalLine.textContent  = out.decimal;
       drawTape(num);
-    }catch{
-      if (measure.active && expr.length === 0){
+    } catch {
+      // Fallbacks
+      if (measure.active && !left){
         const m = measureTotal();
         const out = formatResult(m);
         fractionLine.textContent = out.fraction;
@@ -700,6 +718,7 @@
       }
     }
   }
+
   const qEval = () => { clearTimeout(tmr); tmr = setTimeout(evaluate, 120); };
 
   // Tape rendering
