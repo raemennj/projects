@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-<title>Inch Calc — Palette Painter</title>
+<title>Inch Calc — Palette Painter (with Save States)</title>
 <style>
   :root{
     --card-max: 420px; --gap: 8px; --tile: 56px; --pad: var(--gap);
@@ -18,12 +18,12 @@
   .panel{ background:var(--card); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.22); overflow:hidden; }
   .pad{ padding:var(--pad) }
 
-  /* Keep a tiny tape bar just for spacing */
+  /* Tiny tape bar for spacing */
   .tape{ position:relative; min-height:60px; }
   .tape::after{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(255,255,0,.2), rgba(255,255,0,.35)); border:1px solid rgba(255,255,255,.08); }
   .center-line{ position:absolute; top:10%; left:50%; width:4px; height:76%; background:#e33; opacity:.6; transform:translateX(-50%); }
 
-  /* Calculator zones */
+  /* Zones */
   .io{ display:flex; flex-direction:column; gap:var(--gap); }
   .memory-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(1,var(--tile)); }
   .console-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(4,var(--tile)); }
@@ -31,34 +31,55 @@
   .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
   .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
 
-  .btn{ height:100%; width:100%; border:1px solid rgba(255,255,255,.12); border-radius:8px; background:#183232; color:var(--ink); display:grid; place-items:center; font-weight:700; font-size:clamp(14px, calc(var(--tile)*.42), 20px); letter-spacing:.25px; cursor:pointer; transition:transform .05s ease, box-shadow .15s ease, background-color .2s ease, color .2s ease; }
+  /* Buttons (basic 3D-ish) */
+  .btn{
+    height:100%; width:100%;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;
+    background:#183232;
+    color:var(--ink);
+    display:grid; place-items:center;
+    font-weight:700; font-size:clamp(14px, calc(var(--tile)*.42), 20px);
+    letter-spacing:.25px; cursor:pointer;
+    transition:transform .05s ease, box-shadow .15s ease, background-color .2s ease, color .2s ease;
+  }
   .btn:hover{ box-shadow:0 8px 22px rgba(0,0,0,.33) }
   .btn:active{ transform:translateY(1px) }
 
-  /* Painter panel */
-  .palette{ margin-top:12px; padding:10px; background:#0f2222; border:1px solid rgba(255,255,255,.08); border-radius:10px; display:grid; gap:10px; }
-  .row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .row label{ font-size:12px; color:var(--muted); white-space:nowrap }
-  .row select,.row button{ background:#0d1f1f; color:var(--ink); border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:8px; font:inherit }
-  .pill{ padding:6px 10px; border-radius:999px; font-size:12px }
+  /* Painter UI */
+  .palette-wrap{ margin-top:12px; padding:10px; background:#0f2222; border:1px solid rgba(255,255,255,.08); border-radius:12px; display:grid; gap:10px; }
+  .paintbar, .statebar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .mini{ border:0; padding:8px 12px; border-radius:999px; font-weight:800; cursor:pointer; background:#0d1f1f; color:#dff8f4; }
+  .mini.on{ background:#10b3a3; color:#0a1514; }
   .spacer{ flex:1 }
   .status{ font-size:12px; color:var(--muted) }
 
-  .group{ border:1px solid rgba(255,255,255,.08); border-radius:10px; overflow:hidden }
-  .group h3{ margin:0; padding:6px 10px; font-size:12px; font-weight:600; color:#cfe; background:#0b1a1a; border-bottom:1px solid rgba(255,255,255,.06) }
-  .swatch-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(26px,1fr)); gap:6px; max-height:200px; overflow:auto; padding:8px; background:#0d1f1f; }
-  .swatch{ width:100%; aspect-ratio:1/1; border-radius:6px; border:1px solid rgba(255,255,255,.35); cursor:pointer; position:relative }
-  .swatch:hover::after{ content:attr(data-name); position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:10px; color:#000; background:rgba(255,255,255,.8); padding:2px 4px; border-radius:4px; }
+  /* Condensed palette grid */
+  .palette{ display:grid; gap:8px; grid-template-columns:repeat(12, minmax(0,1fr)); }
+  @media (max-width:480px){ .palette{ grid-template-columns:repeat(8, minmax(0,1fr)); } }
+  .swatch{
+    width:100%; aspect-ratio:1/1; border-radius:8px;
+    border:1px solid rgba(255,255,255,.25); cursor:pointer; position:relative;
+  }
+  .swatch:focus-visible{ outline:2px solid var(--ring); outline-offset:2px; }
+  .swatch.selected::after{
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    box-shadow:0 0 0 2px #fff, 0 0 0 4px rgba(16,179,163,.9) inset;
+  }
 
-  @media (max-width:460px){ .card{ width:100% } }
+  /* List panel */
+  .list-panel{ display:none; border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:10px; background:#0d1f1f; }
+  .list-row{ display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center; padding:6px 0; border-bottom:1px dashed rgba(255,255,255,.06); }
+  .list-row:last-child{ border-bottom:0 }
+  .hex{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#0b1919; padding:4px 8px; border-radius:8px; cursor:pointer; }
+  .hex:hover{ outline:2px solid rgba(16,179,163,.65); outline-offset:2px; }
+  .keylbl{ opacity:.9 }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card" id="card">
       <div class="panel tape"><div class="center-line"></div></div>
-
-      <!-- Empty results area removed (height 0) -->
       <div class="panel" style="height:0; padding:0; overflow:hidden"></div>
 
       <div class="panel pad">
@@ -82,12 +103,15 @@
             <button class="btn r1 c2" data-key="n7">7</button>
             <button class="btn r1 c3" data-key="n8">8</button>
             <button class="btn r1 c4" data-key="n9">9</button>
+
             <button class="btn r2 c2" data-key="n4">4</button>
             <button class="btn r2 c3" data-key="n5">5</button>
             <button class="btn r2 c4" data-key="n6">6</button>
+
             <button class="btn r3 c2" data-key="n1">1</button>
             <button class="btn r3 c3" data-key="n2">2</button>
             <button class="btn r3 c4" data-key="n3">3</button>
+
             <button class="btn r4 c2" data-key="blank"></button>
             <button class="btn r4 c3" data-key="n0">0</button>
             <button class="btn r4 c4" data-key="dot">.</button>
@@ -105,11 +129,13 @@
             <button class="btn" data-key="f-3-16">3/16</button>
             <button class="btn" data-key="f-1-4">1/4</button>
             <button class="btn" data-key="f-5-16">5/16</button>
+
             <button class="btn" data-key="f-3-8">3/8</button>
             <button class="btn" data-key="f-7-16">7/16</button>
             <button class="btn" data-key="f-1-2">1/2</button>
             <button class="btn" data-key="f-9-16">9/16</button>
             <button class="btn" data-key="f-5-8">5/8</button>
+
             <button class="btn" data-key="f-11-16">11/16</button>
             <button class="btn" data-key="f-3-4">3/4</button>
             <button class="btn" data-key="f-13-16">13/16</button>
@@ -118,21 +144,36 @@
           </div>
         </div>
 
-        <!-- Painter: only what you asked for -->
-        <div class="palette" id="palette">
-          <div class="row">
-            <button id="paintToggle" class="pill">Paint on click: ON</button>
+        <!-- Painter controls -->
+        <div class="palette-wrap">
+          <div class="paintbar">
+            <button id="paintBg" class="mini on" aria-pressed="true" title="Paint Background">BG</button>
+            <button id="paintFg" class="mini" title="Paint Text">Text</button>
             <div class="spacer"></div>
-            <label for="target">Paint</label>
-            <select id="target">
-              <option value="bg" selected>Background</option>
-              <option value="fg">Text</option>
-            </select>
+            <button id="toggleList" class="mini" title="Show/hide list">List</button>
+            <button id="copyAll" class="mini" title="Copy whole list">Copy All</button>
           </div>
 
-          <div id="paletteGroups" class="palette-groups" style="display:grid; gap:10px;"></div>
+          <!-- Save states -->
+          <div class="statebar">
+            <span class="status">States:</span>
+            <button class="mini" data-save="1">Save 1</button>
+            <button class="mini" data-load="1">Load 1</button>
+            <button class="mini" data-save="2">Save 2</button>
+            <button class="mini" data-load="2">Load 2</button>
+            <button class="mini" data-save="3">Save 3</button>
+            <button class="mini" data-load="3">Load 3</button>
+            <button class="mini" data-save="4">Save 4</button>
+            <button class="mini" data-load="4">Load 4</button>
+          </div>
 
-          <div class="row status" id="status">Pick a swatch, then tap buttons.</div>
+          <!-- Palette -->
+          <div id="palette" class="palette" aria-label="Color palette (tap a swatch, then tap keys to paint)"></div>
+
+          <!-- List panel -->
+          <div id="listPanel" class="list-panel"></div>
+
+          <div class="status" id="status">Pick a swatch, then tap buttons to paint. (Painting is always ON.)</div>
         </div>
       </div>
     </div>
@@ -140,85 +181,187 @@
 
 <script>
 (function(){
-  // Full list of named colors
-  const NAMES = [
-    "aliceblue","antiquewhite","aqua","aquamarine","azure","beige","bisque","black","blanchedalmond","blue","blueviolet","brown","burlywood","cadetblue","chartreuse","chocolate","coral","cornflowerblue","cornsilk","crimson","cyan","darkblue","darkcyan","darkgoldenrod","darkgray","darkgreen","darkgrey","darkkhaki","darkmagenta","darkolivegreen","darkorange","darkorchid","darkred","darksalmon","darkseagreen","darkslateblue","darkslategray","darkslategrey","darkturquoise","darkviolet","deeppink","deepskyblue","dimgray","dimgrey","dodgerblue","firebrick","floralwhite","forestgreen","fuchsia","gainsboro","ghostwhite","gold","goldenrod","gray","green","greenyellow","grey","honeydew","hotpink","indianred","indigo","ivory","khaki","lavender","lavenderblush","lawngreen","lemonchiffon","lightblue","lightcoral","lightcyan","lightgoldenrodyellow","lightgray","lightgreen","lightgrey","lightpink","lightsalmon","lightseagreen","lightskyblue","lightslategray","lightslategrey","lightsteelblue","lightyellow","lime","limegreen","linen","magenta","maroon","mediumaquamarine","mediumblue","mediumorchid","mediumpurple","mediumseagreen","mediumslateblue","mediumspringgreen","mediumturquoise","mediumvioletred","midnightblue","mintcream","mistyrose","moccasin","navajowhite","navy","oldlace","olive","olivedrab","orange","orangered","orchid","palegoldenrod","palegreen","paleturquoise","palevioletred","papayawhip","peachpuff","peru","pink","plum","powderblue","purple","rebeccapurple","red","rosybrown","royalblue","saddlebrown","salmon","sandybrown","seagreen","seashell","sienna","silver","skyblue","slateblue","slategray","slategrey","snow","springgreen","steelblue","tan","teal","thistle","tomato","turquoise","violet","wheat","white","whitesmoke","yellow","yellowgreen"
-  ];
-
+  // ===== Utilities =====
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
-  const status = $('#status');
-  const state = { paint:true, target:'bg', color:null };
-
-  // Convert a named color to HSL via computed style
+  function rgbToHex(v){
+    if (!v) return '';
+    const m = v.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (!m) return v.trim();
+    return '#'+[m[1],m[2],m[3]].map(n=>(+n).toString(16).padStart(2,'0')).join('');
+  }
   function nameToHsl(name){
     const probe = document.createElement('span');
     probe.style.color = name; document.body.appendChild(probe);
     const rgb = getComputedStyle(probe).color; probe.remove();
-    const inside = rgb.slice(rgb.indexOf('(')+1, rgb.indexOf(')'));
-    const parts = inside.split(',').map(s => parseInt(s.trim(),10));
-    const r = (parts[0]||0)/255, g=(parts[1]||0)/255, b=(parts[2]||0)/255;
-    const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+    const [,r,g,b] = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i) || [0,0,0,0];
+    const R = +r/255, G = +g/255, B = +b/255;
+    const max=Math.max(R,G,B), min=Math.min(R,G,B), d=max-min;
     let h=0, s=0, l=(max+min)/2;
-    if(d!==0){ s = d / (1 - Math.abs(2*l - 1));
-      switch(max){ case r: h = 60 * (((g-b)/d) % 6); break; case g: h = 60 * (((b-r)/d) + 2); break; case b: h = 60 * (((r-g)/d) + 4); }
+    if(d!==0){
+      s = d / (1 - Math.abs(2*l - 1));
+      switch(max){ case R: h = 60 * (((G-B)/d) % 6); break; case G: h = 60 * (((B-R)/d) + 2); break; case B: h = 60 * (((R-G)/d) + 4); }
     }
-    if(h<0) h+=360; return {h, s: s*100, l: l*100};
+    if (h<0) h+=360;
+    return {h, s, l};
   }
 
-  function bucket(name, h, s, l){
-    const lowSat = s < 10; // greys
-    if(/white|ivory|linen|oldlace|ghostwhite|snow|floralwhite/i.test(name)) return 'Whites';
-    if(/black/i.test(name)) return 'Blacks';
-    if(/gray|grey|gainsboro|silver|whitesmoke/i.test(name) || lowSat) return 'Grays';
-    if(/brown|sienna|saddlebrown|chocolate|peru|tan|burlywood|rosybrown/i.test(name) || (h>15&&h<50&&l<55)) return 'Browns';
-    if(h>=345||h<15) return 'Reds';
-    if(h<45) return 'Oranges';
-    if(h<65) return 'Yellows';
-    if(h<150) return 'Greens';
-    if(h<190) return 'Teals';
-    if(h<255) return 'Blues';
-    if(h<285) return 'Purples';
-    if(h<345) return 'Pinks';
-    return 'Reds';
+  // ===== Palette (condensed, CSS names sorted by hue) =====
+  const NAMES = [
+    "black","dimgray","gray","darkgray","silver","lightgray","gainsboro","whitesmoke","white",
+    "maroon","brown","firebrick","crimson","red","tomato","orangered","coral","darkorange","orange",
+    "peru","sienna","saddlebrown","chocolate","sandybrown","goldenrod","darkgoldenrod","gold","khaki","tan",
+    "darkkhaki","palegoldenrod","wheat","bisque","navajowhite","moccasin","peachpuff","papayawhip","lemonchiffon","ivory",
+    "olive","olivedrab","yellowgreen","greenyellow","lawngreen","chartreuse","lime","limegreen","forestgreen","green",
+    "seagreen","mediumseagreen","springgreen","mediumspringgreen","lightgreen","palegreen","darkseagreen","yellow",
+    "teal","darkcyan","lightseagreen","cadetblue","darkslategray","darkslategrey","steelblue","lightsteelblue",
+    "powderblue","lightblue","skyblue","lightskyblue","deepskyblue","dodgerblue","cornflowerblue","royalblue","blue",
+    "mediumblue","navy","midnightblue","slateblue","darkslateblue","mediumpurple","blueviolet","indigo","rebeccapurple",
+    "purple","darkmagenta","magenta","fuchsia","orchid","violet","plum","thistle","pink","lightpink","hotpink","deeppink",
+    "palevioletred","mediumvioletred","salmon","darksalmon","lightsalmon","rosybrown",
+    "azure","aliceblue","ghostwhite","lavender","lavenderblush","mintcream","honeydew","seashell","linen","oldlace","floralwhite","cornsilk","beige"
+  ];
+  const sorted = [...NAMES].map(n => ({ n, ...nameToHsl(n) }))
+                           .sort((a,b)=> a.h-b.h || b.s-a.s || b.l-a.l);
+
+  const palette = $('#palette');
+  const listPanel = $('#listPanel');
+  const status = $('#status');
+  const paintBgBtn = $('#paintBg');
+  const paintFgBtn = $('#paintFg');
+  const toggleListBtn = $('#toggleList');
+  const copyAllBtn = $('#copyAll');
+
+  // Current paint mode
+  let target = 'bg';         // 'bg' or 'fg'
+  let current = null;        // current color string
+  setTarget('bg');
+
+  function setTarget(t){
+    target = t;
+    paintBgBtn.classList.toggle('on', t==='bg');
+    paintFgBtn.classList.toggle('on', t==='fg');
   }
+  paintBgBtn.addEventListener('click', ()=> setTarget('bg'));
+  paintFgBtn.addEventListener('click', ()=> setTarget('fg'));
 
-  function buildGroupedPalette(){
-    const groups = { 'Reds':[], 'Oranges':[], 'Yellows':[], 'Greens':[], 'Teals':[], 'Blues':[], 'Purples':[], 'Pinks':[], 'Browns':[], 'Grays':[], 'Whites':[], 'Blacks':[] };
-    NAMES.forEach(n=>{ const {h,s,l}=nameToHsl(n); const key=bucket(n,h,s,l); groups[key].push({name:n,h,s,l}); });
-    Object.values(groups).forEach(arr=> arr.sort((a,b)=> a.h-b.h || b.s-a.s || b.l-a.l));
-
-    const host = $('#paletteGroups'); host.innerHTML='';
-    for(const [label, items] of Object.entries(groups)){
-      if(!items.length) continue;
-      const section = document.createElement('section'); section.className='group';
-      const h3 = document.createElement('h3'); h3.textContent = label; section.appendChild(h3);
-      const grid = document.createElement('div'); grid.className='swatch-grid';
-      items.forEach(it=>{
-        const sw = document.createElement('button'); sw.type='button'; sw.className='swatch'; sw.style.background = it.name; sw.title = it.name; sw.dataset.name = it.name;
-        sw.addEventListener('click', ()=>{ state.color = it.name; status.textContent = `Color: ${it.name}. Now tap buttons.`; });
-        grid.appendChild(sw);
-      });
-      section.appendChild(grid); host.appendChild(section);
-    }
-  }
-
-  // Button painting
-  document.addEventListener('click', (e)=>{
-    const b = e.target.closest('.btn');
-    if(!b) return;
-    if(!state.paint) return; // only paint in paint mode
-    if(!state.color){ status.textContent = 'Pick a color first.'; return; }
-    if(state.target==='bg') b.style.backgroundColor = state.color; else b.style.color = state.color;
+  // Build swatches
+  sorted.forEach(({n}, i)=>{
+    const s = document.createElement('button');
+    s.type = 'button'; s.className = 'swatch'; s.style.background = n; s.title = n;
+    s.addEventListener('click', ()=>{
+      current = n;
+      [...palette.children].forEach(el=>el.classList.remove('selected'));
+      s.classList.add('selected');
+      status.textContent = `Color: ${n}. Tap keys to paint ${target==='bg'?'BG':'Text'}.`;
+    });
+    if (i===0){ current = n; s.classList.add('selected'); }
+    palette.appendChild(s);
   });
 
-  // Controls
-  $('#paintToggle').addEventListener('click', ()=>{ state.paint = !state.paint; $('#paintToggle').textContent = 'Paint on click: ' + (state.paint?'ON':'OFF'); });
-  $('#target').addEventListener('change', (e)=>{ state.target = e.target.value; });
+  // Always-on paint on button click
+  document.addEventListener('click', (e)=>{
+    const b = e.target.closest('.btn');
+    if (!b) return;
+    if (!current) { status.textContent = 'Pick a swatch first.'; return; }
+    e.stopImmediatePropagation(); e.preventDefault();
+    if (target === 'bg'){ b.style.backgroundColor = current; }
+    else { b.style.color = current; }
+    // keep list panel in sync if visible
+    if (listPanel.style.display === 'block') renderList();
+  }, true);
 
-  // Boot
-  buildGroupedPalette();
-  status.textContent = 'Pick a swatch, then tap buttons.';
+  // ====== List panel & copy helpers ======
+  function collectButtonColors(){
+    return $$('.btn').map(b=>{
+      const key   = b.getAttribute('data-key') || '';
+      const label = (b.textContent || '').trim() || '(blank)';
+      const bgHex = rgbToHex(getComputedStyle(b).backgroundColor);
+      const fgHex = rgbToHex(getComputedStyle(b).color);
+      return { key, label, bgHex, fgHex };
+    });
+  }
+
+  function renderList(){
+    const rows = collectButtonColors();
+    listPanel.innerHTML = '';
+    rows.forEach(({key,label,bgHex,fgHex})=>{
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      const left = document.createElement('div'); left.className='keylbl'; left.textContent = (key ? key+' — ' : '') + label;
+      const bg = document.createElement('button'); bg.className='hex'; bg.textContent = bgHex; bg.title='Click to copy';
+      const fg = document.createElement('button'); fg.className='hex'; fg.textContent = fgHex; fg.title='Click to copy';
+      bg.addEventListener('click', ()=> copyText(bgHex));
+      fg.addEventListener('click', ()=> copyText(fgHex));
+      row.append(left, bg, fg);
+      listPanel.appendChild(row);
+    });
+  }
+
+  function copyText(txt){
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt);
+    status.textContent = `Copied ${txt}`;
+  }
+
+  toggleListBtn.addEventListener('click', ()=>{
+    const open = listPanel.style.display === 'block';
+    listPanel.style.display = open ? 'none' : 'block';
+    if (!open) renderList();
+  });
+
+  copyAllBtn.addEventListener('click', ()=>{
+    const rows = collectButtonColors()
+      .map(({key,label,bgHex,fgHex}) => `${(key||'').padEnd(8)} ${label.padEnd(8)}  BG ${bgHex}  Text ${fgHex}`)
+      .join('\n');
+    copyText(rows);
+  });
+
+  // ====== Save / Load states ======
+  const LS_KEY = slot => `inchcalc_paint_state_${slot}`;
+
+  function snapshotState(){
+    const map = {};
+    $$('.btn').forEach(b=>{
+      const id = b.getAttribute('data-key') || (b.textContent || '').trim();
+      if (!id) return;
+      map[id] = {
+        bg: rgbToHex(getComputedStyle(b).backgroundColor),
+        fg: rgbToHex(getComputedStyle(b).color)
+      };
+    });
+    return map;
+  }
+
+  function applyState(map){
+    if (!map) return;
+    $$('.btn').forEach(b=>{
+      const id = b.getAttribute('data-key') || (b.textContent || '').trim();
+      if (!id || !map[id]) return;
+      if (map[id].bg) b.style.backgroundColor = map[id].bg;
+      if (map[id].fg) b.style.color = map[id].fg;
+    });
+    if (listPanel.style.display === 'block') renderList();
+  }
+
+  $$('[data-save]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const slot = btn.getAttribute('data-save');
+      const data = snapshotState();
+      localStorage.setItem(LS_KEY(slot), JSON.stringify(data));
+      status.textContent = `Saved state ${slot}.`;
+    });
+  });
+
+  $$('[data-load]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const slot = btn.getAttribute('data-load');
+      const raw = localStorage.getItem(LS_KEY(slot));
+      if (!raw){ status.textContent = `No state saved in slot ${slot}.`; return; }
+      try { applyState(JSON.parse(raw)); status.textContent = `Loaded state ${slot}.`; }
+      catch { status.textContent = `Could not load slot ${slot}.`; }
+    });
+  });
+
 })();
 </script>
 </body>
