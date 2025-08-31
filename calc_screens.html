@@ -315,7 +315,7 @@
         <button class="btn r3 c3" data-val="2"><span class="btn-label">2</span></button>
         <button class="btn r3 c4" data-val="3"><span class="btn-label">3</span></button>
 
-        <!-- NEW: Repeat button in the formerly empty slot -->
+        <!-- Repeat button in the formerly empty slot -->
         <button class="btn operator r4 c2" id="repeatBtn" title="Repeat last op+term" disabled>
           <span class="btn-label">↻</span>
         </button>
@@ -572,38 +572,97 @@
     measure = { active:false, feet:0, inches:0, inEntry:'' };
   }
 
-  function updateInput(){
-    let s='';
-    tokens.forEach((t, idx)=>{
-      if (isOp(t)) {
-        s += `${prettyOp(t)} `;
-      } else if (tokenDisplays[idx]) {
-        s += `${tokenDisplays[idx]} `;
-      } else if (isDec(t)) {
-        const [w,f]=splitDec(t);
-        s += f>0 ? `${w} ${fracFromDec(f)} ` : `${w} `;
-      } else {
-        s += `${t} `;
-      }
-    });
+  /* --- Pretty history with precedence parentheses --- */
+  function tokenDisplayAt(idx, tok){
+    if (tokenDisplays[idx]) return tokenDisplays[idx];
+    if (isDec(tok)){
+      const [w,f] = splitDec(tok);
+      return f>0 ? `${w} ${fracFromDec(f)}` : `${w}`;
+    }
+    return `${tok}`;
+  }
 
+  function buildDisplayArr(){
+    const arr = [];
+    for (let i=0;i<tokens.length;i++){
+      const t = tokens[i];
+      if (isOp(t)) arr.push({type:'op', value:t});
+      else arr.push({type:'num', value:t, display: tokenDisplayAt(i,t)});
+    }
+
+    // Append the "in-progress" entry for preview
     if (measure.active){
-      s += measureDisplay() + ' ';
+      arr.push({type:'num', value: String(measureTotal()), display: measureDisplay()});
     } else if (currentEntry){
-      if (isDec(currentEntry)){
-        const [w,f]=splitDec(currentEntry);
-        s += f>0 ? `${w} ${fracFromDec(f)} ` : `${w} `;
+      const t = currentEntry;
+      const display = isDec(t)
+        ? (()=>{ const [w,f]=splitDec(t); return f>0 ? `${w} ${fracFromDec(f)}` : `${w}`; })()
+        : t;
+      arr.push({type:'num', value:t, display});
+    }
+
+    // Keep trailing operator visible, but don’t include it in grouping
+    let trailingOp = null;
+    if (arr.length && arr[arr.length-1].type==='op'){
+      trailingOp = arr.pop().value;
+    }
+
+    // Unary leading minus → merge into first number for display
+    if (arr.length>=2 && arr[0].type==='op' && arr[0].value==='-' && arr[1].type==='num'){
+      arr.shift();
+      arr[0].display = '−' + arr[0].display;
+    }
+
+    return {arr, trailingOp};
+  }
+
+  function renderHistory(){
+    const {arr, trailingOp} = buildDisplayArr();
+    if (!arr.length){
+      inputLine.textContent = trailingOp ? prettyOp(trailingOp) : '';
+      return;
+    }
+
+    const hasHigh = arr.some(n => n.type==='op' && (n.value==='*' || n.value==='/'));
+    const hasLow  = arr.some(n => n.type==='op' && (n.value==='+' || n.value==='-'));
+    const mixed   = hasHigh && hasLow;
+
+    // Build with minimal parentheses around ×/÷ runs when mixed
+    let s = '';
+    for (let i=0;i<arr.length;){
+      const node = arr[i];
+      if (node.type==='num'){
+        let part = node.display;
+        let j=i;
+        let hasHighInGroup = false;
+        while (j+1<arr.length && arr[j+1].type==='op' && (arr[j+1].value==='*' || arr[j+1].value==='/') && j+2<arr.length && arr[j+2].type==='num'){
+          part += ' ' + prettyOp(arr[j+1].value) + ' ' + arr[j+2].display;
+          hasHighInGroup = true;
+          j += 2;
+        }
+        if (mixed && hasHighInGroup) part = '(' + part + ')';
+        s += part;
+        i = j+1;
       } else {
-        s += `${currentEntry} `;
+        s += ' ' + prettyOp(node.value) + ' ';
+        i += 1;
       }
     }
 
+    if (trailingOp) s = (s ? s + ' ' : '') + prettyOp(trailingOp);
+
     inputLine.textContent = s.trim();
-    requestAnimationFrame(()=>{ const hist=document.getElementById('history'); if(hist) hist.scrollTop = hist.scrollHeight; });
+
+    requestAnimationFrame(()=>{
+      const hist=document.getElementById('history');
+      if(hist) hist.scrollTop = hist.scrollHeight;
+    });
 
     // Keep repeat button state fresh
     setRepeatEnabled(canRepeat());
   }
+
+  function updateInput(){ renderHistory(); }
 
   // SAFE evaluator
   function evaluate(){
@@ -1082,7 +1141,6 @@
 
   function doRepeat(){
     if (!canRepeat()){
-      // Little visual nudge if pressed while disabled (shouldn't fire because disabled)
       return;
     }
     commitPendingIfPair();
@@ -1154,4 +1212,98 @@
 })();
 </script>
 </body>
+
+<!-- ===== manifest.webmanifest (create this file alongside) ===== -->
+<!--
+{
+  "name": "Inch Calc",
+  "short_name": "Inch Calc",
+  "start_url": ".",
+  "scope": ".",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#1f4d4d",
+  "theme_color": "#1f4d4d",
+  "description": "Tape & Memory calculator with inch fractions.",
+  "icons": [
+    {"src": "calcicon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "calcicon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any"}
+  ]
+}
+-->
+
+<!-- ===== sw.js (create this file alongside) ===== -->
+<!--
+const CACHE_NAME = 'inch-calc-v1-2025-08-23';
+const ASSETS = [
+  './',
+  './tapemeasurememory.html',
+  './manifest.webmanifest',
+  './sw.js',
+  './calcicon.png',
+  './apple-touch-icon.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const accept = req.headers.get('accept') || '';
+
+  // HTML (navigation): network-first
+  if (req.mode === 'navigate' || accept.includes('text/html')){
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  const sameOrigin = new URL(req.url).origin === self.location.origin;
+
+  // Same-origin assets: cache-first
+  if (sameOrigin){
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, copy));
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Cross-origin (e.g., CDN): network, fallback to cache
+  event.respondWith(
+    fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(req, copy));
+      return res;
+    }).catch(() => caches.match(req))
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
+});
+-->
 </html>
