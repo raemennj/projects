@@ -126,7 +126,7 @@
   /* ---------- Console (5×4) ---------- */
   .console{ grid-area:console }
   .console-grid{
-	margin-top: 8px;  
+    margin-top: 8px;
     display:grid; gap:var(--gap);
     grid-template-columns:repeat(5, 1fr);
     grid-template-rows:repeat(4, var(--tile));
@@ -137,7 +137,7 @@
   /* ---------- Fractions (5×3) ---------- */
   .fractions{ grid-area:fractions }
   .fract-grid{
-	margin-top: 8px;  
+    margin-top: 8px;
     display:grid; gap:var(--gap);
     grid-template-columns:repeat(5, 1fr);
     grid-template-rows:repeat(3, var(--tile));
@@ -211,7 +211,7 @@
   /* --- Hold arming pulse --- */
   .btn.hold {
     box-shadow: 0 0 0 0 rgba(14,165,165,.55);
-    animation: pulseRing 1s ease-out infinite.
+    animation: pulseRing 1s ease-out infinite;
   }
   @keyframes pulseRing {
     0%   { box-shadow: 0 0 0 0   rgba(14,165,165,.55); }
@@ -433,7 +433,7 @@
     const tapeMin = cssNum('--tape-min', 100);
 
     // Measure fixed results height = padding*2 + 2 input lines + gap + 1 output line (+1px border)
-    const pad = gap; // matches --pad
+    const pad = gap;
     const inputEl = document.getElementById('inputLine');
     const outputEl = document.querySelector('.output');
     const getLineHeightPx = (el) => {
@@ -455,8 +455,8 @@
     const ROWS = 8;
     const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap
     const W_inside = W - 2*gap;
-
     const H_for_keypad = Math.max(0, H - tapeMin - resultsFixed - 2*gap);
+
     const tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
     const tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
     const tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
@@ -569,7 +569,7 @@
     measure = { active:false, feet:0, inches:0, inEntry:'' };
   }
 
-  /* --- Pretty history with precedence parentheses --- */
+  /* --- Pretty history with precedence parentheses + inch marks when feet appear --- */
   function tokenDisplayAt(idx, tok){
     if (tokenDisplays[idx]) return tokenDisplays[idx];
     if (isDec(tok)){
@@ -620,6 +620,15 @@
       return;
     }
 
+    // If ANY feet are present in the expression, show explicit inches (″) on inch-only terms
+    const feetPresent = arr.some(n => n.type==='num' && typeof n.display==='string' && n.display.includes('′'));
+    const markInches = (txt) => {
+      if (!feetPresent) return txt;
+      if (!txt) return txt;
+      if (txt.includes('′') || txt.includes('″')) return txt;
+      return txt + '″';
+    };
+
     const hasHigh = arr.some(n => n.type==='op' && (n.value==='*' || n.value==='/'));
     const hasLow  = arr.some(n => n.type==='op' && (n.value==='+' || n.value==='-'));
     const mixed   = hasHigh && hasLow;
@@ -629,11 +638,11 @@
     for (let i=0;i<arr.length;){
       const node = arr[i];
       if (node.type==='num'){
-        let part = node.display;
+        let part = markInches(node.display);
         let j=i;
         let hasHighInGroup = false;
         while (j+1<arr.length && arr[j+1].type==='op' && (arr[j+1].value==='*' || arr[j+1].value==='/') && j+2<arr.length && arr[j+2].type==='num'){
-          part += ' ' + prettyOp(arr[j+1].value) + ' ' + arr[j+2].display;
+          part += ' ' + prettyOp(arr[j+1].value) + ' ' + markInches(arr[j+2].display);
           hasHighInGroup = true;
           j += 2;
         }
@@ -682,6 +691,7 @@
     } else if (liveMeasure) {
       // nice preview when only a measure is being typed
       preview = left ? `${left} + ${liveMeasure}` : liveMeasure;
+
     } else if (liveEntry) {
       preview = left ? `${left} ${liveEntry}` : liveEntry;
     } else {
@@ -1267,6 +1277,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(ASSETS))
+
       .then(() => self.skipWaiting())
   );
 });
