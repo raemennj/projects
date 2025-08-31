@@ -31,7 +31,7 @@
     margin:0; background:#1f4d4d; color:#111;
     font-family:"aktiv-grotesk",-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
-    display:flex; align-items:center; justify-content:center;
+    display:flex; justify-content:center; align-items:stretch; /* fill the viewport */
     padding:
       calc(env(safe-area-inset-top) + 10px)
       calc(env(safe-area-inset-right) + 10px)
@@ -47,9 +47,8 @@
     --pad: var(--gap);
 
     --tape-min: 100px;
-    --results-min: 60px;
-
-    --results-fixed: 140px;  /* fixed results height, set by JS */
+    --results-min: 140px;  /* minimum results height (computed precisely by JS) */
+    --history-min: 40px;   /* minimum history window (computed precisely by JS) */
 
     /* theme tokens */
     --card:#fff; --display-bg:#222; --display-text:#0f0;
@@ -65,18 +64,18 @@
     height:100%;
     display:grid; gap:var(--gap);
     grid-template-rows:
-      minmax(var(--tape-min), auto)
-      var(--results-fixed)
-      auto
-      auto
-      auto;
+      minmax(var(--tape-min), auto)      /* tape stays at top */
+      minmax(var(--results-min), 1fr)    /* results flex row */
+      auto                                /* memory */
+      auto                                /* console */
+      auto;                               /* fractions */
     grid-template-areas:
       "tape" "results" "memory" "console" "fractions";
   }
   .panel{
     background:var(--card);
     border-radius:8px;
-	  background-color: darkslategrey;
+    background-color: darkslategrey;
     box-shadow:0 8px 24px rgba(0,0,0,.15);
     overflow:hidden;
   }
@@ -104,9 +103,16 @@
   .sweep.animate::before{ animation:sweep .8s ease-in-out forwards; }
 
   /* ---------- Results ---------- */
-  .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); }
-  .results .pad{ display:flex; flex-direction:column; gap:8px; }
-  .history{ height:var(--history-fixed); overflow:auto; padding-right:4px; display:flex; flex-direction:column; gap:4px; }
+  .results{ grid-area:results; background:var(--display-bg); color:var(--display-text); min-height:0; }
+  .results .pad{ display:flex; flex-direction:column; gap:8px; height:100%; }
+  .history{
+    /* was height:var(--history-fixed); */
+    min-height: var(--history-min);
+    flex: 1 1 auto;
+    max-height: 100%;
+    overflow:auto; padding-right:4px;
+    display:flex; flex-direction:column; gap:4px;
+  }
   .row.input{ letter-spacing:.04em; font-size:clamp(14px,1.9vw,18px); opacity:.9; }
   #inputLine{ display:block; }
   .output{ display:flex; justify-content:space-between; gap:8px; font-size:clamp(22px,3.1vw,32px); color:#bdfcb7; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); }
@@ -260,7 +266,6 @@
     --press-translate: 1px;
   }
 
-  /* Hover → lighten existing background color (works for all roles) */
   .btn:hover{
     background-image:
       var(--btn-img),
@@ -274,7 +279,6 @@
     transform: translateY(-0.5px);
   }
 
-  /* Pressed (mouse :active or touch via .pressed) → darker + inset */
   .btn:active,
   .btn.pressed{
     background-image:
@@ -289,7 +293,6 @@
     transform: translateY(var(--press-translate)) scale(.985);
   }
 
-  /* Don’t animate disabled */
   .btn[disabled]:hover,
   .btn[disabled].pressed{
     background-image: var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
@@ -297,7 +300,6 @@
     transform: none;
   }
 
-  /* Respect reduced motion: neutralize the movement */
   @media (prefers-reduced-motion: reduce){
     .btn:hover{ transform:none }
     .btn:active, .btn.pressed{ transform:none }
@@ -484,7 +486,7 @@
 
     const tapeMin = cssNum('--tape-min', 100);
 
-    // Measure fixed results height = padding*2 + 2 input lines + gap + 1 output line (+1px border)
+    // Measure minimum results height = padding*2 + 2 input lines + gap + 1 output line (+1px border)
     const pad = gap;
     const inputEl = document.getElementById('inputLine');
     const outputEl = document.querySelector('.output');
@@ -498,16 +500,18 @@
     };
     const inputLH = getLineHeightPx(inputEl);
     const outputLH = getLineHeightPx(outputEl);
-    const historyFixed = Math.ceil(inputLH * 2);
-    setVar('--history-fixed', historyFixed + 'px');
-    const resultsFixed = Math.ceil(pad*2 + historyFixed + 8 + outputLH + 1);
-    setVar('--results-fixed', resultsFixed + 'px');
+    const historyMin = Math.ceil(inputLH * 2);
+    setVar('--history-min', historyMin + 'px');
+    const resultsMin = Math.ceil(pad*2 + historyMin + 8 + outputLH + 1);
+    setVar('--results-min', resultsMin + 'px');
 
-    // Keypad composition
+    // Keypad composition (8 rows total: 1 mem + 4 console + 3 fractions)
     const ROWS = 8;
     const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap
     const W_inside = W - 2*gap;
-    const H_for_keypad = Math.max(0, H - tapeMin - resultsFixed - 2*gap);
+
+    // Available height for keypad if results uses only its MIN
+    const H_for_keypad = Math.max(0, H - tapeMin - resultsMin - 2*gap);
 
     const tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
     const tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
@@ -1402,7 +1406,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(ASSETS))
-
       .then(() => self.skipWaiting())
   );
 });
