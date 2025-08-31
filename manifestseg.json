@@ -2,7 +2,7 @@
   "name": "Segment Calculator",
   "short_name": "Segment Calc",
   "description": "A tool to divide a distance into segments.",
-  "start_url": "/projects/segmentcalc.html",
+  "start_url": "/projects/segment_tape.html",
   "display": "standalone",
   "orientation": "portrait",
   "icons": [
@@ -20,3 +20,4 @@
   "theme_color": "#ffffff",
   "background_color": "#000000"
 }
+
