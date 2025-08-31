@@ -823,8 +823,12 @@
     updateInput(); qEval();
   }));
 
-  // ===== Backspace / Clear =====
-  document.querySelector('.btn.back').addEventListener('click',()=>{
+  /* ===== Backspace: tap = 1 char. Hold 750ms = remove last number + preceding op ===== */
+  const backBtn = document.querySelector('.btn.back');
+  let backHoldTimer = null;
+  let backHoldTriggered = false;
+
+  function backspaceChar(){
     if (measure.active){
       if (measure.inEntry){
         measure.inEntry = measure.inEntry.slice(0,-1);
@@ -849,8 +853,64 @@
       }
     }
     updateInput(); evaluate();
+  }
+
+  function removeLastTermPair(){
+    // If building a measure or typing, drop it and the operator just before it (if any)
+    if (measure.active){
+      measure = { active:false, feet:0, inches:0, inEntry:'' };
+      if (tokens.length && isOp(tokens.at(-1))) { tokens.pop(); tokenDisplays.pop(); }
+      updateInput(); evaluate(); return;
+    }
+    if (currentEntry){
+      currentEntry = '';
+      if (tokens.length && isOp(tokens.at(-1))) { tokens.pop(); tokenDisplays.pop(); }
+      updateInput(); evaluate(); return;
+    }
+    if (!tokens.length){ updateInput(); evaluate(); return; }
+
+    // Find last numeric token
+    let idx = tokens.length - 1;
+    while (idx >= 0 && isOp(tokens[idx])) idx--;
+    if (idx < 0){ updateInput(); evaluate(); return; }
+
+    // Remove the number
+    tokens.splice(idx, 1);
+    tokenDisplays.splice(idx, 1);
+
+    // Remove the operator immediately before it, if present
+    if (idx - 1 >= 0 && isOp(tokens[idx - 1])){
+      tokens.splice(idx - 1, 1);
+      tokenDisplays.splice(idx - 1, 1);
+    }
+    updateInput(); evaluate();
+  }
+
+  // Short tap
+  backBtn.addEventListener('click', (e)=>{
+    if (backHoldTriggered){ backHoldTriggered = false; e.preventDefault(); return; }
+    backspaceChar();
   });
 
+  // Long-hold (750ms)
+  function clearBackHold(){
+    clearTimeout(backHoldTimer);
+    setHoldVisual(backBtn, false);
+  }
+  backBtn.addEventListener('pointerdown', ()=>{
+    setHoldVisual(backBtn, true);
+    clearTimeout(backHoldTimer);
+    backHoldTimer = setTimeout(()=>{
+      setHoldVisual(backBtn, false);
+      backHoldTriggered = true;     // block subsequent click
+      removeLastTermPair();
+    }, 750);
+  });
+  backBtn.addEventListener('pointerup', clearBackHold);
+  backBtn.addEventListener('pointercancel', clearBackHold);
+  backBtn.addEventListener('mouseleave', clearBackHold);
+
+  // ===== Clear =====
   document.querySelector('.btn.clear[data-action="clear"]').addEventListener('click',()=>{
     tokens=[]; tokenDisplays=[]; currentEntry=''; measure = { active:false, feet:0, inches:0, inEntry:'' };
     inputLine.textContent=''; fractionLine.textContent=''; decimalLine.textContent='';
