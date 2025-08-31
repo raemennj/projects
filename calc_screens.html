@@ -55,8 +55,8 @@
     --card:#fff; --display-bg:#222; --display-text:#0f0;
 
     /* legacy role colors as defaults */
-    --num:khaki; --op:gold; --frac:#64b5f6; --dec:#a5d6a7;
-    --clear:lightcoral; --mem:#64b5f6;
+    --num:khaki; --op:gold; --frac:#64b5f6; --dec:darkkhaki;
+    --clear:lightcoral; --mem:lightskyblue;
   }
 
   /* ---------- Card (stacked zones) ---------- */
@@ -160,11 +160,11 @@
     background-size:cover, auto;
     box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
     -webkit-tap-highlight-color:transparent;
-    transition: background-color .15s ease, transform .05s ease, box-shadow .15s ease, filter .15s ease;
+    transition: transform .06s ease, box-shadow .15s ease, filter .15s ease;
     position: relative; overflow: hidden;     /* for ripples */
     touch-action: manipulation;                /* snappier taps */
   }
-  .btn:active{ transform:scale(.98) }
+  .btn:active{ transform:scale(.98) } /* older press effect (will be overridden below) */
 
   .btn.operator{ --_btn-bg: var(--op);  --_btn-fg:#111; }
   .btn.frac    { --_btn-bg: var(--frac);--_btn-fg:#063c67; }
@@ -252,6 +252,57 @@
     box-shadow:0 8px 24px rgba(0,0,0,.25);
     font-size:14px;
   }
+
+  /* ========== NEW implied motion block ========== */
+  :root{
+    --hover-lift: 24%;
+    --active-shade: 16%;
+    --press-translate: 1px;
+  }
+
+  /* Hover → lighten existing background color (works for all roles) */
+  .btn:hover{
+    background-image:
+      var(--btn-img),
+      linear-gradient(
+        color-mix(in oklab, var(--btn-bg), white var(--hover-lift)),
+        color-mix(in oklab, var(--btn-bg), white var(--hover-lift))
+      );
+    box-shadow:
+      0 4px 10px rgba(0,0,0,.25),
+      inset 0 1px 0 rgba(255,255,255,.14);
+    transform: translateY(-0.5px);
+  }
+
+  /* Pressed (mouse :active or touch via .pressed) → darker + inset */
+  .btn:active,
+  .btn.pressed{
+    background-image:
+      var(--btn-img),
+      linear-gradient(
+        color-mix(in oklab, var(--btn-bg), black var(--active-shade)),
+        color-mix(in oklab, var(--btn-bg), black var(--active-shade))
+      );
+    box-shadow:
+      inset 0 2px 6px rgba(0,0,0,.35),
+      inset 0 -1px 0 rgba(255,255,255,.06);
+    transform: translateY(var(--press-translate)) scale(.985);
+  }
+
+  /* Don’t animate disabled */
+  .btn[disabled]:hover,
+  .btn[disabled].pressed{
+    background-image: var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
+    box-shadow: 0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
+    transform: none;
+  }
+
+  /* Respect reduced motion: neutralize the movement */
+  @media (prefers-reduced-motion: reduce){
+    .btn:hover{ transform:none }
+    .btn:active, .btn.pressed{ transform:none }
+  }
+  /* ========== /NEW block ========== */
 </style>
 </head>
 <body>
@@ -1090,6 +1141,18 @@
       });
     });
   }
+
+  /* ===== NEW: touch-friendly pressed state ===== */
+  function attachPressState(){
+    document.querySelectorAll('.btn').forEach(btn=>{
+      const set = on => { if (!btn.disabled) btn.classList.toggle('pressed', !!on); };
+      btn.addEventListener('pointerdown', ()=> set(true));
+      btn.addEventListener('pointerup',   ()=> set(false));
+      btn.addEventListener('pointercancel',()=> set(false));
+      btn.addEventListener('mouseleave',  ()=> set(false));
+    });
+  }
+
   function setHoldVisual(btn, on) { if (btn) btn.classList.toggle('hold', !!on); }
 
   function showToast(msg='Copied', ms=900){
@@ -1257,6 +1320,7 @@
   loadMemory();
 
   attachRipples();
+  attachPressState();          // NEW: enable touch pressed-state
   applyFractionPalettes();
   enableClickCopy('#fractionLine, #decimalLine');
 
