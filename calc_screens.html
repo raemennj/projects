@@ -18,457 +18,292 @@
 <meta name="application-name" content="Inch Calc" />
 <style>
 /* ---------- Reset ---------- */
-*, *::before, *::after {
-    box-sizing: border-box
-}
-html, body {
-    height: 100%
-}
+*, *::before, *::after { box-sizing: border-box }
+html, body { height: 100% }
 /* Global: disable selection everywhere... */
 html, body {
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
-body {
-    margin: 0;
-    background: #1f4d4d;
-    color: #111;
-    font-family: "aktiv-grotesk", -apple-system, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    display: flex;
-    justify-content: center;
-    align-items: stretch; /* fill the viewport */
-    padding: calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 10px) calc(env(safe-area-inset-bottom) + 10px) calc(env(safe-area-inset-left) + 10px);
-    overflow: hidden; /* page never scrolls */
+body{
+  margin:0; background:#1f4d4d; color:#111;
+  font-family:"aktiv-grotesk",-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex; justify-content:center; align-items:stretch;
+  padding:calc(env(safe-area-inset-top)+10px) calc(env(safe-area-inset-right)+10px)
+          calc(env(safe-area-inset-bottom)+10px) calc(env(safe-area-inset-left)+10px);
+  overflow:hidden;
 }
-:root {
---card-max: 420px;     /* designed scale cap */
---gap: 8px;            /* unified spacing, set by JS */
---tile: 56px;          /* unified button height, set by JS */
---pad: var(--gap);
---tape-min: 120px;
---results-min: 140px;  /* computed precisely by JS */
---history-min: 40px;   /* computed precisely by JS */
---output-min: 40px;    /* computed precisely by JS */
+:root{
+  --card-max:420px; --gap:8px; --tile:56px; --pad:var(--gap);
+  --tape-min:120px;
+  --results-min:140px;
+  --history-min:40px;
+  --output-min:40px;
 
-    /* theme tokens */
-    --card:#fff;
---display-bg:#222;
---display-text:#0f0;
+  /* theme tokens */
+  --card:#fff;
+  --display-bg:#02210a;
+  --display-text:#0f0;
 
-    /* legacy role colors as defaults */
-    --num:khaki;
---op:gold;
---frac:#64b5f6;
---dec:darkkhaki;
---clear:lightcoral;
---mem:lightskyblue;
+  /* legacy role colors as defaults */
+  --num:khaki; --op:gold; --frac:#64b5f6; --dec:darkkhaki; --clear:lightcoral; --mem:lightskyblue;
+
+  /* Bezel tokens */
+  --bezel-radius:22px;            /* outer curve */
+  --bezel-rim-radius:16px;        /* inner curve */
+  --bezel-pad:6px;               /* rim thickness */
+  --bezel-outer:#1a1f1f;          /* outer shell (via gradient below) */
+  --bezel-inner:#0f1515;          /* inner bed */
+  --bezel-hi:rgba(255,255,255,.07);
+  --bezel-lo:rgba(0,0,0,.65);
+  --bezel-divider:rgba(255,255,255,.08);
 }
+
 /* ---------- Card (stacked zones) ---------- */
-.card {
-    width: clamp(320px, 100%, var(--card-max));
-    height: 100%;
-    display: grid;
-    gap: var(--gap);
-    grid-template-rows: minmax(var(--tape-min), auto)      /* tape stays at top */
-minmax(var(--results-min), 1fr)    /* results flex row (expands/contracts) */
-auto                                /* memory */
-auto                                /* console */
-auto;                               /* fractions */
-    grid-template-areas: "tape" "results" "memory" "console" "fractions";
+.card{
+  width:clamp(320px,100%,var(--card-max));
+  height:100%;
+  display:grid;
+  gap:var(--gap);
+  grid-template-rows:
+    auto                          /* BEZEL (Tape+Results inside) */
+    auto                          /* memory */
+    auto                          /* console */
+    auto;                         /* fractions */
+  grid-template-areas:
+    "bezel"
+    "memory"
+    "console"
+    "fractions";
 }
-.panel {
-    background: var(--card);
-    border-radius: 8px;
-    background-color: darkslategrey;
-    box-shadow: 0 8px 24px rgba(0,0,0,.15);
-    overflow: hidden;
+.panel{
+  background:var(--card);
+  border-radius:8px;
+  background-color:darkslategrey;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);
+  overflow:hidden;
 }
-.pad {
-    padding: var(--pad)
+.pad{ padding:var(--pad) }
+
+/* ===== Bezel (unifies Tape + Results) ===== */
+.bezel{ grid-area:bezel }
+.bezel{
+  background:linear-gradient(#2a2f2f,darkslategray);
+  border-radius:calc(var(--bezel-radius) + 6px);
+  padding:11px;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.55),
+    inset 0 2px 6px rgba(255,255,255,.03);
 }
+.bezel__rim{
+  background:var(--bezel-inner);
+  border-radius:var(--bezel-rim-radius);
+  padding:var(--bezel-pad);
+  box-shadow:
+    inset 0 2px 0 var(--bezel-hi),
+    inset 0 -2px 0 var(--bezel-lo),
+    0 0 0 1px #000;
+  overflow:hidden;                     /* clip children to rounded rect */
+  display:grid;
+  grid-template-rows:
+    minmax(var(--tape-min), auto)
+    minmax(var(--results-min), 1fr);
+}
+/* Inside bezel, flatten the panels so they read as one unit */
+.bezel .panel{ border-radius:0; box-shadow:none; background:transparent; }
+.bezel .tape{ border-top-left-radius:16px; border-top-right-radius:16px;
+	border-bottom-left-radius:11px; border-bottom-right-radius:11px;}
+.bezel .results{ border-bottom-left-radius:12px; border-bottom-right-radius:12px; }
+/* Seam between sections (use bezel divider tone) */
+.bezel .results .output{ border-top:1px solid var(--bezel-divider); }
+/* Add a subtle inner edge on the yellow tape area */
+.tape-inner{ box-shadow: inset 0 0 0 2px rgba(0,0,0,.55); }
+
 /* ---------- Tape ---------- */
-.tape {
-    grid-area: tape;
-    position: relative;
-    min-height: var(--tape-min);
+.tape{ position:relative; min-height:var(--tape-min); }
+.tape-inner{
+  position:absolute; inset:0;
+  border:1px solid #000;
+  background:linear-gradient(to bottom,
+    rgba(189,183,107,.3) 0%,
+    rgba(255,215,0,.6) 6%,
+    #ff0 25%,
+    #ff0 75%,
+    rgba(189,183,107,.6) 98%,
+    rgba(255,215,0,.8) 100%);
 }
-.tape-inner {
-    position: absolute;
-    inset: 0;
-    border: 1px solid #000;
-    background: linear-gradient(to bottom, rgba(189,183,107,.3) 0%, rgba(255,215,0,.6) 6%, #ff0 25%, #ff0 75%, rgba(189,183,107,.6) 98%, rgba(255,215,0,.8) 100%);
+.center-line{
+  position:absolute; top:29%; left:50.1%; width:5px; height:75%;
+  background:red; transform:translateX(-50%);
 }
-.center-line {
-    position: absolute;
-    top: 29%;
-    left: 50.1%;
-    width: 5px;
-    height: 75%;
-    background: red;
-    transform: translateX(-50%);
+.tick{ position:absolute; bottom:0; width:3px; background:#000; }
+.tick.small{ height:19px } .tick.med{ height:39px } .tick.lg{ height:60px } .tick.num{ height:80px }
+.tick-label{
+  position:absolute; bottom:85px; width:50px; text-align:center; transform:translateX(-50%);
+  font-size:22px; font-weight:600; line-height:1; letter-spacing:.02em;
+  font-feature-settings:"tnum" 1; font-variant-numeric:tabular-nums;
+  filter:url(#textInnerShadow);
 }
-.tick {
-    position: absolute;
-    bottom: 0;
-    width: 3px;
-    background: #000;
+.sweep{ position:absolute; inset:0; pointer-events:none; }
+.sweep::before{
+  content:""; position:absolute; left:100%; top:0; width:100%; height:100%;
+  background:linear-gradient(120deg, rgba(0,0,0,.08), rgba(0,0,0,.28) 50%, rgba(0,0,0,.08));
+  transform:skewX(20deg); opacity:0;
 }
-.tick.small {
-    height: 19px
-}
-.tick.med {
-    height: 39px
-}
-.tick.lg {
-    height: 60px
-}
-.tick.num {
-    height: 80px
-}
-.tick-label {
-    position: absolute;
-    bottom: 85px;
-    width: 50px;
-    text-align: center;
-    transform: translateX(-50%);
-	
-  font-size: 22px;          /* ← size */
-  font-weight: 600;         /* ← weight */
-  line-height: 1;
-  letter-spacing: .02em;
-  font-feature-settings: "tnum" 1;
-  font-variant-numeric: tabular-nums;
-  /* optional: match the button look */
-  filter: url(#textInnerShadow);
-}
-.sweep {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-}
-.sweep::before {
-    content: "";
-    position: absolute;
-    left: 100%;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, rgba(0,0,0,.08), rgba(0,0,0,.28) 50%, rgba(0,0,0,.08));
-    transform: skewX(20deg);
-    opacity: 0;
-}
-@keyframes sweep {
-0% {
-left:100%;
-opacity:.6
-}
-100% {
-left:-100%;
-opacity:0
-}
-}
-.sweep.animate::before {
-    animation: sweep .8s ease-in-out forwards;
-}
+@keyframes sweep{ 0%{left:100%;opacity:.6} 100%{left:-100%;opacity:0} }
+.sweep.animate::before{ animation:sweep .8s ease-in-out forwards; }
+
 /* ---------- Results ---------- */
-.results {
-    grid-area: results;
-    background: var(--display-bg);
-    color: var(--display-text);
-    min-height: 0;
+.results{
+  background:var(--display-bg);
+  color:var(--display-text);
+  min-height:0;
 }
-.results .pad {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    height: 100%;
+.results .pad{
+  display:flex; flex-direction:column; gap:8px; height:100%;
 }
-.history {
-    min-height: var(--history-min);
-    flex: 1 1 auto;
-    max-height: 100%;
-    overflow: auto;
-    padding-right: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.history{
+  min-height:var(--history-min); flex:1 1 auto; max-height:100%;
+  overflow:auto; padding-right:4px;
+  display:flex; flex-direction:column; gap:4px;
 }
-.row.input {
-    letter-spacing: .04em;
-    font-size: clamp(20px, 25.8vw, 26px);
-    opacity: .9;
-}
-#inputLine {
-    display: block;
-}
-.output {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: clamp(22px, 3.1vw, 32px);
-    color: #bdfcb7;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255,255,255,.1);
-    min-height: var(--output-min); /* reserve space so divider is stable */
+.row.input{ letter-spacing:.04em; font-size:clamp(20px, 25.8vw, 26px); opacity:.9; }
+#inputLine{ display:block; }
+.output{
+  display:flex; justify-content:space-between; gap:8px;
+  font-size:clamp(22px, 3.1vw, 32px);
+  color:#bdfcb7; padding-top:6px;
+  border-top:1px solid rgba(255,255,255,.1);
+  min-height:var(--output-min);
 }
 /* Re-enable selection for history and outputs */
-.history, .output, .output * {
-    -webkit-user-select: text;
-    user-select: text;
-}
+.history, .output, .output *{ -webkit-user-select:text; user-select:text; }
+
 /* ---------- Memory ---------- */
-.memory {
-    grid-area: memory
+.memory{ grid-area:memory }
+.memory-grid{
+  display:grid; gap:var(--gap);
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(1,var(--tile));
 }
-.memory-grid {
-    display: grid;
-    gap: var(--gap);
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(1, var(--tile));
-}
+
 /* ---------- Console (5×4) ---------- */
-.console {
-    grid-area: console
+.console{ grid-area:console }
+.console-grid{
+  margin-top:8px; display:grid; gap:var(--gap);
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(4,var(--tile));
 }
-.console-grid {
-    margin-top: 8px;
-    display: grid;
-    gap: var(--gap);
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(4, var(--tile));
-}
-.r1 {
-    grid-row: 1
-}
-.r2 {
-    grid-row: 2
-}
-.r3 {
-    grid-row: 3
-}
-.r4 {
-    grid-row: 4
-}
-.c1 {
-    grid-column: 1
-}
-.c2 {
-    grid-column: 2
-}
-.c3 {
-    grid-column: 3
-}
-.c4 {
-    grid-column: 4
-}
-.c5 {
-    grid-column: 5
-}
+.r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
+.c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
+
 /* ---------- Fractions (5×3) ---------- */
-.fractions {
-    grid-area: fractions
+.fractions{ grid-area:fractions }
+.fract-grid{
+  margin-top:8px; display:grid; gap:var(--gap);
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(3,var(--tile));
 }
-.fract-grid {
-    margin-top: 8px;
-    display: grid;
-    gap: var(--gap);
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(3, var(--tile));
-}
+
 /* ---------- Buttons ---------- */
-.btn {
---btn-bg: var(--_btn-bg, var(--num));
---btn-fg: var(--_btn-fg, currentColor);
---btn-img: var(--_btn-img, none);
-    width: 100%;
-    height: 100%;
-    display: grid;
-    place-items: center;
-    border: 0;
-    border-radius: 5px;
-    font-weight: 600;
-font-size:clamp(14px, calc(var(--tile)*.42), 20px);
-    color: var(--btn-fg);
-    background-image: var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
-    background-repeat: no-repeat;
-    background-size: cover, auto;
-    box-shadow: 0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
-    -webkit-tap-highlight-color: transparent;
-    transition: transform .06s ease, box-shadow .15s ease, filter .15s ease;
-    position: relative;
-    overflow: hidden;     /* for ripples */
-    touch-action: manipulation;                /* snappier taps */
+.btn{
+  --btn-bg:var(--_btn-bg, var(--num));
+  --btn-fg:var(--_btn-fg, currentColor);
+  --btn-img:var(--_btn-img, none);
+  width:100%; height:100%; display:grid; place-items:center;
+  border:0; border-radius:5px; font-weight:600;
+  font-size:clamp(14px, calc(var(--tile)*.42), 20px);
+  color:var(--btn-fg);
+  background-image:var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
+  background-repeat:no-repeat; background-size:cover, auto;
+  box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .06s ease, box-shadow .15s ease, filter .15s ease;
+  position:relative; overflow:hidden; touch-action:manipulation;
 }
-.btn:active {
-    transform: scale(.98)
-} /* older press effect (will be overridden below) */
-.btn.operator {
---_btn-bg: var(--op);
---_btn-fg:#111;
-}
-.btn.frac {
---_btn-bg: var(--frac);
---_btn-fg:#063c67;
-}
-.btn.dec {
---_btn-bg: var(--dec);
---_btn-fg:#0c3a10;
-}
-.btn.clear, .btn.back {
---_btn-bg: var(--clear);
---_btn-fg:#fff;
-}
-.btn.mem {
---_btn-bg: var(--mem);
---_btn-fg:#083f3f;
-}
-.btn.frac:hover {
---btn-bg: var(--btn-hover-bg, color-mix(in oklab, var(--btn-bg), white 12%));
-}
-.btn.frac:active {
---btn-bg: var(--btn-active-bg, color-mix(in oklab, var(--btn-bg), black 10%));
-}
-.btn[disabled] {
-    opacity: .5;
-    filter: saturate(.15)
-}
-/* Button text should never select / show callout */
-.btn, .btn .btn-label {
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-}
-.btn .btn-label {
-    line-height: 1;
-    filter: url(#textInnerShadow);
-}
-.btn .btn-label::selection {
-    background: transparent;
-    color: inherit;
-}
+.btn:active{ transform:scale(.98) } /* legacy press */
+.btn.operator{ --_btn-bg:var(--op); --_btn-fg:#111; }
+.btn.frac{ --_btn-bg:var(--frac); --_btn-fg:#063c67; }
+.btn.dec{ --_btn-bg:var(--dec); --_btn-fg:#0c3a10; }
+.btn.clear,.btn.back{ --_btn-bg:var(--clear); --_btn-fg:#fff; }
+.btn.mem{ --_btn-bg:var(--mem); --_btn-fg:#083f3f; }
+.btn.frac:hover{ --btn-bg: color-mix(in oklab, var(--btn-bg), white 12%); }
+.btn.frac:active{ --btn-bg: color-mix(in oklab, var(--btn-bg), black 10%); }
+.btn[disabled]{ opacity:.5; filter:saturate(.15) }
+/* Button text never selects */
+.btn, .btn .btn-label{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+.btn .btn-label{ line-height:1; filter:url(#textInnerShadow); }
+.btn .btn-label::selection{ background:transparent; color:inherit; }
 
-@media (prefers-reduced-motion: reduce) {
-.sweep::before {
-    animation: none !important;
-    opacity: 0 !important;
+@media (prefers-reduced-motion: reduce){
+  .sweep::before{ animation:none !important; opacity:0 !important; }
+  .btn:active{ transform:none }
 }
-.btn:active {
-    transform: none
-}
-}
-.btn:focus-visible {
-outline:2px solid #0ea5a5;
-outline-offset:2px;
-}
+.btn:focus-visible{ outline:2px solid #0ea5a5; outline-offset:2px; }
+
 /* --- Press ripple --- */
-.ripple {
-    position: absolute;
-    border-radius: 999px;
-    pointer-events: none;
-    transform: translate(-50%, -50%) scale(0);
-    opacity: .35;
-    background: rgba(255,255,255,.65);
-    animation: ripple .45s ease-out forwards;
+.ripple{
+  position:absolute; border-radius:999px; pointer-events:none;
+  transform:translate(-50%,-50%) scale(0); opacity:.35; background:rgba(255,255,255,.65);
+  animation:ripple .45s ease-out forwards;
 }
-@keyframes ripple {
-to {
-transform: translate(-50%, -50%) scale(14);
-opacity: 0;
-}
-}
+@keyframes ripple{ to{ transform:translate(-50%,-50%) scale(14); opacity:0 } }
+
 /* --- Hold arming pulse --- */
-.btn.hold {
-    box-shadow: 0 0 0 0 rgba(14,165,165,.55);
-    animation: pulseRing 1s ease-out infinite;
-}
-@keyframes pulseRing {
-0% {
-box-shadow: 0 0 0 0 rgba(14,165,165,.55);
-}
-100% {
-box-shadow: 0 0 0 12px rgba(14,165,165,0);
-}
-}
+.btn.hold{ box-shadow:0 0 0 0 rgba(14,165,165,.55); animation:pulseRing 1s ease-out infinite; }
+@keyframes pulseRing{ 0%{box-shadow:0 0 0 0 rgba(14,165,165,.55)} 100%{box-shadow:0 0 0 12px rgba(14,165,165,0)} }
+
 /* Feet peek visual */
-#feetBtn.peek {
-    box-shadow: 0 0 0 2px #0ea5a5 inset, 0 2px 8px rgba(0,0,0,.3);
+#feetBtn.peek{ box-shadow:0 0 0 2px #0ea5a5 inset, 0 2px 8px rgba(0,0,0,.3); }
+
+/* Memory “saved” flash */
+.btn.mem.saved{
+  --btn-bg: color-mix(in oklab, var(--mem), #22c55e 46%);
+  box-shadow:0 0 0 2px #22c55e inset, 0 0 16px rgba(34,197,94,.35);
+  animation:pop .16s ease;
 }
-/* Memory “saved” confirmation flash */
-.btn.mem.saved {
---btn-bg: color-mix(in oklab, var(--mem), #22c55e 46%);
-    box-shadow: 0 0 0 2px #22c55e inset, 0 0 16px rgba(34,197,94,.35);
-    animation: pop .16s ease;
+.btn.mem.saved::after{
+  content:"✓"; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-weight:800; font-size:1.1em; color:#063; opacity:.95; pointer-events:none;
 }
-.btn.mem.saved::after {
-    content: "✓";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-weight: 800;
-    font-size: 1.1em;
-    color: #063;
-    opacity: .95;
-    pointer-events: none;
-}
-@keyframes pop {
-from {
-transform: scale(.97);
-}
-to {
-transform: scale(1);
-}
-}
+@keyframes pop{ from{transform:scale(.97)} to{transform:scale(1)} }
+
 /* Copy toast */
-#copyToast {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 12px;
-    background: #111;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 8px;
-    display: none;
-    gap: 8px;
-    align-items: center;
-    z-index: 45;
-    box-shadow: 0 8px 24px rgba(0,0,0,.25);
-    font-size: 14px;
-}
-/* ========== NEW implied motion block ========== */
-:root {
---hover-lift: 24%;
---active-shade: 16%;
---press-translate: 1px;
-}
-.btn:hover {
-    background-image: var(--btn-img), linear-gradient( color-mix(in oklab, var(--btn-bg), white var(--hover-lift)), color-mix(in oklab, var(--btn-bg), white var(--hover-lift)) );
-    box-shadow: 0 4px 10px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.14);
-    transform: translateY(-0.5px);
-}
-.btn:active, .btn.pressed {
-    background-image: var(--btn-img), linear-gradient( color-mix(in oklab, var(--btn-bg), black var(--active-shade)), color-mix(in oklab, var(--btn-bg), black var(--active-shade)) );
-    box-shadow: inset 0 2px 6px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.06);
-    transform: translateY(var(--press-translate)) scale(.985);
-}
-.btn[disabled]:hover, .btn[disabled].pressed {
-    background-image: var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
-    box-shadow: 0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
-    transform: none;
+#copyToast{
+  position:fixed; left:50%; transform:translateX(-50%); bottom:12px;
+  background:#111; color:#fff; padding:8px 12px; border-radius:8px;
+  display:none; gap:8px; align-items:center; z-index:45; box-shadow:0 8px 24px rgba(0,0,0,.25);
+  font-size:14px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-.btn:hover {
-    transform: none
+/* ========== NEW implied motion block ========== */
+:root{ --hover-lift:24%; --active-shade:16%; --press-translate:1px; }
+.btn:hover{
+  background-image:var(--btn-img), linear-gradient(
+    color-mix(in oklab, var(--btn-bg), white var(--hover-lift)),
+    color-mix(in oklab, var(--btn-bg), white var(--hover-lift))
+  );
+  box-shadow:0 4px 10px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.14);
+  transform:translateY(-0.5px);
 }
-.btn:active, .btn.pressed {
-    transform: none
+.btn:active, .btn.pressed{
+  background-image:var(--btn-img), linear-gradient(
+    color-mix(in oklab, var(--btn-bg), black var(--active-shade)),
+    color-mix(in oklab, var(--btn-bg), black var(--active-shade))
+  );
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.06);
+  transform:translateY(var(--press-translate)) scale(.985);
 }
+.btn[disabled]:hover, .btn[disabled].pressed{
+  background-image:var(--btn-img), linear-gradient(var(--btn-bg), var(--btn-bg));
+  box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
+  transform:none;
 }
-  /* ========== /NEW block ========== */
+@media (prefers-reduced-motion: reduce){
+  .btn:hover{ transform:none }
+  .btn:active, .btn.pressed{ transform:none }
+}
+/* ========== /NEW block ========== */
 </style>
 </head>
 <body>
@@ -484,29 +319,38 @@ transform: scale(1);
     <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
   </filter>
 </svg>
-<div id="card" class="card"> 
-  
-  <!-- Tape -->
-  <div class="panel tape">
-    <div class="tape-inner" id="tape">
-      <div class="center-line"></div>
-      <div class="sweep" id="sweep"></div>
+
+<div id="card" class="card">
+
+  <!-- ===== Unified BEZEL: Tape + Results inside ===== -->
+  <div class="bezel panel">
+    <div class="bezel__rim">
+
+      <!-- Tape -->
+      <div class="panel tape">
+        <div class="tape-inner" id="tape">
+          <div class="center-line"></div>
+          <div class="sweep" id="sweep"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="panel results">
+        <div class="pad">
+          <div class="history" id="history">
+            <div class="row input" id="inputLine"></div>
+          </div>
+          <div class="output">
+            <div id="fractionLine" title="Tap to copy"></div>
+            <div id="decimalLine" title="Tap to copy"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
-  
-  <!-- Results -->
-  <div class="panel results">
-    <div class="pad">
-      <div class="history" id="history">
-        <div class="row input" id="inputLine"></div>
-      </div>
-      <div class="output">
-        <div id="fractionLine" title="Tap to copy"></div>
-        <div id="decimalLine" title="Tap to copy"></div>
-      </div>
-    </div>
-  </div>
-  
+  <!-- ===== /BEZEL ===== -->
+
   <!-- Memory (5×1) -->
   <div class="panel memory pad">
     <div class="memory-grid">
@@ -516,13 +360,14 @@ transform: scale(1);
       <button class="btn mem" data-mem="2"><span class="btn-label">M3</span></button>
       <button class="btn mem" data-mem="3"><span class="btn-label">M4</span></button>
     </div>
-    <div class="console-grid"> 
+
+    <div class="console-grid">
       <!-- Utility rail (col 1) -->
       <button class="btn back r1 c1" data-action="back"><span class="btn-label">←</span></button>
-      <button class="btn clear  r2 c1" data-action="clear"><span class="btn-label">C</span></button>
-      <button class="btn       r3 c1" id="menuBtn"><span class="btn-label">menu</span></button>
+      <button class="btn clear r2 c1" data-action="clear"><span class="btn-label">C</span></button>
+      <button class="btn r3 c1" id="menuBtn"><span class="btn-label">menu</span></button>
       <button class="btn operator r4 c1" id="feetBtn"><span class="btn-label">Ft</span></button>
-      
+
       <!-- Numbers (cols 2–4) -->
       <button class="btn r1 c2" data-val="7"><span class="btn-label">7</span></button>
       <button class="btn r1 c3" data-val="8"><span class="btn-label">8</span></button>
@@ -533,18 +378,19 @@ transform: scale(1);
       <button class="btn r3 c2" data-val="1"><span class="btn-label">1</span></button>
       <button class="btn r3 c3" data-val="2"><span class="btn-label">2</span></button>
       <button class="btn r3 c4" data-val="3"><span class="btn-label">3</span></button>
-      
-      <!-- Repeat button in the formerly empty slot -->
-      <button class="btn operator r4 c2" id="repeatBtn" title="Repeat last op+term" disabled> <span class="btn-label">↻</span> </button>
+
+      <!-- Repeat button -->
+      <button class="btn operator r4 c2" id="repeatBtn" title="Repeat last op+term" disabled><span class="btn-label">↻</span></button>
       <button class="btn r4 c3" data-val="0"><span class="btn-label">0</span></button>
       <button class="btn dec r4 c4" data-val="."><span class="btn-label">.</span></button>
-      
+
       <!-- Operator rail (col 5) -->
       <button class="btn operator r1 c5" data-op="+"><span class="btn-label">+</span></button>
       <button class="btn operator r2 c5" data-op="-"><span class="btn-label">−</span></button>
       <button class="btn operator r3 c5" data-op="*"><span class="btn-label">×</span></button>
       <button class="btn operator r4 c5" data-op="/"><span class="btn-label">÷</span></button>
     </div>
+
     <div class="fract-grid">
       <button class="btn frac" data-frac="1/16"><span class="btn-label">1/16</span></button>
       <button class="btn frac" data-frac="1/8"><span class="btn-label">1/8</span></button>
