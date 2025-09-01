@@ -56,8 +56,8 @@ html, body {
   --num:khaki; --op:gold; --frac:#64b5f6; --dec:darkkhaki; --clear:lightcoral; --mem:lightskyblue;
 
   /* Bezel tokens */
-  --bezel-radius:12px;            /* outer curve */
-  --bezel-rim-radius:16px;        /* inner curve */
+  --bezel-radius:10px;            /* outer curve */
+  --bezel-rim-radius:8px;        /* inner curve */
   --bezel-pad:6px;               /* rim thickness */
   --bezel-outer:#1a1f1f;          /* outer shell (via gradient below) */
   --bezel-inner:#010701;          /* inner bed */
@@ -85,13 +85,13 @@ html, body {
 }
 .panel{
   background:var(--card);
-  border-radius:8px;
+  border-radius:4px;
   background-color:darkslategrey;
   box-shadow:0 8px 24px rgba(0,0,0,.15);
   overflow:hidden;
 }
 .pad{ padding:var(--pad);
-	background-color: #062b12;
+	background-color: #041e0a;
 	margin-top: 3px;}
 
 /* ===== Bezel (unifies Tape + Results) ===== */
@@ -120,9 +120,10 @@ html, body {
 }
 /* Inside bezel, flatten the panels so they read as one unit */
 .bezel .panel{ border-radius:0; box-shadow:none; background:transparent; }
-.bezel .tape{ border-top-left-radius:16px; border-top-right-radius:16px;
-	border-bottom-left-radius:11px; border-bottom-right-radius:11px;}
-.bezel .results{ border-bottom-left-radius:8px; border-bottom-right-radius:8px; }
+.bezel .tape{ border-top-left-radius:12px; border-top-right-radius:12px;
+	border-bottom-left-radius:6px; border-bottom-right-radius:6px;}
+.bezel .results{ border-bottom-left-radius:12px; border-bottom-right-radius:12px;
+	border-top-left-radius:8px; border-top-right-radius:8px;}
 /* Seam between sections (use bezel divider tone) */
 .bezel .results .output{ border-top:1px solid var(--bezel-divider); }
 /* Add a subtle inner edge on the yellow tape area */
