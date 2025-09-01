@@ -24,15 +24,22 @@ html, body { height: 100% }
 html, body {
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
-body{
-  margin:0; background:#1f4d4d; color:#111;
+	body{
+  margin:0;
+  background:#1f4d4d;
+  color:#111;
   font-family:"aktiv-grotesk",-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
+
   display:flex; justify-content:center; align-items:stretch;
-  padding:calc(env(safe-area-inset-top)+10px) calc(env(safe-area-inset-right)+10px)
-          calc(env(safe-area-inset-bottom)+10px) calc(env(safe-area-inset-left)+10px);
+  /* Keep your side/top spacing fixed, and pad the bottom for the home indicator */
+  padding: 10px 10px calc(env(safe-area-inset-bottom, 0px) + 10px) 10px;
+
+  /* Good idea for PWAs so the viewport chrome changes don’t crush height */
+  min-height: 100dvh;
   overflow:hidden;
 }
+
 :root{
   --card-max:420px; --gap:8px; --tile:56px; --pad:var(--gap);
   --tape-min:120px;
