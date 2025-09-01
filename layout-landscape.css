@@ -1,9 +1,9 @@
 /* layout-landscape.css
    Landscape-only layout for Inch Calc
-   - Full safe-area width/height
-   - Left column widened (60%) for Bezel + Memory
-   - Panels stretch to fill their columns
-   - Extra space between columns
+   - Full device size on .card (100dvw/100dvh)
+   - Safe-area padding applied to .card (not body), so content never sits under status/notch areas
+   - Left column widened (55%) for Bezel + Memory
+   - Extra space between columns (25px)
    - Lock keypad internal gap to 8px
 */
 
@@ -12,9 +12,9 @@
   /* ===== Global safeguards ===== */
 
   :root {
-    --card-max: 99999px;   /* defeat clamp upper bound */
-    --left-col-fr: 0.55fr;  /* widen left side */
-    --right-col-fr: 0.45fr; /* right side */
+    --card-max: 99999px;     /* defeat clamp upper bound from portrait */
+    --left-col-fr: 0.55fr;   /* widen left side */
+    --right-col-fr: 0.45fr;  /* right side */
   }
 
   html, body, #app {
@@ -23,39 +23,47 @@
     box-sizing: border-box;
   }
 
+  /* In landscape, let .card own the safe-area padding.
+     This prevents content from hiding under the system bars.
+  */
   body {
-    display: block !important;
+    display: block !important;   /* override portrait flex */
     margin: 0;
+    padding: 0 !important;       /* <— move padding off body */
+    min-height: 100dvh;
+    overflow: hidden;
+    background: #1f4d4d;         /* keep your bg color edge-to-edge */
+  }
+
+  /* ===== .card fills the device viewport and applies safe-area padding ===== */
+  .card,
+  #card {
+    position: relative;
+    width: 100dvw !important;
+    height: 100dvh !important;
+
+    /* Apply safe-area padding directly here */
     padding:
       calc(env(safe-area-inset-top, 0px) + 10px)
       calc(env(safe-area-inset-right, 0px) + 10px)
       calc(env(safe-area-inset-bottom, 0px) + 10px)
       calc(env(safe-area-inset-left, 0px) + 10px);
-    min-height: 100dvh;
-    overflow: hidden;
-  }
 
-  /* ===== Card fills safe-area viewport and becomes a 2-col grid ===== */
-  .card,
-  #card {
-    width: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) !important;
-    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
-
+    /* No external max constraints */
     max-width: none !important;
     max-height: none !important;
-
     margin: 0 !important;
-    padding: 0;
     box-sizing: border-box;
 
+    /* 2-column layout inside the padded safe area */
     display: grid !important;
     grid-template-columns: var(--left-col-fr) var(--right-col-fr);
     grid-auto-rows: minmax(0, 1fr);
     grid-auto-flow: row;
 
-    /* Wider gap between left/right columns */
-    column-gap: 25px;         /* adjust to taste */
-    row-gap: var(--gap);      /* keep row gaps consistent (8px) */
+    /* Wider gap between left/right columns, keep row gaps tight */
+    column-gap: 25px;        /* adjust to taste */
+    row-gap: var(--gap);     /* your base var (8px) */
   }
 
   /* ===== Left column: Bezel stacked over Memory ===== */
@@ -78,7 +86,7 @@
     grid-column: 1;
     grid-row: 2;
     align-self: end;
-    max-height: none;
+    max-height: none;  /* allow full width/height within the grid track */
     overflow: clip;
   }
 
@@ -102,7 +110,7 @@
     grid-template-rows: auto 1fr;
     gap: 8px; /* lock console vs. fractions spacing to 8px */
 
-    /* Compute responsive tile height from safe-area height */
+    /* Compute responsive tile height from visible height */
     --available-h: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     --land-rows: 7;          /* 4 console + 3 fractions */
     --land-gap-count: 8;     /* 4 + 3 + 1 between grids */
@@ -116,7 +124,6 @@
 
   .console-grid,
   .fract-grid {
-  margin-top:-8px;
     width: 100%;
     --tile: clamp(var(--tile-min), var(--tile-h), var(--tile-max));
   }
@@ -126,9 +133,9 @@
 
   .keypad.pad { padding: var(--pad); }
 
+  /* Safety: don’t let outer wrappers clamp width */
   body > *,
   body > * > * {
     max-width: none !important;
   }
 }
-
