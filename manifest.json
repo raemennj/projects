@@ -6,6 +6,7 @@
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone"],
+  "orientation"; "portrait",
   "background_color": "#1f4d4d",
   "theme_color": "#1f4d4d",
   "icons": [
@@ -14,5 +15,6 @@
     { "src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
+
 
 
