@@ -1,20 +1,19 @@
 /* layout-landscape.css
    Landscape-only layout for Inch Calc
    - Full device size on .card (100dvw/100dvh)
-   - Safe-area padding applied to .card (not body), so content never sits under status/notch areas
+   - Safe-area padding applied to .card (not body)
    - Left column widened (55%) for Bezel + Memory
    - Extra space between columns (25px)
-   - Lock keypad internal gap to 8px
+   - Lock keypad internal gap smaller (6px)
+   - Remove extra margins above grids so number/fraction spacing is tighter
 */
 
 @media (orientation: landscape), (min-aspect-ratio: 1/1) {
 
-  /* ===== Global safeguards ===== */
-
   :root {
-    --card-max: 99999px;     /* defeat clamp upper bound from portrait */
-    --left-col-fr: 0.55fr;   /* widen left side */
-    --right-col-fr: 0.45fr;  /* right side */
+    --card-max: 99999px;
+    --left-col-fr: 0.55fr;
+    --right-col-fr: 0.45fr;
   }
 
   html, body, #app {
@@ -23,50 +22,41 @@
     box-sizing: border-box;
   }
 
-  /* In landscape, let .card own the safe-area padding.
-     This prevents content from hiding under the system bars.
-  */
   body {
-    display: block !important;   /* override portrait flex */
+    display: block !important;
     margin: 0;
-    padding: 0 !important;       /* <— move padding off body */
+    padding: 0 !important;
     min-height: 100dvh;
     overflow: hidden;
-    background: #1f4d4d;         /* keep your bg color edge-to-edge */
+    background: #1f4d4d;
   }
 
-  /* ===== .card fills the device viewport and applies safe-area padding ===== */
   .card,
   #card {
     position: relative;
     width: 100dvw !important;
     height: 100dvh !important;
 
-    /* Apply safe-area padding directly here */
     padding:
       calc(env(safe-area-inset-top, 0px) + 10px)
       calc(env(safe-area-inset-right, 0px) + 10px)
       calc(env(safe-area-inset-bottom, 0px) + 10px)
       calc(env(safe-area-inset-left, 0px) + 10px);
 
-    /* No external max constraints */
     max-width: none !important;
     max-height: none !important;
     margin: 0 !important;
     box-sizing: border-box;
 
-    /* 2-column layout inside the padded safe area */
     display: grid !important;
     grid-template-columns: var(--left-col-fr) var(--right-col-fr);
     grid-auto-rows: minmax(0, 1fr);
     grid-auto-flow: row;
 
-    /* Wider gap between left/right columns, keep row gaps tight */
-    column-gap: 25px;        /* adjust to taste */
-    row-gap: var(--gap);     /* your base var (8px) */
+    column-gap: 25px;
+    row-gap: var(--gap);
   }
 
-  /* ===== Left column: Bezel stacked over Memory ===== */
   .bezel,
   .memory,
   .panel {
@@ -86,7 +76,7 @@
     grid-column: 1;
     grid-row: 2;
     align-self: end;
-    max-height: none;  /* allow full width/height within the grid track */
+    max-height: none;
     overflow: clip;
   }
 
@@ -101,19 +91,17 @@
   .row.input { font-size: clamp(20px, 2.2vw, 30px); }
   .output    { font-size: clamp(20px, 1.9vw, 30px); }
 
-  /* ===== Right column: Keypad (console + fractions) ===== */
   .keypad {
     grid-column: 2 / 3;
     grid-row: 1 / -1;
 
     display: grid;
     grid-template-rows: auto 1fr;
-    gap: 8px; /* lock console vs. fractions spacing to 8px */
+    gap: 6px; /* tighter space between console and fractions */
 
-    /* Compute responsive tile height from visible height */
     --available-h: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    --land-rows: 7;          /* 4 console + 3 fractions */
-    --land-gap-count: 8;     /* 4 + 3 + 1 between grids */
+    --land-rows: 7;
+    --land-gap-count: 8;
     --tile-h: calc((var(--available-h) - var(--land-gap-count) * var(--gap)) / var(--land-rows));
   }
 
@@ -125,6 +113,7 @@
   .console-grid,
   .fract-grid {
     width: 100%;
+    margin-top: 0; /* remove extra spacing above grids */
     --tile: clamp(var(--tile-min), var(--tile-h), var(--tile-max));
   }
 
@@ -133,7 +122,6 @@
 
   .keypad.pad { padding: var(--pad); }
 
-  /* Safety: don’t let outer wrappers clamp width */
   body > *,
   body > * > * {
     max-width: none !important;
