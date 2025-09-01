@@ -1,97 +1,99 @@
 /* layout-landscape.css
-   Landscape-only layout for Inch Calc
-   - No JS required
-   - Uses full screen (minus safe areas)
-   - Kills the 420px max-width constraint
-   - Left column: Bezel (tape+results) stacked over Memory
-   - Right column: Keypad (console + fractions) with responsive tile size
+   Landscape-only layout overrides (force full safe-area width)
+   Load this AFTER your main CSS.
 */
 
-@media (orientation: landscape) {
+@media (orientation: landscape), (min-aspect-ratio: 1/1) {
 
-  /* --- Safety: ensure ancestors don't clamp width --- */
-  html, body, #app {
-    width: 100%;
-    max-width: none;
+  /* 0) Safety: ensure the file is really loaded (temporary visual check)
+     Uncomment for a quick test, then re-comment:
+  body { outline: 3px solid lime !important; }
+  */
+
+  /* 1) Kill any width caps from portrait */
+  :root {
+    --card-max: 99999px; /* neutralize clamp upper bound */
   }
 
-  /* Respect safe areas on all sides and disable portrait's flex centering */
+  /* 2) Ancestors must not clamp the width */
+  html, body, #app {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+  }
+
+  /* Portrait had body as flex; that can center & shrink the child.
+     Make the body a normal block container in landscape.
+  */
   body {
-    display: block; /* override portrait's flex to avoid unintended centering/narrowing */
+    display: block !important;
+    margin: 0;
+    /* Respect all safe areas */
     padding:
       calc(env(safe-area-inset-top, 0px) + 10px)
       calc(env(safe-area-inset-right, 0px) + 10px)
       calc(env(safe-area-inset-bottom, 0px) + 10px)
       calc(env(safe-area-inset-left, 0px) + 10px);
-    overflow: hidden;
     min-height: 100dvh;
+    overflow: hidden;
   }
 
-  /* Blow away portrait cap; ensure nothing uses 420px max in landscape */
-  :root {
-    --card-max: 9999px;
-  }
-
-  /* Card fills the entire safe-area viewport and becomes a 2-column grid */
-  .card {
+  /* 3) FORCE the card to fill the safe-area viewport width/height */
+  .card,
+  #card {
+    /* Overwrite the portrait clamp */
     width: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) !important;
-    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    max-width: none !important;
-    margin: 0;
+    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
 
-    display: grid;
-    grid-template-columns: 1fr 1fr;   /* left / right halves */
+    max-width: none !important;
+    max-height: none !important;
+
+    margin: 0 !important;             /* defeat margin:auto centering */
+    padding: 0;                        /* grid gaps handle spacing */
+    box-sizing: border-box;
+
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;    /* left / right halves */
     grid-auto-rows: minmax(0, 1fr);
     grid-auto-flow: row;
     gap: var(--gap);
-    padding: 0;
   }
 
-  /* ===== Left column: Bezel stacked over Memory ===== */
-
-  /* Auto-placement puts .bezel first (col 1 / row 1) */
+  /* 4) Left column: Bezel stacked over Memory */
   .bezel {
     grid-column: 1;
     grid-row: 1;
-    margin-bottom: var(--gap);
+    margin: 0 0 var(--gap) 0;
   }
 
-  /* Ensure memory sits beneath bezel and doesn’t overgrow */
   .memory {
     grid-column: 1;
     grid-row: 2;
     align-self: end;
     max-height: 40dvh;
-    overflow: clip; /* keep rounded corners clean */
+    overflow: clip;
   }
 
-  /* Results/history usability tweaks in landscape */
   .results .pad { gap: 8px; }
   .history { max-height: 100%; overflow: auto; }
 
-  /* Slightly adapt typography to wider space */
-  .row.input { font-size: clamp(20px, 2.4vw, 28px); }
-  .output    { font-size: clamp(20px, 2.0vw, 28px); }
-
-  /* ===== Right column: Keypad (console + fractions) ===== */
-
-  /* Keypad fills the entire right column (all rows) */
+  /* 5) Right column: Keypad (console + fractions) occupies entire right half */
   .keypad {
     grid-column: 2 / 3;
     grid-row: 1 / -1;
 
     display: grid;
-    grid-template-rows: auto 1fr;  /* console on top, fractions below */
+    grid-template-rows: auto 1fr;   /* console on top, fractions below */
     gap: var(--gap);
 
-    /* Compute a responsive tile height from visible height */
+    /* Tile sizing from safe-area-visible height */
     --available-h: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    --land-rows: 7;          /* 4 console + 3 fractions = 7 rows */
-    --land-gap-count: 8;     /* 4 gaps inside console + 3 inside fractions + 1 between grids */
+    --land-rows: 7;          /* 4 console + 3 fractions */
+    --land-gap-count: 8;     /* 4 + 3 + 1 between grids */
     --tile-h: calc((var(--available-h) - var(--land-gap-count) * var(--gap)) / var(--land-rows));
   }
 
-  /* Keep tap targets comfy; allow generous size on large tablets */
+  /* Generous but safe tap targets */
   :root {
     --tile-min: 44px;
     --tile-max: 120px;
@@ -106,11 +108,8 @@
   .console-grid { grid-template-rows: repeat(4, var(--tile)); }
   .fract-grid   { grid-template-rows: repeat(3, var(--tile)); }
 
-  /* Preserve your padding token on the keypad panel */
   .keypad.pad { padding: var(--pad); }
 
-  /* Panels should naturally fill; ensure no stray max-widths clip them */
-  .panel {
-    max-width: none;
-  }
+  /* 6) Ensure panels don’t inherit stray max-widths */
+  .panel { max-width: none !important; }
 }
