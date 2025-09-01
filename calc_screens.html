@@ -60,7 +60,7 @@ html, body {
   --bezel-rim-radius:16px;        /* inner curve */
   --bezel-pad:6px;               /* rim thickness */
   --bezel-outer:#1a1f1f;          /* outer shell (via gradient below) */
-  --bezel-inner:#042306;          /* inner bed */
+  --bezel-inner:#010701;          /* inner bed */
   --bezel-hi:rgba(255,255,255,.07);
   --bezel-lo:rgba(0,0,0,.65);
   --bezel-divider:rgba(255,255,255,.08);
@@ -90,7 +90,9 @@ html, body {
   box-shadow:0 8px 24px rgba(0,0,0,.15);
   overflow:hidden;
 }
-.pad{ padding:var(--pad) }
+.pad{ padding:var(--pad);
+	background-color: #062b12;
+	margin-top: 3px;}
 
 /* ===== Bezel (unifies Tape + Results) ===== */
 .bezel{ grid-area:bezel }
