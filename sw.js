@@ -82,7 +82,7 @@ self.addEventListener('fetch', (event) => {
         cache.put(req, net.clone());
         return net;
       } catch {
-        return caches.match('./tapemeasurememory.html'); // last resort
+        return caches.match('./calc_screens.html'); // last resort
       }
     })());
     return;
@@ -108,5 +108,6 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') self.skipWaiting();
 });
+
 
 
