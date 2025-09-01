@@ -110,6 +110,10 @@
     --tile-max: 120px;
   }
 
+  .console-grid {
+     margin-bottom: 0;
+  }
+   
   .console-grid,
   .fract-grid {
     width: 100%;
@@ -127,3 +131,4 @@
     max-width: none !important;
   }
 }
+
