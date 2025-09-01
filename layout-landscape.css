@@ -1,0 +1,106 @@
+/* layout-landscape.css */
+
+/* Only apply in landscape */
+@media (orientation: landscape) {
+
+  /* Two-column card: left (bezel + memory), right (keypad) */
+  .card {
+    /* two columns, equal halves, full height */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 100%;
+    gap: var(--gap);
+    width: clamp(640px, 100%, 1200px);
+    height: 100dvh;           /* fill visible height */
+    padding: 0;               /* your body already has safe padding */
+  }
+
+  /* Stack left column: Bezel on top, Memory below */
+  .bezel {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    grid-template-rows:
+      minmax(var(--tape-min), auto)
+      minmax(var(--results-min), 1fr);
+    /* Bezel already contains its rim/grid; no change needed here */
+  }
+
+  .memory {
+    grid-column: 1;
+    grid-row: 1;
+    /* place memory below bezel using self-alignment + margins */
+    align-self: end;
+    margin-top: var(--gap);
+    /* make it visually sit under the bezel by limiting height */
+    max-height: calc(40dvh);
+    overflow: clip;
+  }
+
+  /* Right column = keypad panel (console + fractions) */
+  .keypad {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-rows: auto 1fr; /* console rows up top, fractions fills */
+    gap: var(--gap);
+  }
+
+  /* Let the right column grids fill the column height */
+  .console-grid,
+  .fract-grid {
+    width: 100%;
+  }
+
+  /* --- Tile sizing in landscape ---
+     7 rows total on right (4 console + 3 fractions)
+     We compute a safe tile height from viewport height.
+  */
+  :root {
+    /* gap stack: 4 gaps inside console + 3 in fractions + 1 between them ≈ 8 gaps */
+    --land-rows: 7;
+    --land-gap-count: 8;
+  }
+
+  /* Derive a tile size based on visible height; clamp to tap target size */
+  .keypad {
+    /* free vertical space for tiles */
+    --available-h: calc(100dvh - 2 * var(--gap));
+    /* rough tile size */
+    --tile-h: calc((var(--available-h) - var(--land-gap-count) * var(--gap)) / var(--land-rows));
+  }
+
+  /* Override the global tile in landscape (min 44px tappable) */
+  :root {
+    --tile-min: 44px;
+    --tile-max: 92px; /* keep from getting comically huge on tablets */
+  }
+  .console-grid,
+  .fract-grid {
+    /* Respect min/max while following --tile-h */
+    --tile: clamp(var(--tile-min), var(--tile-h), var(--tile-max));
+    grid-template-rows: repeat(4, var(--tile)); /* console */
+  }
+  .fract-grid {
+    grid-template-rows: repeat(3, var(--tile)); /* fractions */
+  }
+
+  /* Make the tape/results (left) breathe nicely in landscape */
+  .bezel {
+    margin-bottom: var(--gap);
+  }
+
+  /* Keep results/history usable */
+  .results .pad {
+    gap: 8px;
+  }
+  .history { max-height: 100%; overflow: auto; }
+
+  /* Optional: slightly larger font sizes in landscape since we have more width */
+  .row.input {
+    font-size: clamp(20px, 2.4vw, 28px);
+  }
+  .output {
+    font-size: clamp(20px, 2.0vw, 28px);
+  }
+}
