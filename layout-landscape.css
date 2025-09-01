@@ -13,8 +13,8 @@
 
   :root {
     --card-max: 99999px;   /* defeat clamp upper bound */
-    --left-col-fr: 0.6fr;  /* widen left side */
-    --right-col-fr: 0.4fr; /* right side */
+    --left-col-fr: 0.55fr;  /* widen left side */
+    --right-col-fr: 0.45fr; /* right side */
   }
 
   html, body, #app {
@@ -54,7 +54,7 @@
     grid-auto-flow: row;
 
     /* Wider gap between left/right columns */
-    column-gap: 16px;         /* adjust to taste */
+    column-gap: 25px;         /* adjust to taste */
     row-gap: var(--gap);      /* keep row gaps consistent (8px) */
   }
 
@@ -121,7 +121,7 @@
   }
 
   .console-grid { grid-template-rows: repeat(4, var(--tile)); }
-  .fract-grid   { grid-template-rows: repeat(5, var(--tile)); }
+  .fract-grid   { grid-template-rows: repeat(3, var(--tile)); }
 
   .keypad.pad { padding: var(--pad); }
 
@@ -130,4 +130,3 @@
     max-width: none !important;
   }
 }
-
