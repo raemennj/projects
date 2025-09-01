@@ -310,20 +310,7 @@ html, body {
   .btn:hover{ transform:none }
   .btn:active, .btn.pressed{ transform:none }
 }
-/* Portrait-lock wrapper */
-.app { position: relative; width: 100%; height: 100%; }
 
-@media (orientation: landscape) {
-  .app {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100dvh;    /* short side */
-    height: 100dvw;   /* long side */
-    transform-origin: top left;
-    overflow: hidden;
-    touch-action: none;
-  }
-}
 /* ========== /NEW block ========== */
 </style>
 </head>
@@ -341,7 +328,7 @@ html, body {
   </filter>
 </svg>
 
- <div class="app">	
+
 <div id="card" class="card">
 
   <!-- ===== Unified BEZEL: Tape + Results inside ===== -->
@@ -484,7 +471,7 @@ html, body {
   <button id="updateReload" style="background:#0ea5a5; color:#111; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;">Refresh</button>
 </div>
 <div id="copyToast"><span>Copied</span></div>
- </div>
+ 
 <script>
 (() => {
   'use strict';
@@ -1460,6 +1447,7 @@ window.addEventListener('orientationchange', () => {
 </body>
 
 </html>
+
 
 
 
