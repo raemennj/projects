@@ -3,9 +3,9 @@
    - Full device size on .card (100dvw/100dvh)
    - Safe-area padding applied to .card (not body)
    - Left column widened (55%) for Bezel + Memory
-   - Extra space between columns (25px)
-   - Lock keypad internal gap smaller (6px)
-   - Remove extra margins above grids so number/fraction spacing is tighter
+   - Wider space between columns (25px)
+   - Keypad internal spacing uses portrait gap (var(--gap)=8px)
+   - No clipping: rows are minmax(44px, 1fr) to auto-fit
 */
 
 @media (orientation: landscape), (min-aspect-ratio: 1/1) {
@@ -14,6 +14,8 @@
     --card-max: 99999px;
     --left-col-fr: 0.55fr;
     --right-col-fr: 0.45fr;
+    --tile-min: 44px;   /* comfy tap target */
+    /* --gap comes from your base CSS (8px). */
   }
 
   html, body, #app {
@@ -22,6 +24,7 @@
     box-sizing: border-box;
   }
 
+  /* Let .card own safe-area padding in landscape */
   body {
     display: block !important;
     margin: 0;
@@ -31,12 +34,14 @@
     background: #1f4d4d;
   }
 
+  /* .card fills device viewport and lays out two columns inside the safe area */
   .card,
   #card {
     position: relative;
     width: 100dvw !important;
     height: 100dvh !important;
 
+    /* Safe-area padding here so content never sits under bars/notch */
     padding:
       calc(env(safe-area-inset-top, 0px) + 10px)
       calc(env(safe-area-inset-right, 0px) + 10px)
@@ -53,10 +58,12 @@
     grid-auto-rows: minmax(0, 1fr);
     grid-auto-flow: row;
 
+    /* Wider gap between left/right columns; rows keep base gap (8px) */
     column-gap: 25px;
     row-gap: var(--gap);
   }
 
+  /* ===== Left column: Bezel stacked over Memory ===== */
   .bezel,
   .memory,
   .panel {
@@ -91,44 +98,33 @@
   .row.input { font-size: clamp(20px, 2.2vw, 30px); }
   .output    { font-size: clamp(20px, 1.9vw, 30px); }
 
+  /* ===== Right column: Keypad (console + fractions) ===== */
   .keypad {
     grid-column: 2 / 3;
     grid-row: 1 / -1;
 
     display: grid;
-    grid-template-rows: auto 1fr;
-    gap: 6px; /* tighter space between console and fractions */
-
-    --available-h: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    --land-rows: 7;
-    --land-gap-count: 8;
-    --tile-h: calc((var(--available-h) - var(--land-gap-count) * var(--gap)) / var(--land-rows));
+    grid-template-rows: auto 1fr;   /* console above, fractions below */
+    gap: var(--gap);                 /* <— portrait gap (8px) between the two blocks */
+    box-sizing: border-box;
   }
 
-  :root {
-    --tile-min: 44px;
-    --tile-max: 120px;
-  }
-
-  .console-grid {
-     margin-bottom: 0;
-  }
-   
+  /* Remove any extra margin so only the 8px block gap remains */
   .console-grid,
   .fract-grid {
     width: 100%;
-    margin-top: 0; /* remove extra spacing above grids */
-    --tile: clamp(var(--tile-min), var(--tile-h), var(--tile-max));
+    margin-top: 0;                   /* kill additive spacing */
+    gap: var(--gap);                 /* keep portrait cell gap inside each grid */
   }
 
-  .console-grid { grid-template-rows: repeat(4, var(--tile)); }
-  .fract-grid   { grid-template-rows: repeat(3, var(--tile)); }
+  /* Auto-fit rows with a minimum tap target; no more clipping */
+  .console-grid { grid-template-rows: repeat(4, minmax(var(--tile-min), 1fr)); }
+  .fract-grid   { grid-template-rows: repeat(3, minmax(var(--tile-min), 1fr)); }
 
+  /* Keep your panel padding token */
   .keypad.pad { padding: var(--pad); }
 
+  /* Safety: don’t let outer wrappers clamp width */
   body > *,
-  body > * > * {
-    max-width: none !important;
-  }
+  body > * > * { max-width: none !important; }
 }
-
