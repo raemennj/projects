@@ -122,7 +122,7 @@ html, body {
 .bezel .panel{ border-radius:0; box-shadow:none; background:transparent; }
 .bezel .tape{ border-top-left-radius:16px; border-top-right-radius:16px;
 	border-bottom-left-radius:11px; border-bottom-right-radius:11px;}
-.bezel .results{ border-bottom-left-radius:12px; border-bottom-right-radius:12px; }
+.bezel .results{ border-bottom-left-radius:8px; border-bottom-right-radius:8px; }
 /* Seam between sections (use bezel divider tone) */
 .bezel .results .output{ border-top:1px solid var(--bezel-divider); }
 /* Add a subtle inner edge on the yellow tape area */
@@ -558,7 +558,7 @@ html, body {
   let tokenDisplays = [];          // pretty display for measurement tokens
   let currentEntry = '';           // normal numeric entry (non-measure)
   let tmr = null;
-  const PPI = 190;
+  const PPI = 170;
 
   // Keep last good output so UI never blanks mid-entry
   let lastGood = { value: 0, fraction: '', decimal: '' };
