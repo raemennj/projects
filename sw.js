@@ -5,7 +5,7 @@ const CACHE_NAME = `${CACHE_PREFIX}-${VERSION}`;
 
 const ASSETS = [
   './',                                   // folder index (helps GH Pages)
-  './tapemeasurememory.html',             // <-- change if your entry html has a different name
+  './calc_screens.html',             // <-- change if your entry html has a different name
   './manifest.webmanifest',
   './sw.js',
   './calcicon-192.png',
@@ -108,3 +108,4 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') self.skipWaiting();
 });
+
