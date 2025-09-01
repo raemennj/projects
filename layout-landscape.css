@@ -116,6 +116,7 @@
 
   .console-grid,
   .fract-grid {
+  margin-top:-8px;
     width: 100%;
     --tile: clamp(var(--tile-min), var(--tile-h), var(--tile-max));
   }
@@ -130,3 +131,4 @@
     max-width: none !important;
   }
 }
+
