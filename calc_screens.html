@@ -24,7 +24,7 @@ html, body { height: 100% }
 html, body {
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
-  body{
+	body{
   margin:0;
   background:#1f4d4d;
   color:#111;
@@ -44,9 +44,7 @@ html, body {
   --card-max:420px; --gap:8px; --tile:56px; --pad:var(--gap);
   --tape-min:120px;
   --results-min:140px;
-  /* number of visible rows in history; JS computes exact px based on line-height */
-  --history-rows: 2.5;
-  --history-fixed: 88px; /* JS overwrites */
+  --history-min:40px;
   --output-min:40px;
 
   /* theme tokens */
@@ -93,8 +91,8 @@ html, body {
   overflow:visible;
 }
 .pad{ padding:var(--pad);
-  background-color: #041e0a;
-  margin-top: 3px;}
+	background-color: #041e0a;
+	margin-top: 3px;}
 
 /* ===== Bezel (unifies Tape + Results) ===== */
 .bezel{ grid-area:bezel }
@@ -123,9 +121,9 @@ html, body {
 /* Inside bezel, flatten the panels so they read as one unit */
 .bezel .panel{ border-radius:0; box-shadow:none; background:transparent; }
 .bezel .tape{ border-top-left-radius:12px; border-top-right-radius:12px;
-  border-bottom-left-radius:6px; border-bottom-right-radius:6px;}
+	border-bottom-left-radius:6px; border-bottom-right-radius:6px;}
 .bezel .results{ border-bottom-left-radius:12px; border-bottom-right-radius:12px;
-  border-top-left-radius:8px; border-top-right-radius:8px;}
+	border-top-left-radius:8px; border-top-right-radius:8px;}
 /* Seam between sections (use bezel divider tone) */
 .bezel .results .output{ border-top:1px solid var(--bezel-divider); }
 /* Add a subtle inner edge on the yellow tape area */
@@ -174,10 +172,8 @@ html, body {
 .results .pad{
   display:flex; flex-direction:column; gap:8px; height:100%;
 }
-/* Fixed, compact history: exactly ~2.5 rows tall (computed in JS) */
 .history{
-  height:var(--history-fixed);
-  flex:0 0 auto;
+  min-height:var(--history-min); flex:1 1 auto; max-height:100%;
   overflow:auto; padding-right:4px;
   display:flex; flex-direction:column; gap:4px;
 }
@@ -518,18 +514,16 @@ html, body {
     const outputLH  = getLineHeightPx(outputEl);
     const outputPad = parseFloat(getComputedStyle(outputEl).paddingTop) || 0;
 
-    // Fixed history height = ~2.5 lines of the input line
-    const HISTORY_ROWS = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--history-rows')) || 2.5;
-    const historyFixed = Math.ceil(inputLH * HISTORY_ROWS);
-    setVar('--history-fixed', historyFixed + 'px');
+    const historyMin = Math.ceil(inputLH * 2);
+    setVar('--history-min', historyMin + 'px');
 
     // Reserve at least one output line + its top padding so divider is stable
     const outputMin = Math.ceil(outputPad + outputLH);
     setVar('--output-min', outputMin + 'px');
 
-    // Results panel minimum = padding*2 + historyFixed + (fixed 8px gap) + output + 1px divider
+    // Results panel minimum = padding*2 + history + (fixed 8px gap between rows) + output + 1px divider
     const INTER_ROW_GAP = 8;
-    const resultsMin = Math.ceil(pad*2 + historyFixed + INTER_ROW_GAP + outputMin + 1);
+    const resultsMin = Math.ceil(pad*2 + historyMin + INTER_ROW_GAP + outputMin + 1);
     setVar('--results-min', resultsMin + 'px');
 
     // Keypad composition (8 rows total: 1 mem + 4 console + 3 fractions)
@@ -578,8 +572,8 @@ html, body {
 
   const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
   const isOp = t => ['+','-','*','/'].includes(t);
-  const isWhole = s => /^-?\\d+$/.test(s);
-  const isDec = s => /^-?\\d+\\.\\d+$/.test(s);
+  const isWhole = s => /^-?\d+$/.test(s);
+  const isDec = s => /^-?\d+\.\d+$/.test(s);
   const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
   const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
   const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
@@ -633,7 +627,7 @@ html, body {
   function measureDisplay(){
     const inVal = (measure.inEntry ? parseFloat(measure.inEntry) : 0) + measure.inches;
     const hasInches = inVal > 0;
-    const feetStr = `${measure.feet}\\u2032`;
+    const feetStr = `${measure.feet}\u2032`;
     if (!hasInches) return feetStr;
     const r = roundToSixteenth(inVal);
     const w = Math.floor(r);
@@ -713,8 +707,8 @@ html, body {
       return txt + '″';
     };
 
-    const hasHigh = arr.some(n => n.type==='op' && (n.value==='*' || n.value==='/' ));
-    const hasLow  = arr.some(n => n.type==='op' && (n.value==='+' || n.value==='-' ));
+    const hasHigh = arr.some(n => n.type==='op' && (n.value==='*' || n.value==='/'));
+    const hasLow  = arr.some(n => n.type==='op' && (n.value==='+' || n.value==='-'));
     const mixed   = hasHigh && hasLow;
 
     // Build with minimal parentheses around ×/÷ runs when mixed
@@ -852,7 +846,7 @@ html, body {
   }
 
   function formatResultInchOnlyLabel(v){
-    return formatResultInch(v).fraction.replace('\"','');
+    return formatResultInch(v).fraction.replace('"','');
   }
 
   function refreshMemLabels(){
@@ -1009,7 +1003,7 @@ html, body {
       const ft = parseFloat(currentEntry);
       const total = ft * 12;
       tokens.push(String(total));
-      tokenDisplays.push(`${ft}\\u2032`);
+      tokenDisplays.push(`${ft}\u2032`);
       currentEntry='';
       updateInput(); qEval();
       return;
@@ -1026,7 +1020,7 @@ html, body {
     if (!Number.isNaN(ft)){
       const total = ft * 12;
       tokens.push(String(total));
-      tokenDisplays.push(`${ft}\\u2032`);
+      tokenDisplays.push(`${ft}\u2032`);
       currentEntry='';
       updateInput(); qEval();
     }
@@ -1217,66 +1211,29 @@ html, body {
     });
   }
 
+  // Block selection/callout on buttons only (not outputs/history)
+  document.addEventListener('selectstart', (e) => {
+    if (e.target.closest('.btn')) e.preventDefault();
+  }, { capture: true });
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.btn')) e.preventDefault();
+  }, { capture: true });
+
   // Modal
   const modal=document.getElementById('modal');
   document.getElementById('menuBtn').addEventListener('click',()=>{ modal.style.display='flex'; });
   document.getElementById('closeModal').addEventListener('click',()=>{ modal.style.display='none'; });
   modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
 
-  /* === GLOBAL history scroll: swipe/wheel anywhere maps to #history === */
-  (function enableGlobalHistoryScroll(){
-    const hist = document.getElementById('history');
-
-    // Wheel (desktop / trackpad)
-    window.addEventListener('wheel', (e) => {
-      if (modal && modal.style.display === 'flex') return; // don't hijack when modal open
-      e.preventDefault();
-      hist.scrollTop += e.deltaY;
-    }, { passive: false });
-
-    // Touch (pointer) with small threshold to avoid stealing taps
-    let dragging = false, startY = 0, lastY = 0, moved = false;
-    document.addEventListener('pointerdown', (e) => {
-      if (e.pointerType !== 'touch') return;
-      if (modal && modal.style.display === 'flex') return;
-      dragging = true;
-      startY = lastY = e.clientY;
-      moved = false;
-    }, { passive: true });
-
-    document.addEventListener('pointermove', (e) => {
-      if (!dragging || e.pointerType !== 'touch') return;
-      const dy = e.clientY - lastY;
-      if (!moved && Math.abs(e.clientY - startY) > 8) moved = true;
-      if (moved) {
-        hist.scrollTop -= dy;
-        e.preventDefault();
-      }
-      lastY = e.clientY;
-    }, { passive: false });
-
-    document.addEventListener('pointerup', () => {
-      dragging = false;
-      // brief window where we squash the "ghost click" after a scroll gesture
-      moved = false;
-    });
-
-    // Cancel clicks that happen right after a scroll gesture so buttons don't fire
-    document.addEventListener('click', (e) => {
-      // If a pointermove with threshold happened just before, moved would be true at that moment.
-      // We set moved=false on pointerup, so we rely on preventDefault in pointermove to stop click.
-      // This is a safety net in case a click still sneaks through while scrolling.
-      if (dragging && e.target.closest('.btn')) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, true);
-  })();
+  // Prevent body scroll, allow results/history/modal/output scroll/selection
+  document.addEventListener('touchmove', e=>{
+    if (e.target.closest('.history') || e.target.closest('.output') || e.target.closest('#modal')) return;
+    e.preventDefault();
+  }, {passive:false});
 
   // === Feet Peek (hold) ===
   (function enableFeetPeek(){
     const DELAY_MS = 1000; // 1s hold
-    const feetBtn = document.getElementById('feetBtn');
     let holdTimer = null;
     let peeking = false;
     let suppressNextClick = false;
