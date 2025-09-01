@@ -33,7 +33,7 @@ html, body {
 
   display:flex; justify-content:center; align-items:stretch;
   /* Keep your side/top spacing fixed, and pad the bottom for the home indicator */
-  padding: 10px 10px calc(env(safe-area-inset-bottom, 0px) + 10px) 10px;
+  padding: 10px 10px calc(env(safe-area-inset-bottom, 10px) + 10px) 10px;
 
   /* Good idea for PWAs so the viewport chrome changes don’t crush height */
   min-height: 100dvh;
@@ -87,8 +87,8 @@ html, body {
   background:var(--card);
   border-radius:4px;
   background-color:darkslategrey;
-  box-shadow:0 8px 24px rgba(0,0,0,.15);
-  overflow:hidden;
+  box-shadow:0 1px 1px rgba(0,0,0,.35); 
+  overflow:visible;
 }
 .pad{ padding:var(--pad);
 	background-color: #041e0a;
@@ -101,8 +101,8 @@ html, body {
   border-radius:calc(var(--bezel-radius) + 6px);
   padding:11px;
   box-shadow:
-    0 18px 40px rgba(0,0,0,.55),
-    inset 0 2px 6px rgba(255,255,255,.03);
+    0 4px 10px rgba(0,0,0,.55),
+    inset 0 2px 6px rgba(255,255,255,.23);
 }
 .bezel__rim{
   background:var(--bezel-inner);
