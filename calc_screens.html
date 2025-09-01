@@ -310,6 +310,14 @@ html, body {
   .btn:hover{ transform:none }
   .btn:active, .btn.pressed{ transform:none }
 }
+@media screen and (orientation: landscape) {
+	body {
+		transform: rotate(90deg);
+		transform-origin: left top;
+		width: 100vh;
+		overflow-x: hidden;
+	}
+}
 /* ========== /NEW block ========== */
 </style>
 </head>
@@ -1390,4 +1398,5 @@ html, body {
 })();
 </script>
 </body>
+
 </html>
