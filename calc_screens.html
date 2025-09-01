@@ -172,13 +172,14 @@ html, body {
 .history{
   min-height:var(--history-min); flex:1 1 auto; max-height:100%;
   overflow:auto; padding-right:4px;
+  font-size:clamp(24px, 3.1vw, 26px);
   display:flex; flex-direction:column; gap:4px;
 }
 .row.input{ letter-spacing:.04em; font-size:clamp(20px, 25.8vw, 26px); opacity:.9; }
 #inputLine{ display:block; }
 .output{
   display:flex; justify-content:space-between; gap:8px;
-  font-size:clamp(22px, 3.1vw, 32px);
+  font-size:clamp(24px, 3.1vw, 26px);
   color:#bdfcb7; padding-top:6px;
   border-top:1px solid rgba(255,255,255,.1);
   min-height:var(--output-min);
@@ -1447,6 +1448,7 @@ window.addEventListener('orientationchange', () => {
 </body>
 
 </html>
+
 
 
 
