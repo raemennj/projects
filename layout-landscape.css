@@ -1,106 +1,120 @@
-/* layout-landscape.css */
+/* layout-landscape.css
+   Landscape-only layout for Inch Calc
+   - No JS required
+   - Uses full screen (minus safe areas)
+   - Left column: Bezel (tape+results) stacked above Memory
+   - Right column: Keypad (console + fractions) sized by viewport height
+*/
 
-/* Only apply in landscape */
+/* Only apply these rules in landscape */
 @media (orientation: landscape) {
 
-  /* Two-column card: left (bezel + memory), right (keypad) */
-  .card {
-    /* two columns, equal halves, full height */
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 100%;
-    gap: var(--gap);
-    width: clamp(640px, 100%, 1200px);
-    height: 100dvh;           /* fill visible height */
-    padding: 0;               /* your body already has safe padding */
+  /* Respect safe areas on all sides while keeping your base padding pattern */
+  body {
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 10px)
+      calc(env(safe-area-inset-right, 0px) + 10px)
+      calc(env(safe-area-inset-bottom, 0px) + 10px)
+      calc(env(safe-area-inset-left, 0px) + 10px);
+    /* Prevent stray scrollbars during viewport chrome changes */
+    overflow: hidden;
   }
 
-  /* Stack left column: Bezel on top, Memory below */
-  .bezel {
-    grid-column: 1;
-    grid-row: 1;
+  /* Card fills the visible area minus safe areas and splits into two columns */
+  .card {
+    width: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    margin: 0;
+
     display: grid;
-    grid-template-rows:
-      minmax(var(--tape-min), auto)
-      minmax(var(--results-min), 1fr);
-    /* Bezel already contains its rim/grid; no change needed here */
+    grid-template-columns: 1fr 1fr;         /* left half / right half */
+    grid-auto-rows: minmax(0, auto);        /* allow children to stack on left */
+    grid-auto-flow: row;
+    gap: var(--gap);
+    /* Remove any portrait-specific internal padding that might clip */
+    padding: 0;
+  }
+
+  /* ===== Left column: stack Bezel above Memory ===== */
+
+  /* Default auto-placement will put .bezel in col 1, row 1; .memory in col 1, row 2 */
+  .bezel {
+    /* breathe below bezel */
+    margin-bottom: var(--gap);
+    /* Let the bezel manage its inner rows as in portrait */
   }
 
   .memory {
-    grid-column: 1;
-    grid-row: 1;
-    /* place memory below bezel using self-alignment + margins */
+    /* keep memory visually under bezel and prevent it from growing too tall */
     align-self: end;
-    margin-top: var(--gap);
-    /* make it visually sit under the bezel by limiting height */
-    max-height: calc(40dvh);
+    max-height: 40dvh;
     overflow: clip;
   }
 
-  /* Right column = keypad panel (console + fractions) */
-  .keypad {
-    grid-column: 2;
-    grid-row: 1;
-    display: grid;
-    grid-template-rows: auto 1fr; /* console rows up top, fractions fills */
-    gap: var(--gap);
-  }
-
-  /* Let the right column grids fill the column height */
-  .console-grid,
-  .fract-grid {
-    width: 100%;
-  }
-
-  /* --- Tile sizing in landscape ---
-     7 rows total on right (4 console + 3 fractions)
-     We compute a safe tile height from viewport height.
-  */
-  :root {
-    /* gap stack: 4 gaps inside console + 3 in fractions + 1 between them ≈ 8 gaps */
-    --land-rows: 7;
-    --land-gap-count: 8;
-  }
-
-  /* Derive a tile size based on visible height; clamp to tap target size */
-  .keypad {
-    /* free vertical space for tiles */
-    --available-h: calc(100dvh - 2 * var(--gap));
-    /* rough tile size */
-    --tile-h: calc((var(--available-h) - var(--land-gap-count) * var(--gap)) / var(--land-rows));
-  }
-
-  /* Override the global tile in landscape (min 44px tappable) */
-  :root {
-    --tile-min: 44px;
-    --tile-max: 92px; /* keep from getting comically huge on tablets */
-  }
-  .console-grid,
-  .fract-grid {
-    /* Respect min/max while following --tile-h */
-    --tile: clamp(var(--tile-min), var(--tile-h), var(--tile-max));
-    grid-template-rows: repeat(4, var(--tile)); /* console */
-  }
-  .fract-grid {
-    grid-template-rows: repeat(3, var(--tile)); /* fractions */
-  }
-
-  /* Make the tape/results (left) breathe nicely in landscape */
-  .bezel {
-    margin-bottom: var(--gap);
-  }
-
-  /* Keep results/history usable */
+  /* Results/history usability tweaks in landscape */
   .results .pad {
     gap: 8px;
   }
-  .history { max-height: 100%; overflow: auto; }
+  .history {
+    max-height: 100%;
+    overflow: auto;
+  }
 
-  /* Optional: slightly larger font sizes in landscape since we have more width */
+  /* Optional: slightly adjust typography to use extra width gracefully */
   .row.input {
     font-size: clamp(20px, 2.4vw, 28px);
   }
   .output {
     font-size: clamp(20px, 2.0vw, 28px);
   }
+
+  /* ===== Right column: Keypad (console + fractions) fills the column ===== */
+
+  /* Make the keypad occupy the entire right column, spanning all rows */
+  .keypad {
+    grid-column: 2 / 3;
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-rows: auto 1fr;   /* console up top, fractions below filling remaining */
+    gap: var(--gap);
+
+    /* Compute a tile size from viewport height (safe-area aware) */
+    --available-h: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    /* Total rows on right = 7 (4 console + 3 fractions) */
+    --land-rows: 7;
+    /* Gap count roughly: 4 inside console + 3 inside fractions + 1 between = 8 */
+    --land-gap-count: 8;
+
+    /* Raw tile height suggestion */
+    --tile-h: calc((var(--available-h) - var(--land-gap-count) * var(--gap)) / var(--land-rows));
+  }
+
+  /* Keep tap targets comfy and cap runaway growth on big tablets */
+  :root {
+    --tile-min: 44px;
+    --tile-max: 92px;
+  }
+
+  /* Apply the landscape tile to both grids */
+  .console-grid,
+  .fract-grid {
+    width: 100%;
+    /* Clamp the final tile height */
+    --tile: clamp(var(--tile-min), var(--tile-h), var(--tile-max));
+  }
+
+  /* Define exact row counts using the computed tile size */
+  .console-grid {
+    grid-template-rows: repeat(4, var(--tile));
+  }
+  .fract-grid {
+    grid-template-rows: repeat(3, var(--tile));
+  }
+
+  /* Ensure keypad rows don’t overflow due to internal margins/padding */
+  .keypad.pad {
+    padding: var(--pad);
+  }
+
+  /* Buttons fill their cells like in portrait; no change to .btn needed */
 }
