@@ -310,21 +310,15 @@ html, body {
   .btn:hover{ transform:none }
   .btn:active, .btn.pressed{ transform:none }
 }
-/* Portrait lock wrapper */
-.app {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
+/* Portrait-lock wrapper */
+.app { position: relative; width: 100%; height: 100%; }
 
 @media (orientation: landscape) {
   .app {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100dvh;   /* short side */
-    height: 100dvw;  /* long side */
-    transform: rotate(-90deg) translateY(-100%);
+    top: 0; left: 0;
+    width: 100dvh;    /* short side */
+    height: 100dvw;   /* long side */
     transform-origin: top left;
     overflow: hidden;
     touch-action: none;
@@ -1370,6 +1364,58 @@ html, body {
   applyFractionPalettes();
   enableClickCopy('#fractionLine, #decimalLine');
 
+/* ===== Orientation direction fix (handles +90 vs -90) ===== */
+function applyOrientationFix() {
+  const app = document.querySelector('.app');
+  if (!app) return;
+
+  const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+
+  // angle from modern API (Chrome/Android), fallback to window.orientation (iOS Safari)
+  const rawAngle = (screen.orientation && typeof screen.orientation.angle === 'number')
+    ? screen.orientation.angle
+    : (typeof window.orientation === 'number' ? window.orientation : 0);
+
+  // Normalize -90/270 to the same value
+  const angle = ((rawAngle % 360) + 360) % 360; // 0, 90, 180, 270
+
+  if (!isLandscape) {
+    // Portrait: no transform, let CSS size normally
+    app.style.transform = '';
+    app.style.transformOrigin = '';
+    return;
+  }
+
+  // In landscape we’ve already swapped width/height via CSS.
+  // Choose rotation direction so the UI stays upright.
+  // Common cases:
+  //  - angle === 90  -> rotate(90deg) then shift up
+  //  - angle === 270 -> rotate(-90deg) then shift left
+  //  - angle === 0 or 180 (some browsers) -> default to rotate(90deg)
+  if (angle === 270) {
+    app.style.transform = 'rotate(-90deg) translateX(-100%)';
+  } else if (angle === 90) {
+    app.style.transform = 'rotate(90deg) translateY(-100%)';
+  } else if (angle === 180) {
+    // Rare, but keep it upright (treat like 90)
+    app.style.transform = 'rotate(90deg) translateY(-100%)';
+  } else {
+    // angle === 0 or unknown -> safe default
+    app.style.transform = 'rotate(90deg) translateY(-100%)';
+  }
+  app.style.transformOrigin = 'top left';
+}
+
+// Run on load + when device rotates/resizes
+window.addEventListener('DOMContentLoaded', applyOrientationFix);
+window.addEventListener('resize', applyOrientationFix);
+window.addEventListener('orientationchange', () => {
+  // Some browsers need a tiny delay before innerWidth/Height settle
+  setTimeout(applyOrientationFix, 60);
+});
+
+
+
   /* PWA: Service Worker + Install */
   let deferredPrompt = null;
   if ('serviceWorker' in navigator){
@@ -1414,5 +1460,6 @@ html, body {
 </body>
 
 </html>
+
 
 
