@@ -585,7 +585,7 @@ html, body {
   let tokenDisplays = [];          // pretty display for measurement tokens
   let currentEntry = '';           // normal numeric entry (non-measure)
   let tmr = null;
-  const PPI = 190;                 // pixels-per-inch for visual tape
+  const PPI = 170;                 // pixels-per-inch for visual tape
 
   // Feet-builder state (active until finalized by an operator)
   let measure = { active:false, feet:0, inches:0, inEntry:'' };
@@ -910,6 +910,7 @@ html, body {
   document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
     const val = b.dataset.val;
     if (measure.active){
+
       measure.inEntry += val;
       updateInput(); qEval();
       return;
@@ -1463,7 +1464,6 @@ html, body {
 </body>
 
 </html>
-
 
 
 
