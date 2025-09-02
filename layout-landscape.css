@@ -13,7 +13,6 @@
 
   :root {
     --card-max: 99999px;
-     --center-line-left: 50%;
     --left-col-fr: 0.55fr;
     --right-col-fr: 0.45fr;
     --tile-min: 44px;   /* comfy tap target */
@@ -64,7 +63,9 @@
     column-gap: 25px;
     row-gap: var(--gap);
   }
-
+.bezel .tape .center-line {
+  left: var(--center-line-left, 50%) !important; /* fallback keeps portrait value */
+}
   /* ===== Left column: Bezel stacked over Memory ===== */
   .bezel,
   .memory,
@@ -128,4 +129,5 @@
   body > *,
   body > * > * { max-width: none !important; }
 }
+
 
