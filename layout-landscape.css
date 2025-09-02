@@ -4,7 +4,7 @@
    - Safe-area padding applied to .card (not body)
    - Left column widened (55%) for Bezel + Memory
    - Wider space between columns (25px)
-   - Keypad internal spacing uses portrait gap (var(--gap)=8px)
+   - Unified 7×5 keypad grid on the right: evenly spaced rows that fill the column
    - No clipping: rows are minmax(44px, 1fr) to auto-fit
 */
 
@@ -98,31 +98,29 @@
   .row.input { font-size: clamp(20px, 2.2vw, 30px); }
   .output    { font-size: clamp(20px, 1.9vw, 30px); }
 
-  /* ===== Right column: Keypad (console + fractions) ===== */
+  /* ===== Right column: unified 7×5 grid (even rows, full height) ===== */
   .keypad {
     grid-column: 2 / 3;
     grid-row: 1 / -1;
-
     display: grid;
-    grid-template-rows: auto 1fr;   /* console above, fractions below */
-    gap: var(--gap);                 /* <— portrait gap (8px) between the two blocks */
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(7, minmax(var(--tile-min), 1fr));
+    gap: var(--gap);                 /* same gap between every row/col */
+    padding: var(--pad);
     box-sizing: border-box;
   }
 
-  /* Remove any extra margin so only the 8px block gap remains */
+  /* Flatten the inner wrappers so their children are placed directly on the 7×5 grid */
   .console-grid,
   .fract-grid {
-    width: 100%;
-    margin-top: 0;                   /* kill additive spacing */
-    gap: var(--gap);                 /* keep portrait cell gap inside each grid */
+    display: contents !important;
+    margin: 0 !important;            /* remove legacy spacing */
+    gap: 0 !important;               /* gaps now owned by .keypad */
   }
 
-  /* Auto-fit rows with a minimum tap target; no more clipping */
-  .console-grid { grid-template-rows: repeat(4, minmax(var(--tile-min), 1fr)); }
-  .fract-grid   { grid-template-rows: repeat(3, minmax(var(--tile-min), 1fr)); }
-
-  /* Keep your panel padding token */
-  .keypad.pad { padding: var(--pad); }
+  /* Neutralize any leftover row sizing from the old split layout */
+  .console-grid { grid-template-rows: unset !important; }
+  .fract-grid   { grid-template-rows: unset !important; }
 
   /* Safety: don’t let outer wrappers clamp width */
   body > *,
