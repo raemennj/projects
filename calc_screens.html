@@ -7,6 +7,7 @@
 
   <!-- Fonts & CSS -->
   <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="layout-landscape.css">
 
   <!-- Libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" defer></script>
@@ -45,27 +46,26 @@
     /* theme */
     --card:#fff; --display-bg:#02210a; --display-text:#0f0;
 
-    /* role defaults */
+    /* legacy role defaults */
     --num:khaki; --op:gold; --frac:#64b5f6; --dec:darkkhaki; --clear:lightcoral; --mem:lightskyblue;
 
     /* Bezel */
     --bezel-radius:22px; --bezel-rim-radius:16px; --bezel-pad:6px;
     --bezel-outer:#1a1f1f; --bezel-inner:#0f1515;
     --bezel-hi:rgba(255,255,255,.07); --bezel-lo:rgba(0,0,0,.65); --bezel-divider:rgba(255,255,255,.08);
-
-    /* Memory tray sizing (inside bevel) */
-    --mem-tile: calc(var(--tile) * .90);
   }
 
   /* Center line positioned by JS */
-  .center-line{ position:absolute; top:29%; height:75%; width:4px; background:red; }
+  .center-line{
+    position:absolute; top:29%; height:75%; width:4px; background:red;
+  }
 
   /* ---------- Card (stacked zones) ---------- */
   .card{
     width:clamp(320px,100%,var(--card-max)); height:100%;
     display:grid; gap:var(--gap);
-    grid-template-rows:auto 1fr;
-    grid-template-areas:"bezel" "keypad";
+    grid-template-rows:auto auto auto auto;
+    grid-template-areas:"bezel" "memory" "console" "fractions";
   }
   .panel{
     background:var(--card); border-radius:8px; background-color:darkslategrey;
@@ -86,42 +86,13 @@
     background:var(--bezel-inner); border-radius:var(--bezel-rim-radius); padding:var(--bezel-pad);
     box-shadow: inset 0 2px 0 var(--bezel-hi), inset 0 -2px 0 var(--bezel-lo), 0 0 0 1px #000;
     overflow:hidden;
-    display:grid; row-gap: var(--gap);
-    grid-template-rows:
-      minmax(var(--tape-min), auto)
-      minmax(var(--results-min), 1fr)
-      auto; /* memory tray */
+    display:grid; grid-template-rows: minmax(var(--tape-min), auto) minmax(var(--results-min), 1fr);
   }
   .bezel .panel{ border-radius:0; box-shadow:none; background:transparent; }
   .bezel .tape{ border-top-left-radius:16px; border-top-right-radius:16px; border-bottom-left-radius:11px; border-bottom-right-radius:11px;}
   .bezel .results{ border-bottom-left-radius:12px; border-bottom-right-radius:12px; }
   .bezel .results .output{ border-top:1px solid var(--bezel-divider); }
   .tape-inner{ box-shadow: inset 0 0 0 2px rgba(0,0,0,.55); }
-
-  /* ----- Memory tray (INSIDE the bevel) ----- */
-  .bezel__memory{
-    position:relative;
-    background: linear-gradient(#0d1414, #0a0f0f);
-    border-radius: 0 0 var(--bezel-rim-radius) var(--bezel-rim-radius);
-    padding: calc(var(--bezel-pad) - 2px) var(--bezel-pad) var(--bezel-pad);
-    box-shadow:
-      inset 0 1px 0 var(--bezel-hi),
-      inset 0 -2px 0 var(--bezel-lo),
-      0 -1px 0 #000;
-    border-top: 1px solid var(--bezel-divider);
-  }
-  .bezel__memory::before{
-    /* tiny lip highlight for the layered feel */
-    content:""; position:absolute; left:var(--bezel-pad); right:var(--bezel-pad); top:-6px; height:6px;
-    background:linear-gradient(to bottom, rgba(255,255,255,.08), rgba(0,0,0,0));
-    border-top-left-radius:8px; border-top-right-radius:8px;
-    pointer-events:none;
-  }
-  .memory-grid{
-    display:grid; gap:var(--gap);
-    grid-template-columns:repeat(5,1fr);
-    grid-template-rows: var(--mem-tile);
-  }
 
   /* ---------- Tape ---------- */
   .tape{ position:relative; min-height:var(--tape-min); }
@@ -170,22 +141,29 @@
   /* Re-enable selection for history and outputs */
   .history, .output, .output *{ -webkit-user-select:text; user-select:text; }
 
-  /* ---------- Keypad (console + fractions) ---------- */
-  .keypad{ grid-area: keypad; }
+  /* ---------- Memory ---------- */
+  .memory{ grid-area:memory }
+  .memory-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(1,var(--tile)); }
+
+  /* ---------- Console (5×4) ---------- */
+  .console{ grid-area:console }
   .console-grid{
     margin-top:-8px; display:grid; gap:var(--gap);
     grid-template-columns:repeat(5,1fr);
     grid-template-rows:repeat(4,var(--tile));
   }
+  .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
+  .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
+
+  /* ---------- Fractions (5×3) ---------- */
+  .fractions{ grid-area:fractions }
   .fract-grid{
     margin-top:8px; display:grid; gap:var(--gap);
     grid-template-columns:repeat(5,1fr);
     grid-template-rows:repeat(3,var(--tile));
   }
-  .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
-  .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
 
-  /* ---------- Buttons ---------- */
+  /* ---------- Buttons (updated) ---------- */
   .btn{
     --btn-bg:var(--_btn-bg, var(--num));
     --btn-fg:var(--_btn-fg, currentColor);
@@ -207,6 +185,8 @@
     filter: brightness(1) saturate(1);
     transition: filter .35s ease, transform .12s ease, box-shadow .2s ease;
   }
+
+  /* Role variants */
   .btn.operator{ --_btn-bg:var(--op);   --_btn-fg:#111; }
   .btn.frac    { --_btn-bg:var(--frac); --_btn-fg:#063c67; }
   .btn.dec     { --_btn-bg:var(--dec);  --_btn-fg:#0c3a10; }
@@ -214,6 +194,7 @@
   .btn.back    { --_btn-bg:var(--clear);--_btn-fg:#fff; }
   .btn.mem     { --_btn-bg:var(--mem);  --_btn-fg:#083f3f; }
 
+  /* Hover (only on devices that support hover) */
   @media (hover:hover){
     .btn:hover{
       background-image:var(--btn-img), linear-gradient(
@@ -226,16 +207,29 @@
     .btn.frac:hover{ --btn-bg: color-mix(in oklab, var(--btn-bg), white 12%); }
   }
 
+  /* Pressed while finger is down — fades back via the base transition */
   .btn:active{
     filter: brightness(.82) saturate(1.05);
     transform: translateY(1px) scale(.985);
     box-shadow: inset 0 2px 6px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.06);
   }
-  .btn[disabled]{ opacity:.5; filter: saturate(.15) brightness(1); pointer-events:none; }
+
+  /* Disabled */
+  .btn[disabled]{
+    opacity:.5; filter: saturate(.15) brightness(1); pointer-events:none;
+  }
+
+  /* Text/selection guards */
   .btn, .btn .btn-label{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   .btn .btn-label{ line-height:1; filter:url(#textInnerShadow); }
   .btn .btn-label::selection{ background:transparent; color:inherit; }
-  @media (prefers-reduced-motion: reduce){ .btn{ transition:none; } }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .btn{ transition:none; }
+  }
+
+  /* Focus */
   .btn:focus-visible{ outline:2px solid #0ea5a5; outline-offset:2px; }
 
   /* --- Press ripple --- */
@@ -285,9 +279,10 @@
   </filter>
 </svg>
 
+
 <div id="card" class="card">
 
-  <!-- ===== Unified BEZEL: Tape + Results + Memory tray inside ===== -->
+  <!-- ===== Unified BEZEL: Tape + Results inside ===== -->
   <div class="bezel panel">
     <div class="bezel__rim">
 
@@ -312,23 +307,23 @@
         </div>
       </div>
 
-      <!-- Memory tray INSIDE the bevel -->
-      <div class="bezel__memory">
-        <div class="memory-grid">
-          <button class="btn clear" data-action="mc"><span class="btn-label">MC</span></button>
-          <button class="btn mem" data-mem="0"><span class="btn-label">M1</span></button>
-          <button class="btn mem" data-mem="1"><span class="btn-label">M2</span></button>
-          <button class="btn mem" data-mem="2"><span class="btn-label">M3</span></button>
-          <button class="btn mem" data-mem="3"><span class="btn-label">M4</span></button>
-        </div>
-      </div>
-
     </div>
   </div>
   <!-- ===== /BEZEL ===== -->
 
-  <!-- RIGHT: Keypad (console + fractions) -->
-  <div class="panel keypad pad">
+  <!-- Memory (5×1) -->
+  <div class="panel memory pad">
+    <div class="memory-grid">
+      <button class="btn clear" data-action="mc"><span class="btn-label">MC</span></button>
+      <button class="btn mem" data-mem="0"><span class="btn-label">M1</span></button>
+      <button class="btn mem" data-mem="1"><span class="btn-label">M2</span></button>
+      <button class="btn mem" data-mem="2"><span class="btn-label">M3</span></button>
+      <button class="btn mem" data-mem="3"><span class="btn-label">M4</span></button>
+    </div>
+</div>
+
+<!-- RIGHT: Keypad (console + fractions) -->
+<div class="panel keypad pad">
     <div class="console-grid">
       <!-- Utility rail (col 1) -->
       <button class="btn back r1 c1" data-action="back"><span class="btn-label">←</span></button>
@@ -389,8 +384,12 @@
         <div class="cm-sub">Combine inches, decimals, and fractions in a single calculation.</div>
         <div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div>
       </li>
-      <li><div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div></li>
-      <li><div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div></li>
+      <li>
+        <div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div>
+      </li>
+      <li>
+        <div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div>
+      </li>
       <li>
         <div class="cm-head">Results are solved and displayed automatically, in three ways:</div>
         <ul class="cm-bullets">
@@ -413,7 +412,9 @@
           <li><b>C</b> Clear entire results screen</li>
         </ul>
       </li>
-      <li><div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div></li>
+      <li>
+        <div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div>
+      </li>
     </ul>
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
       <button id="installBtn" style="background:#0ea5a5; color:#111; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; display:none;">Install</button>
@@ -425,7 +426,7 @@
   <button id="updateReload" style="background:#0ea5a5; color:#111; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;">Refresh</button>
 </div>
 <div id="copyToast"><span>Copied</span></div>
-
+ 
 <script>
 (() => {
   'use strict';
@@ -479,24 +480,21 @@
     const outputMin = Math.ceil(outputPad + outputLH);
     setVar('--output-min', outputMin + 'px');
 
-    // Results panel minimum = padding*2 + history + (fixed 8px gap) + output + 1px divider
+    // Results panel minimum = padding*2 + history + (fixed 8px gap between rows) + output + 1px divider
     const INTER_ROW_GAP = 8;
     const resultsMin = Math.ceil(pad*2 + historyMin + INTER_ROW_GAP + outputMin + 1);
     setVar('--results-min', resultsMin + 'px');
 
-    // Keypad composition (7 rows total: 4 console + 3 fractions) — memory now lives inside bevel
-    const ROWS = 7;
+    // Keypad composition (8 rows total: 1 mem + 4 console + 3 fractions)
+    const ROWS = 8;
+    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // 13*gap across memory/console/fractions stacks
+    const W_inside = W - 2*gap;
 
-    // Within the two stacked grids we have 3 gaps (console) + 2 gaps (fractions) + the join gap (~margin-top)
-    const internalGaps = (3 + 2) * gap + gap; // = 6*gap
-    const keypadPadding = pad * 2;           // .pad on keypad panel
-    const cardRowGap = gap;                  // gap between bezel and keypad rows
+    // Available height for keypad if results uses only its MIN
+    const H_for_keypad = Math.max(0, H - tapeMin - resultsMin - 2*gap);
 
-    // Available height for keypad assuming tape + MIN results
-    const H_for_keypad = Math.max(0, H - tapeMin - resultsMin - cardRowGap);
-
-    const tileFromH = Math.floor((H_for_keypad - internalGaps - keypadPadding) / ROWS);
-    const tileFromW = Math.floor(((W - 2*gap) - (5 - 1) * gap) / 5);
+    const tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
+    const tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
     const tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
     setVar('--tile', tile + 'px');
 
@@ -607,7 +605,7 @@
     measure = { active:false, feet:0, inches:0, inEntry:'' };
   }
 
-  /* --- Pretty history with precedence and inch marks when feet appear --- */
+  /* --- Pretty history with precedence parentheses + inch marks when feet appear --- */
   function tokenDisplayAt(idx, tok){
     if (tokenDisplays[idx]) return tokenDisplays[idx];
     if (isDec(tok)){
@@ -658,6 +656,7 @@
       return;
     }
 
+    // If ANY feet are present in the expression, show explicit inches (″) on inch-only terms
     const feetPresent = arr.some(n => n.type==='num' && typeof n.display==='string' && n.display.includes('′'));
     const markInches = (txt) => {
       if (!feetPresent) return txt;
@@ -670,6 +669,7 @@
     const hasLow  = arr.some(n => n.type==='op' && (n.value==='+' || n.value==='-'));
     const mixed   = hasHigh && hasLow;
 
+    // Build with minimal parentheses around ×/÷ runs when mixed
     let s = '';
     for (let i=0;i<arr.length;){
       const node = arr[i];
@@ -709,15 +709,19 @@
   const qEval = () => { clearTimeout(tmr); tmr = setTimeout(evaluate, 120); };
 
   function evaluate(){
+    // Start with raw tokens and maybe a trailing operator
     let exprTokens = [...tokens];
     let pendingOp = null;
-    if (exprTokens.length && isOp(exprTokens.at(-1))) { pendingOp = exprTokens.pop(); }
+    if (exprTokens.length && isOp(exprTokens.at(-1))) {
+      pendingOp = exprTokens.pop(); // hold the trailing op
+    }
 
     const left = exprTokens.join(' ');
     const liveMeasure = measure.active ? String(measureTotal()) : null;
     const liveEntry   = (!measure.active && currentEntry) ? currentEntry : null;
 
     let preview = '';
+
     if (pendingOp && (liveMeasure || liveEntry)) {
       preview = (left ? left + ' ' : '') + pendingOp + ' ' + (liveMeasure ?? liveEntry);
     } else if (liveMeasure) {
@@ -763,19 +767,20 @@
     if (center<0) center=0;
 
     // Clear old ticks/labels
-    const q = tape.querySelectorAll('.tick,.tick-label');
-    q.forEach(n=>n.remove());
+    [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
 
     const rect = tape.getBoundingClientRect();
     const mid = rect.width/2;
 
+    // Generate ticks around the center value
     const range = 3; // inches on screen
     const start = Math.max(center - range/2, 0), end = center + range/2;
     const a = Math.floor(start*16), b = Math.ceil(end*16);
 
     for (let i=a;i<=b;i++){
       const inches = i/16;
-      const x = (inches - center)*170 + mid - 1.5;
+      // 3px tick width → center by offsetting 1.5px
+      const x = (inches - center)*PPI + mid - 1.5;
 
       const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
       if (i%16===0){
@@ -792,9 +797,11 @@
       tape.appendChild(el);
     }
 
+    // Place the red center line at the exact pixel mid (override any CSS)
     const centerEl = tape.querySelector('.center-line');
     if (centerEl){
-      const desiredW = 4;
+      // Prefer crisp even width (override to 4px if needed)
+      const desiredW = 4; // change to 5 if you really want thicker (may subpixel-blur on some DPRs)
       centerEl.style.setProperty('width', desiredW + 'px', 'important');
       centerEl.style.setProperty('transform', 'none', 'important');
 
@@ -803,6 +810,7 @@
       centerEl.style.setProperty('left', leftPx + 'px', 'important');
     }
 
+    // Sweep animation reset
     sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
   }
 
@@ -838,6 +846,7 @@
   document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
     const val = b.dataset.val;
     if (measure.active){
+
       measure.inEntry += val;
       updateInput(); qEval();
       return;
@@ -922,13 +931,16 @@
     }
     if (!tokens.length){ updateInput(); evaluate(); return; }
 
+    // Find last numeric token
     let idx = tokens.length - 1;
     while (idx >= 0 && isOp(tokens[idx])) idx--;
     if (idx < 0){ updateInput(); evaluate(); return; }
 
+    // Remove the number
     tokens.splice(idx, 1);
     tokenDisplays.splice(idx, 1);
 
+    // Remove the operator immediately before it, if present
     if (idx - 1 >= 0 && isOp(tokens[idx - 1])){
       tokens.splice(idx - 1, 1);
       tokenDisplays.splice(idx - 1, 1);
@@ -953,7 +965,7 @@
     clearTimeout(backHoldTimer);
     backHoldTimer = setTimeout(()=>{
       setHoldVisual(backBtn, false);
-      backHoldTriggered = true;
+      backHoldTriggered = true;     // block subsequent click
       removeLastTermPair();
     }, 750);
   });
@@ -1024,6 +1036,7 @@
       memorySlots[i]= valNum;
       saveMemory(); refreshMemLabels();
 
+      // Saved flash
       btn.classList.add('saved');
       setTimeout(() => btn.classList.remove('saved'), 480);
     });
@@ -1141,6 +1154,7 @@
     });
   }
 
+  // Touch-friendly pressed state
   function attachPressState(){
     document.querySelectorAll('.btn').forEach(btn=>{
       const set = on => { if (!btn.disabled) btn.classList.toggle('pressed', !!on); };
@@ -1164,7 +1178,7 @@
       el.style.cursor='pointer';
       el.addEventListener('click', () => {
         const sel = window.getSelection();
-        if (sel && sel.toString().length > 0) return;
+        if (sel && sel.toString().length > 0) return; // let manual selection win
         const text = (el.textContent || '').trim();
         if (!text) return;
         if (navigator.clipboard?.writeText){
@@ -1317,7 +1331,7 @@
     const rawAngle = (screen.orientation && typeof screen.orientation.angle === 'number')
       ? screen.orientation.angle
       : (typeof window.orientation === 'number' ? window.orientation : 0);
-    const angle = ((rawAngle % 360) + 360) % 360;
+    const angle = ((rawAngle % 360) + 360) % 360; // 0, 90, 180, 270
 
     if (!isLandscape) { app.style.transform = ''; app.style.transformOrigin = ''; return; }
 
@@ -1384,4 +1398,19 @@
 </script>
 
 </body>
+
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
