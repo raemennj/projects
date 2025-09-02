@@ -92,7 +92,9 @@ html, body {
   overflow:hidden;
 }
 .pad{ padding:var(--pad) }
-
+.bezel .tape .center-line {
+  left: var(--center-line-left, 50.1%) !important; /* fallback keeps portrait value */
+}
 /* ===== Bezel (unifies Tape + Results) ===== */
 .bezel{ grid-area:bezel }
 .bezel{
@@ -1453,6 +1455,7 @@ window.addEventListener('orientationchange', () => {
 </body>
 
 </html>
+
 
 
 
