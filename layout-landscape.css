@@ -10,8 +10,10 @@
 
 @media (orientation: landscape), (min-aspect-ratio: 1/1) {
 
+
   :root {
     --card-max: 99999px;
+     --center-line-left: 50%;
     --left-col-fr: 0.55fr;
     --right-col-fr: 0.45fr;
     --tile-min: 44px;   /* comfy tap target */
@@ -126,3 +128,4 @@
   body > *,
   body > * > * { max-width: none !important; }
 }
+
