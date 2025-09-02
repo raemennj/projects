@@ -67,6 +67,18 @@ html, body {
   --bezel-divider:rgba(255,255,255,.08);
 }
 
+:root { --center-line-left: 50.1%; }  /* portrait/default */
+
+.center-line{
+  position:absolute;
+  top:29%;
+  left: var(--center-line-left, 50.1%);  /* ← controls the red tick */
+  width:5px;
+  height:75%;
+  background:red;
+  transform:translateX(-50%);
+}
+
 /* ---------- Card (stacked zones) ---------- */
 .card{
   width:clamp(320px,100%,var(--card-max));
@@ -1455,6 +1467,7 @@ window.addEventListener('orientationchange', () => {
 </body>
 
 </html>
+
 
 
 
