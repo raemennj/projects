@@ -64,7 +64,7 @@
     row-gap: var(--gap);
   }
 .bezel .tape .center-line {
-  left: var(--center-line-left, 50%) !important; /* fallback keeps portrait value */
+  left: var(--center-line-left, 48%) !important; /* fallback keeps portrait value */
 }
   /* ===== Left column: Bezel stacked over Memory ===== */
   .bezel,
@@ -129,5 +129,6 @@
   body > *,
   body > * > * { max-width: none !important; }
 }
+
 
 
