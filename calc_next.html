@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Inch Calc — Next (Exact Visual)</title>
+  <title>Inch Calc — Next (Exact Visual, Split Landscape)</title>
 
   <!-- Fonts -->
   <link href="https://use.typekit.net/iwc3riw.css" rel="stylesheet"/>
@@ -17,16 +17,21 @@
     *, *::before, *::after { box-sizing: border-box }
     html, body { height: 100% }
     html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
     :root{
       /* exact visual tokens from the original */
       --card-max:420px; --gap:8px; --tile:56px; --pad:var(--gap);
       --tape-min:120px; --results-min:140px; --history-min:40px; --output-min:40px;
+
       --card:#fff; --display-bg:#02210a; --display-text:#0f0;
+
       --num:khaki; --op:gold; --frac:#64b5f6; --dec:darkkhaki; --clear:lightcoral; --mem:lightskyblue;
+
       --bezel-radius:22px; --bezel-rim-radius:16px; --bezel-pad:6px;
       --bezel-outer:#1a1f1f; --bezel-inner:#0f1515;
       --bezel-hi:rgba(255,255,255,.07); --bezel-lo:rgba(0,0,0,.65); --bezel-divider:rgba(255,255,255,.08);
     }
+
     body{
       margin:0; background:#1f4d4d; color:#111;
       font-family:"aktiv-grotesk",-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;
@@ -36,13 +41,25 @@
       min-height: 100dvh; overflow:hidden;
     }
 
-    /* ---------- Card (stacked zones) ---------- */
+    /* ---------- Card layout ---------- */
     .card{
       width:clamp(320px,100%,var(--card-max)); height:100%;
       display:grid; gap:var(--gap);
-      grid-template-rows:auto auto auto auto;
-      grid-template-areas:"bezel" "memory" "console" "fractions";
+      grid-template-rows:auto auto auto;
+      grid-template-areas:"bezel" "memory" "keypad";
     }
+
+    /* Landscape: split in two columns (left = bezel+memory, right = keypad) */
+    @media (orientation: landscape){
+      .card{
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+          "bezel  keypad"
+          "memory keypad";
+      }
+    }
+
     .panel{
       background:var(--card); border-radius:8px; background-color:darkslategrey;
       box-shadow:0 8px 24px rgba(0,0,0,.15); overflow:hidden;
@@ -84,8 +101,7 @@
       position:absolute; bottom:85px; width:50px; text-align:center; transform:translateX(-50%);
       font-size:22px; font-weight:700; line-height:1; letter-spacing:.02em;
       font-variant-numeric:tabular-nums; filter:url(#textInnerShadow);
-      color:#111;
-      text-shadow: 0 1px 0 rgba(255,255,255,.4);
+      color:#111; text-shadow: 0 1px 0 rgba(255,255,255,.4);
     }
     .sweep{ position:absolute; inset:0; pointer-events:none; }
     .sweep::before{
@@ -121,22 +137,20 @@
     .memory{ grid-area:memory }
     .memory-grid{ display:grid; gap:var(--gap); grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(1,var(--tile)); }
 
-    /* ---------- Console (5×4) ---------- */
-    .keypad{ grid-area:console / console / fractions / fractions; } /* same columns */
+    /* ---------- Keypad (console + fractions stacked inside) ---------- */
+    .keypad{ grid-area:keypad; }
     .console-grid{
       margin-top:-8px; display:grid; gap:var(--gap);
       grid-template-columns:repeat(5,1fr);
       grid-template-rows:repeat(4,var(--tile));
     }
-    .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
-    .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
-
-    /* ---------- Fractions (5×3) ---------- */
     .fract-grid{
       margin-top:8px; display:grid; gap:var(--gap);
       grid-template-columns:repeat(5,1fr);
       grid-template-rows:repeat(3,var(--tile));
     }
+    .r1{grid-row:1}.r2{grid-row:2}.r3{grid-row:3}.r4{grid-row:4}
+    .c1{grid-column:1}.c2{grid-column:2}.c3{grid-column:3}.c4{grid-column:4}.c5{grid-column:5}
 
     /* ---------- Buttons ---------- */
     .btn{
@@ -185,23 +199,18 @@
     .btn[disabled]{ opacity:.5; filter: saturate(.15) brightness(1); pointer-events:none; }
     .btn, .btn .btn-label{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
     .btn .btn-label{ line-height:1; filter:url(#textInnerShadow); }
-
-    /* Focus */
     .btn:focus-visible{ outline:2px solid #0ea5a5; outline-offset:2px; }
 
-    /* Ripple */
     .ripple{
       position:absolute; border-radius:999px; pointer-events:none;
       transform:translate(-50%,-50%) scale(0); opacity:.35; background:rgba(255,255,255,.65);
       animation:ripple .45s ease-out forwards;
     }
     @keyframes ripple{ to{ transform:translate(-50%,-50%) scale(14); opacity:0 } }
-
-    /* Hold pulse for back/mem */
     .btn.hold{ box-shadow:0 0 0 0 rgba(14,165,165,.55); animation:pulseRing 1s ease-out infinite; }
     @keyframes pulseRing{ 0%{box-shadow:0 0 0 0 rgba(14,165,165,.55)} 100%{box-shadow:0 0 0 12px rgba(14,165,165,0)} }
 
-    /* Copy toast */
+    /* Toast */
     #copyToast{
       position:fixed; left:50%; transform:translateX(-50%); bottom:12px;
       background:#111; color:#fff; padding:8px 12px; border-radius:8px;
@@ -226,7 +235,7 @@
 
 <div id="card" class="card">
 
-  <!-- ===== Unified BEZEL: Tape + Results inside (exact visual) ===== -->
+  <!-- ===== Left: BEZEL (Tape + Results inside) ===== -->
   <div class="bezel panel">
     <div class="bezel__rim">
 
@@ -253,9 +262,8 @@
 
     </div>
   </div>
-  <!-- ===== /BEZEL ===== -->
 
-  <!-- Memory (5×1) -->
+  <!-- Memory (under results, still on the left) -->
   <div class="panel memory pad">
     <div class="memory-grid">
       <button class="btn clear" data-action="mc"><span class="btn-label">MC</span></button>
@@ -266,7 +274,7 @@
     </div>
   </div>
 
-  <!-- RIGHT: Keypad (console + fractions) -->
+  <!-- ===== Right: Keypad (console + fractions) ===== -->
   <div class="panel keypad pad">
     <div class="console-grid">
       <!-- Utility rail (col 1) -->
@@ -318,15 +326,12 @@
   </div>
 </div>
 
-<!-- Minimal modal (unchanged visuals) -->
+<!-- Minimal modal -->
 <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30;">
   <div style="background:#fffdee; color:#222; max-width:min(680px, 92vw); max-height:min(80vh, 700px); overflow:auto; border-radius:12px; padding:16px 18px; box-shadow:0 12px 40px rgba(0,0,0,.45);">
     <h2 class="cm-title">A tape-measure calculator for my friends.</h2>
     <ul class="cm-list">
-      <li>
-        <div class="cm-sub">Combine inches, decimals, and fractions in a single calculation.</div>
-        <div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div>
-      </li>
+      <li><div class="cm-sub">Combine inches, decimals, and fractions in a single calculation.</div><div class="cm-eg">42 1/4 + 2.375 + 9/16 = 45 3/16</div></li>
       <li><div class="cm-head">Add, subtract, multiply, divide. Chain multiple operations.</div></li>
       <li><div class="cm-head">One-Tap Fractions From 1/16 thru 15/16.</div></li>
       <li>
@@ -340,15 +345,8 @@
       <li>
         <div class="cm-head">Memory slot stores four clearly labeled values:</div>
         <ul class="cm-bullets">
-          <li>Long press to store new value as well as to replace an existing value</li>
+          <li>Long press to store / replace</li>
           <li>CM = Clear Memory, M1–M4 = Memory Slots</li>
-        </ul>
-      </li>
-      <li>
-        <div class="cm-head">Undo / Clear</div>
-        <ul class="cm-bullets">
-          <li>&larr; Undo numbers, fractions, and operators one character at a time</li>
-          <li><b>C</b> Clear entire results screen</li>
         </ul>
       </li>
       <li><div class="cm-head"><a href="segment_tape.html">Segment Calculator</a></div></li>
@@ -372,69 +370,59 @@
   /* ===== Small helpers ===== */
   const setVar = (k,v) => document.documentElement.style.setProperty(k,v);
   const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
-  const cssNum = (name, fallback) => {
-    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    const n = parseFloat(v); return Number.isFinite(n) ? n : fallback;
-  };
 
   /* Keep last good number handy for redraws during layout changes */
-  let lastGood = { value: 0, fraction: '', decimal: '' };
+  let lastGood = { value: 0, fraction: '0″', decimal: '0.0000″' };
 
-  /* ====== Uniform tile/gap solver (no clipping on weird ratios) ====== */
+  /* ====== Robust tile solver (measures actual keypad box) ====== */
   const MIN_TAP = 44;
   const MIN_GAP = 6, MAX_GAP = 12;
 
   function computeTile(){
     const card = document.getElementById('card');
-    const { width: W, height: H } = card.getBoundingClientRect();
+    const keypad = document.querySelector('.keypad');
+    if (!card || !keypad) return;
+
+    const { width: Wcard, height: Hcard } = card.getBoundingClientRect();
 
     // gap scales gently with size
-    let gap = clamp(Math.floor(Math.min(W,H) * 0.02), MIN_GAP, MAX_GAP);
+    const gap = clamp(Math.floor(Math.min(Wcard,Hcard) * 0.02), MIN_GAP, MAX_GAP);
     setVar('--gap', gap + 'px');
 
-    const tapeMin = cssNum('--tape-min', 120);
-
-    // Measure minimum results height parts from actual layout
-    const pad = gap;
+    // Results minimum recompute based on actual line heights
     const inputEl  = document.getElementById('inputLine');
     const outputEl = document.querySelector('.output');
-
     const getLineHeightPx = (el) => {
       const cs = getComputedStyle(el);
-      const lh = cs.lineHeight;
-      if (lh.endsWith && lh.endsWith('px')) return parseFloat(lh);
+      const lh = cs.lineHeight || '1.2';
       const fs = parseFloat(cs.fontSize) || 16;
-      const mult = parseFloat(lh) || 1.2;
-      return fs * mult;
+      return lh.endsWith && lh.endsWith('px') ? parseFloat(lh) : fs * parseFloat(lh);
     };
-
-    const inputLH   = getLineHeightPx(inputEl);
-    const outputLH  = getLineHeightPx(outputEl);
-    const outputPad = parseFloat(getComputedStyle(outputEl).paddingTop) || 0;
-
-    // history holds at least two input lines
-    const historyMin = Math.ceil(inputLH * 2);
+    const historyMin = Math.ceil(getLineHeightPx(inputEl) * 2);
     setVar('--history-min', historyMin + 'px');
-
-    // output reserves one line + its top pad (keeps divider stable)
-    const outputMin = Math.ceil(outputPad + outputLH);
+    const outputMin = Math.ceil((parseFloat(getComputedStyle(outputEl).paddingTop)||0) + getLineHeightPx(outputEl));
     setVar('--output-min', outputMin + 'px');
-
-    // results panel = padding*2 + history + inter-gap(8) + output + divider(1)
-    const INTER_ROW_GAP = 8;
-    const resultsMin = Math.ceil(pad*2 + historyMin + INTER_ROW_GAP + outputMin + 1);
+    const resultsMin = Math.ceil(gap*2 + historyMin + 8 + outputMin + 1);
     setVar('--results-min', resultsMin + 'px');
 
-    // keypad has 8 rows total (1 memory + 4 console + 3 fractions)
-    const ROWS = 8;
-    const GAP_BUDGET = (3 + 2 + 2 + 6) * gap; // exact from original stacks → 13 gaps
-    const W_inside = W - 2*gap;
+    // --- Keypad sizing by measuring the keypad panel itself ---
+    const kpRect = keypad.getBoundingClientRect();
+    const kpStyles = getComputedStyle(keypad);
+    const padY = (parseFloat(kpStyles.paddingTop)||0) + (parseFloat(kpStyles.paddingBottom)||0);
+    const padX = (parseFloat(kpStyles.paddingLeft)||0) + (parseFloat(kpStyles.paddingRight)||0);
 
-    // height left for keypad when results uses only its minimum
-    const H_for_keypad = Math.max(0, H - tapeMin - resultsMin - 2*gap);
+    const kpH = Math.max(0, kpRect.height - padY);
+    const kpW = Math.max(0, kpRect.width  - padX);
 
-    const tileFromH = Math.floor((H_for_keypad - GAP_BUDGET) / ROWS);
-    const tileFromW = Math.floor((W_inside - (5 - 1) * gap) / 5);
+    // 7 rows total, with 6 internal gaps between rows:
+    // console-grid: 4 rows → 3 gaps
+    // fract-grid:   3 rows → 2 gaps
+    // between the two grids: +1 gap (their margin-top 8px matches var(--gap))
+    const gapsBetweenRows = 6 * gap;
+
+    const tileFromH = Math.floor((kpH - gapsBetweenRows) / 7);
+    const tileFromW = Math.floor((kpW - 4*gap) / 5); // 5 columns → 4 gaps
+
     const tile = Math.max(MIN_TAP, Math.min(tileFromH, tileFromW));
     setVar('--tile', tile + 'px');
 
@@ -447,7 +435,7 @@
   window.addEventListener('resize', computeTile);
   window.addEventListener('orientationchange', () => setTimeout(computeTile, 60));
 
-  /* ====== Calculator logic (compact, same UX) ====== */
+  /* ====== Calculator logic (unchanged UX) ====== */
   const tape = document.getElementById('tape');
   const sweep = document.getElementById('sweep');
   const centerLine = document.getElementById('centerLine');
@@ -463,9 +451,8 @@
   let currentEntry = '';           // normal numeric/fraction entry
   const PPI = 170;                 // pixels-per-inch for the blade (same visual scale)
 
-  // Feet-builder state for quick feet + inches
   let measure = { active:false, feet:0, inches:0, inEntry:'' };
-  let displayMode = 'inch';        // 'inch' or 'feet' (peek)
+  let displayMode = 'inch';
 
   const gcd = (a,b)=> (b?gcd(b,a%b):Math.abs(a));
   const isOp = t => ['+','-','*','/'].includes(t);
@@ -476,7 +463,6 @@
   const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
   const roundToSixteenth = (x)=> Math.round(x*16)/16;
 
-  /* ---------- Result formatters ---------- */
   function formatResultInch(value){
     const r = roundToSixteenth(value);
     const sign = r<0 ? '-' : '';
@@ -539,7 +525,7 @@
     measure = { active:false, feet:0, inches:0, inEntry:'' };
   }
 
-  /* ---------- History rendering (same look) ---------- */
+  /* History rendering */
   function tokenDisplayAt(idx, tok){
     if (tokenDisplays[idx]) return tokenDisplays[idx];
     if (isDec(tok)){
@@ -622,21 +608,15 @@
 
     setRepeatEnabled(canRepeat());
   }
-
   function updateInput(){ renderHistory(); }
 
-  /* ---------- Evaluation (exactly like before, but local) ---------- */
+  /* Safe eval (+ - * /) */
   function safeEval(expr){
-    // extremely small parser for + - * / with numbers
-    // tokens already sanitized: numbers and operators separated by spaces
     const parts = expr.trim().split(/\s+/);
     if (!parts.length) return 0;
-
-    // Convert to RPN (shunting-yard)
-    const out=[], ops=[];
-    const prec = { '+':1,'-':1,'*':2,'/':2 };
+    const out=[], ops=[], prec={'+':1,'-':1,'*':2,'/':2};
     for (const t of parts){
-      if (['+','-','*','/'].includes(t)){
+      if (prec[t]){
         while (ops.length && prec[ops.at(-1)] >= prec[t]) out.push(ops.pop());
         ops.push(t);
       } else {
@@ -644,19 +624,12 @@
       }
     }
     while (ops.length) out.push(ops.pop());
-
-    // Eval RPN
     const st=[];
     for (const t of out){
-      if (typeof t === 'number') st.push(t);
+      if (typeof t==='number') st.push(t);
       else {
         const b=st.pop(), a=st.pop();
-        let v=0;
-        if (t==='+') v=a+b;
-        else if (t==='-') v=a-b;
-        else if (t==='*') v=a*b;
-        else if (t==='/') v=b===0 ? NaN : a/b;
-        st.push(v);
+        st.push(t==='+'?a+b:t==='-'?a-b:t==='*'?a*b:(b===0?NaN:a/b));
       }
     }
     return st.pop() ?? 0;
@@ -667,31 +640,22 @@
   function evaluate(){
     let exprTokens = [...tokens];
     let pendingOp = null;
-    if (exprTokens.length && isOp(exprTokens.at(-1))) {
-      pendingOp = exprTokens.pop();
-    }
+    if (exprTokens.length && isOp(exprTokens.at(-1))) pendingOp = exprTokens.pop();
 
     const left = exprTokens.join(' ');
     const liveMeasure = measure.active ? String(measureTotal()) : null;
     const liveEntry   = (!measure.active && currentEntry) ? currentEntry : null;
 
     let preview = '';
-
-    if (pendingOp && (liveMeasure || liveEntry)) {
-      preview = (left ? left + ' ' : '') + pendingOp + ' ' + (liveMeasure ?? liveEntry);
-    } else if (liveMeasure) {
-      preview = left ? `${left} + ${liveMeasure}` : liveMeasure;
-    } else if (liveEntry) {
-      preview = left ? `${left} ${liveEntry}` : liveEntry;
-    } else {
-      preview = left;
-    }
+    if (pendingOp && (liveMeasure || liveEntry)) preview = (left ? left + ' ' : '') + pendingOp + ' ' + (liveMeasure ?? liveEntry);
+    else if (liveMeasure) preview = left ? `${left} + ${liveMeasure}` : liveMeasure;
+    else if (liveEntry)   preview = left ? `${left} ${liveEntry}` : liveEntry;
+    else                  preview = left;
 
     try{
       const num = preview.trim() ? safeEval(preview) : 0;
       const out = formatResult(num);
       lastGood = { value: num, fraction: out.fraction, decimal: out.decimal };
-
       fractionLine.textContent = out.fraction;
       decimalLine.textContent  = out.decimal;
       drawTape(num);
@@ -732,14 +696,14 @@
     const rect = tape.getBoundingClientRect();
     const mid = rect.width/2;
 
-    // 3" span like your original
+    // 3" span
     const range = 3;
     const start = Math.max(center - range/2, 0), end = center + range/2;
     const a = Math.floor(start*16), b = Math.ceil(end*16);
 
     for (let i=a;i<=b;i++){
       const inches = i/16;
-      const x = (inches - center)*PPI + mid - 1.5; // tick is 3px wide → offset 1.5
+      const x = (inches - center)*170 + mid - 1.5; // PPI=170, tick 3px wide
 
       const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
       if (i%16===0){
@@ -756,17 +720,14 @@
       tape.appendChild(el);
     }
 
-    // red line crisp at visual center
     snapCenterLine();
 
-    // Sweep animation reset
     sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
   }
 
   /* ---------- Memory ---------- */
   function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
   function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
-
   function ensureLabelSpan(btn){
     let span = btn.querySelector('.btn-label');
     if (!span){
@@ -815,9 +776,9 @@
     if (measure.active) finalizeMeasureToken();
 
     if (currentEntry){
-      // whole number + fraction case (e.g., 3 then 1/4)
       if (/^\d+\/\d+$/.test(currentEntry)){
-        tokens.push(String(parseFraction(currentEntry))); tokenDisplays.push(undefined);
+        const [n,d]=currentEntry.split('/').map(Number);
+        tokens.push(String((n||0)/(d||1))); tokenDisplays.push(undefined);
       } else {
         tokens.push(currentEntry); tokenDisplays.push(undefined);
       }
@@ -833,7 +794,6 @@
     }
     updateInput(); qEval();
   }));
-  function parseFraction(fr){ const [n,d]=fr.split('/').map(Number); return (n||0)/(d||1); }
 
   /* Backspace: tap = 1 char. Hold 750ms = remove last number + preceding op */
   const backBtn = document.querySelector('.btn.back');
@@ -851,7 +811,6 @@
       }
       updateInput(); evaluate(); return;
     }
-
     if (currentEntry){
       currentEntry = currentEntry.slice(0,-1);
     } else if (tokens.length){
@@ -912,7 +871,7 @@
     setRepeatEnabled(false);
   });
 
-  // Feet (tap = convert entry; push feet token)
+  // Feet (tap to convert entry to feet token / start feet builder)
   const feetBtn = document.getElementById('feetBtn');
   feetBtn.addEventListener('click',()=>{
     if (isDec(currentEntry)){
@@ -941,7 +900,7 @@
     }
   });
 
-  // Fraction buttons
+  // Fractions
   document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
     const f=b.dataset.frac;
     const [n,d]=f.split('/').map(Number);
@@ -990,7 +949,6 @@
       });
     });
   }
-  // Press state
   function attachPressState(){
     document.querySelectorAll('.btn').forEach(btn=>{
       const set = on => { if (!btn.disabled) btn.classList.toggle('pressed', !!on); };
@@ -1001,7 +959,6 @@
     });
   }
 
-  // Copy-to-clipboard for outputs
   function showToast(msg='Copied', ms=900){
     const toast = document.getElementById('copyToast');
     if (!toast) return;
@@ -1031,7 +988,7 @@
   document.getElementById('closeModal').addEventListener('click',()=>{ modal.style.display='none'; });
   modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
 
-  // Prevent body scroll, allow results/history/modal/output scroll/selection
+  // Avoid body scroll (still allow results/modal)
   document.addEventListener('touchmove', e=>{
     if (e.target.closest('.history') || e.target.closest('.output') || e.target.closest('#modal')) return;
     e.preventDefault();
@@ -1045,22 +1002,21 @@
     let suppressNextClick = false;
     const start = () => {
       clearTimeout(holdTimer);
-      setHoldVisual(feetBtn, true);
+      feetBtn.classList.add('hold');
       holdTimer = setTimeout(()=>{
         peeking = true;
         suppressNextClick = true;
         displayMode = 'feet';
-        feetBtn.classList.add('peek');
+        feetBtn.classList.remove('hold');
         evaluate();
       }, DELAY_MS);
     };
     const end = () => {
       clearTimeout(holdTimer);
-      setHoldVisual(feetBtn, false);
+      feetBtn.classList.remove('hold');
       if (peeking){
         peeking = false;
         displayMode = 'inch';
-        feetBtn.classList.remove('peek');
         evaluate();
       }
     };
@@ -1090,7 +1046,6 @@
     }
     const n = tokens.length;
     return n >= 2 && isOp(tokens[n-2]) && !isOp(tokens[n-1]);
-
   }
   function setRepeatEnabled(on){ if (!repeatBtn) return; repeatBtn.disabled = !on; }
   function commitPendingIfPair(){
@@ -1167,9 +1122,10 @@
   attachRipples();
   attachPressState();
   enableClickCopy('#fractionLine, #decimalLine');
+
   // initial output
-  fractionLine.textContent = '0″';
-  decimalLine.textContent  = '0.0000″';
+  fractionLine.textContent = lastGood.fraction;
+  decimalLine.textContent  = lastGood.decimal;
 
 })();
 </script>
