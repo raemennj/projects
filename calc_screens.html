@@ -29,6 +29,9 @@
   *, *::before, *::after { box-sizing: border-box }
   html, body { height: 100% }
   html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+@media (display-mode: standalone) {
+  body { min-height: 100svh; padding: 10px; }
+}
 
   body{
     margin:0; background:#1f4d4d; color:#111;
@@ -263,6 +266,7 @@
     display:none; gap:8px; align-items:center; z-index:45; box-shadow:0 8px 24px rgba(0,0,0,.25);
     font-size:14px;
   }
+    
   </style>
 </head>
 <body>
@@ -1400,6 +1404,7 @@
 </body>
 
 </html>
+
 
 
 
