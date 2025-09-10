@@ -3,97 +3,71 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Liquid Glass Blobs — Draggable</title>
+<title>Liquid Glass Blobs — Smooth Drag</title>
 <style>
-  /* ---- Page background to refract/blur ---- */
   :root { color-scheme: light dark; }
   html, body {
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
+    height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent;
     background:
       radial-gradient(1200px 800px at 10% 10%, rgba(255,255,255,.25), transparent 60%),
       radial-gradient(900px 700px at 90% 80%, rgba(255,255,255,.12), transparent 60%),
       linear-gradient(120deg, #2a5bd7, #7b49d9 40%, #06c0a7);
     background-attachment: fixed;
   }
+  .scene { position: fixed; inset: 0; touch-action: none; user-select: none; }
 
-  /* Scene layer to hold blobs */
-  .scene {
-    position: fixed;
-    inset: 0;
-    touch-action: none; /* we’ll handle gestures */
-    user-select: none;
-  }
-
-  /* ---- Liquid glass blob ---- */
   .blob {
-    position: absolute;
-    width: 180px; height: 180px;
-    border-radius: 42% 58% 55% 45% / 47% 38% 62% 53%; /* organic shape */
+    position: absolute; width: 180px; height: 180px;
+    border-radius: 42% 58% 55% 45% / 47% 38% 62% 53%;
     background:
       radial-gradient(120% 100% at 20% 20%, rgba(255,255,255,.55), rgba(255,255,255,.12) 35%, rgba(255,255,255,0) 60%),
       radial-gradient(60% 55% at 70% 75%, rgba(255,255,255,.25), rgba(255,255,255,0) 60%);
-    backdrop-filter: blur(18px) saturate(120%);          /* the frosted glass magic */
+    backdrop-filter: blur(18px) saturate(120%);
     -webkit-backdrop-filter: blur(18px) saturate(120%);
     background-clip: padding-box;
     border: 1px solid rgba(255,255,255,.45);
     box-shadow:
-      inset 0 0.5px 0.5px rgba(255,255,255,.6),          /* inner sheen */
-      inset 0 -10px 25px rgba(255,255,255,.12),          /* inner ambient */
-      0 25px 50px rgba(0,0,0,.25);                       /* soft drop */
+      inset 0 0.5px 0.5px rgba(255,255,255,.6),
+      inset 0 -10px 25px rgba(255,255,255,.12),
+      0 25px 50px rgba(0,0,0,.25);
     transition: box-shadow 180ms ease, transform 180ms ease;
-    cursor: grab;
-    will-change: transform;
+    cursor: grab; will-change: transform, left, top;
+    animation: wobble 7s ease-in-out infinite;
   }
-  .blob::after { /* specular highlight streak */
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background:
-      conic-gradient(from 210deg at 70% 25%, rgba(255,255,255,.28), rgba(255,255,255,0) 25% 85%, rgba(255,255,255,.18));
-    mix-blend-mode: screen;
-    pointer-events: none;
-    opacity: .6;
-    filter: blur(0.3px);
+  .blob::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background: conic-gradient(from 210deg at 70% 25%, rgba(255,255,255,.28), rgba(255,255,255,0) 25% 85%, rgba(255,255,255,.18));
+    mix-blend-mode: screen; pointer-events: none; opacity: .6; filter: blur(0.3px);
   }
-  .blob.dragging {
-    cursor: grabbing;
+  .blob.dragging { cursor: grabbing; transform: scale(1.03);
     box-shadow:
       inset 0 0.5px 0.5px rgba(255,255,255,.7),
       inset 0 -12px 28px rgba(255,255,255,.14),
       0 30px 60px rgba(0,0,0,.35);
-    transform: scale(1.03);
+    animation-play-state: paused;
   }
-
-  /* Tiny “liquid wobble” while idle */
+  /* Pause wobble globally if user prefers less motion */
+  @media (prefers-reduced-motion: reduce) {
+    .blob { animation: none; }
+  }
   @keyframes wobble {
-    0%   { border-radius: 42% 58% 55% 45% / 47% 38% 62% 53%; }
-    50%  { border-radius: 45% 55% 52% 48% / 49% 36% 60% 55%; }
-    100% { border-radius: 42% 58% 55% 45% / 47% 38% 62% 53%; }
+    0%   { border-radius: 42% 58% 55% 45% / 47% 38% 62% 53%; transform: translateZ(0) }
+    50%  { border-radius: 45% 55% 52% 48% / 49% 36% 60% 55%; transform: translateY(-1px) }
+    100% { border-radius: 42% 58% 55% 45% / 47% 38% 62% 53%; transform: translateZ(0) }
   }
-  .blob { animation: wobble 6s ease-in-out infinite; }
 
-  /* Label (optional) */
   .label {
-    position: absolute;
-    bottom: 10px; left: 12px;
+    position: absolute; bottom: 10px; left: 12px;
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
     font-size: 12px; letter-spacing: .2px;
-    color: rgba(0,0,0,.7);
-    mix-blend-mode: multiply;
+    color: rgba(0,0,0,.7); mix-blend-mode: multiply;
     text-shadow: 0 1px 0 rgba(255,255,255,.45);
-    pointer-events: none;
-    user-select: none;
+    pointer-events: none; user-select: none;
   }
 
-  /* Backdrop-filter fallback */
   @supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
     .blob {
       background: radial-gradient(120% 100% at 20% 20%, rgba(255,255,255,.35), rgba(255,255,255,.08) 35%, rgba(255,255,255,0) 60%);
-      /* Simulate “glass” with more translucency + outer blur */
       filter: saturate(110%);
     }
   }
@@ -103,20 +77,16 @@
   <div class="scene" id="scene" aria-label="Liquid glass scene"></div>
 
 <script>
-(function () {
+(() => {
   const scene = document.getElementById('scene');
-
-  // ---- Utility: clamp value between min/max ----
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
-  // ---- Create a blob element ----
   function makeBlob({ x, y, size = 180, text = '' } = {}) {
     const el = document.createElement('div');
     el.className = 'blob';
     el.style.width = el.style.height = size + 'px';
     el.style.left = (x ?? 60) + 'px';
     el.style.top  = (y ?? 60) + 'px';
-
     if (text) {
       const lbl = document.createElement('div');
       lbl.className = 'label';
@@ -128,48 +98,58 @@
     return el;
   }
 
-  // ---- Draggable with pointer events (mouse + touch + pen) ----
   function makeDraggable(el) {
-    let originX = 0, originY = 0;
-    let startLeft = 0, startTop = 0;
     let pointerId = null;
-    let lastT = 0, vx = 0, vy = 0; // for a tiny bit of inertial feel
+    let startX = 0, startY = 0;
+    let baseLeft = 0, baseTop = 0;
+    let lastX = 0, lastY = 0, lastT = 0;
+    let vx = 0, vy = 0;
+    let glideRAF = null;
+
+    const bounds = () => ({
+      vw: window.innerWidth, vh: window.innerHeight,
+      w: el.offsetWidth, h: el.offsetHeight
+    });
 
     const onDown = (e) => {
       if (pointerId !== null) return;
+      if (glideRAF) { cancelAnimationFrame(glideRAF); glideRAF = null; }
       el.setPointerCapture(e.pointerId);
       pointerId = e.pointerId;
       el.classList.add('dragging');
-      originX = e.clientX; originY = e.clientY;
+
       const rect = el.getBoundingClientRect();
-      startLeft = rect.left; startTop = rect.top;
-      lastT = performance.now(); vx = vy = 0;
+      baseLeft = rect.left; baseTop = rect.top;
+      startX = e.clientX;   startY = e.clientY;
+
+      lastX = startX; lastY = startY; lastT = e.timeStamp || performance.now();
+      vx = vy = 0;
     };
 
     const onMove = (e) => {
       if (e.pointerId !== pointerId) return;
-      const dx = e.clientX - originX;
-      const dy = e.clientY - originY;
 
-      // keep inside the viewport
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const w = el.offsetWidth, h = el.offsetHeight;
+      const now = e.timeStamp || performance.now();
+      const dt = Math.max(0.001, (now - lastT) / 1000);
 
-      let nx = clamp(startLeft + dx, 0, vw - w);
-      let ny = clamp(startTop + dy, 0, vh - h);
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
 
-      el.style.left = nx + 'px';
-      el.style.top  = ny + 'px';
+      const { vw, vh, w, h } = bounds();
+      let x = clamp(baseLeft + dx, 0, vw - w);
+      let y = clamp(baseTop + dy, 0, vh - h);
 
-      // velocity estimate
-      const now = performance.now();
-      const dt = (now - lastT) / 1000;
-      if (dt > 0) {
-        vx = (dx) / dt;
-        vy = (dy) / dt;
-      }
-      lastT = now;
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+
+      // velocity from position deltas (smoothed)
+      const px = e.clientX - lastX;
+      const py = e.clientY - lastY;
+      const k = 0.8; // smoothing factor
+      vx = k * (px / dt) + (1 - k) * vx;
+      vy = k * (py / dt) + (1 - k) * vy;
+
+      lastX = e.clientX; lastY = e.clientY; lastT = now;
     };
 
     const onUp = (e) => {
@@ -178,40 +158,39 @@
       pointerId = null;
       el.classList.remove('dragging');
 
-      // small inertial glide
-      const start = performance.now();
-      const friction = 2800; // px/s^2
-      const sign = (n) => (n < 0 ? -1 : 1);
+      // inertia with exponential damping
+      const damp = 0.94; // per-frame damping
+      const minSpeed = 12; // px/s threshold to stop
 
-      let x = parseFloat(el.style.left);
-      let y = parseFloat(el.style.top);
+      let x = parseFloat(el.style.left) || 0;
+      let y = parseFloat(el.style.top)  || 0;
 
-      function step(ts) {
-        const t = (ts - start) / 1000;
-        const ax = -sign(vx) * friction;
-        const ay = -sign(vy) * friction;
-        const vx_t = Math.abs(vx) > 1 ? vx + ax * t : 0;
-        const vy_t = Math.abs(vy) > 1 ? vy + ay * t : 0;
+      let prev = performance.now();
+      const step = (t) => {
+        const now = performance.now();
+        const dt = Math.min(0.032, (now - prev) / 1000); // cap dt for stability
+        prev = now;
 
-        // position using simple integration
-        x += vx_t * (1/60);
-        y += vy_t * (1/60);
+        vx *= Math.pow(damp, 60 * dt); // normalize damping ~60fps
+        vy *= Math.pow(damp, 60 * dt);
 
-        // clamp to viewport bounds
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const w = el.offsetWidth, h = el.offsetHeight;
-        x = clamp(x, 0, vw - w); y = clamp(y, 0, vh - h);
+        if (Math.hypot(vx, vy) < minSpeed) { glideRAF = null; return; }
+
+        x += vx * dt;
+        y += vy * dt;
+
+        const { vw, vh, w, h } = bounds();
+        // collide softly with edges (reverse + damp)
+        if (x < 0) { x = 0; vx = -vx * 0.35; }
+        if (y < 0) { y = 0; vy = -vy * 0.35; }
+        if (x > vw - w) { x = vw - w; vx = -vx * 0.35; }
+        if (y > vh - h) { y = vh - h; vy = -vy * 0.35; }
 
         el.style.left = x + 'px';
         el.style.top  = y + 'px';
-
-        // stop when velocity is low
-        if (Math.abs(vx_t) > 5 || Math.abs(vy_t) > 5) {
-          vx = vx_t; vy = vy_t;
-          requestAnimationFrame(step);
-        }
-      }
-      requestAnimationFrame(step);
+        glideRAF = requestAnimationFrame(step);
+      };
+      glideRAF = requestAnimationFrame(step);
     };
 
     el.addEventListener('pointerdown', onDown);
@@ -220,19 +199,19 @@
     window.addEventListener('pointercancel', onUp);
   }
 
-  // ---- Spawn a few blobs ----
+  // Spawn some blobs
   const vw = window.innerWidth, vh = window.innerHeight;
   makeBlob({ x: vw*0.15, y: vh*0.18, size: 190, text: 'drag me' });
   makeBlob({ x: vw*0.55, y: vh*0.35, size: 220, text: 'glass' });
   makeBlob({ x: vw*0.30, y: vh*0.60, size: 160, text: 'liquid' });
 
-  // Tap/Click empty space to add a new blob quickly
+  // Tap empty space to add a blob
   scene.addEventListener('pointerdown', (e) => {
     if (e.target !== scene) return;
     makeBlob({ x: e.clientX - 90, y: e.clientY - 90, size: 160 });
   });
 
-  // Keep blobs inside on resize/rotate
+  // Keep inside on resize
   window.addEventListener('resize', () => {
     const vw = window.innerWidth, vh = window.innerHeight;
     document.querySelectorAll('.blob').forEach(el => {
