@@ -29,9 +29,6 @@
   *, *::before, *::after { box-sizing: border-box }
   html, body { height: 100% }
   html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-@media (display-mode: standalone) {
-  body { min-height: 100svh; padding: 10px; }
-}
 
   body{
     margin:0; background:#1f4d4d; color:#111;
@@ -266,7 +263,6 @@
     display:none; gap:8px; align-items:center; z-index:45; box-shadow:0 8px 24px rgba(0,0,0,.25);
     font-size:14px;
   }
-    
   </style>
 </head>
 <body>
@@ -1016,56 +1012,95 @@
   });
 
   // ===== Memory buttons =====
-  document.querySelectorAll('.btn.mem').forEach(btn=>{
-    // Insert on tap
-    btn.addEventListener('click',()=>{
-      const i=+btn.dataset.mem, v=memorySlots[i]; if (v==null) return;
-      if (measure.active) finalizeMeasureToken();
-      if (currentEntry) tokens.push(currentEntry), tokenDisplays.push(undefined);
-      currentEntry = String(v);
-      updateInput(); evaluate();
-    });
+function storeToMem(btn){
+  // (was your dblclick body)
+  let expr = [...tokens];
+  if (currentEntry) expr.push(currentEntry);
+  while (expr.length && isOp(expr.at(-1))) expr.pop();
 
-    // Store on double-click (or long-press)
-    btn.addEventListener('dblclick',()=>{
-      let expr=[...tokens];
-      if (currentEntry) expr.push(currentEntry);
-      while (expr.length && isOp(expr.at(-1))) expr.pop();
-      let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
-      let valNum = (typeof base==='number' ? base : base.toNumber()) + (measure.active ? measureTotal() : 0);
+  let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
+  let valNum = (typeof base === 'number' ? base : base.toNumber())
+             + (measure.active ? measureTotal() : 0);
 
-      const i=+btn.dataset.mem;
-      const confirmReplace = memorySlots[i]!=null ? confirm(`M${i+1} has ${formatResultInchOnlyLabel(memorySlots[i])}. Replace?`) : true;
-      if (!confirmReplace) return;
-      memorySlots[i]= valNum;
-      saveMemory(); refreshMemLabels();
+  const i = +btn.dataset.mem;
+  const confirmReplace = memorySlots[i] != null
+    ? confirm(`M${i+1} has ${formatResultInchOnlyLabel(memorySlots[i])}. Replace?`)
+    : true;
+  if (!confirmReplace) return;
 
-      // Saved flash
-      btn.classList.add('saved');
-      setTimeout(() => btn.classList.remove('saved'), 480);
-    });
+  memorySlots[i] = valNum;
+  saveMemory();
+  refreshMemLabels();
 
-    // Long-press → store (touch)
-    let lpTimer = null;
-    btn.addEventListener('touchstart', () => {
-      setHoldVisual(btn, true);
-      lpTimer = setTimeout(() => {
-        btn.dispatchEvent(new Event('dblclick'));
-      }, 600);
-    }, { passive: true });
+  // Saved flash
+  btn.classList.add('saved');
+  setTimeout(() => btn.classList.remove('saved'), 480);
+}
 
-    function clearLP() {
-      clearTimeout(lpTimer);
-      setHoldVisual(btn, false);
+function recallFromMem(btn){
+  const i = +btn.dataset.mem, v = memorySlots[i];
+  if (v == null) return;
+
+  if (measure.active) finalizeMeasureToken();
+  if (currentEntry) { tokens.push(currentEntry); tokenDisplays.push(undefined); }
+  currentEntry = String(v);
+  updateInput(); evaluate();
+}
+
+document.querySelectorAll('.btn.mem').forEach(btn=>{
+  // Per-button guards
+  btn._recallTimer = null;
+  btn._preventNextClick = false;   // set true by LP or dblclick to block ensuing click
+
+  // Tap = recall (debounced to detect double-click)
+  btn.addEventListener('click', (e) => {
+    // Suppress the synthetic click that follows a long-press or dblclick
+    if (btn._preventNextClick){
+      btn._preventNextClick = false;
+      return;
     }
-    btn.addEventListener('touchend', clearLP, { passive: true });
-    btn.addEventListener('touchcancel', clearLP, { passive: true });
+
+    // If this is the second click of a double-click, cancel pending recall
+    if (e.detail && e.detail > 1){
+      clearTimeout(btn._recallTimer);
+      return;
+    }
+
+    clearTimeout(btn._recallTimer);
+    // Small delay lets us see if a second click (dblclick) arrives
+    btn._recallTimer = setTimeout(() => recallFromMem(btn), 300);
   });
 
-  document.querySelector('.btn.clear[data-action="mc"]').addEventListener('click',()=>{
-    if (!confirm('Clear all memory slots?')) return;
-    memorySlots=[null,null,null,null]; saveMemory(); refreshMemLabels();
+  // Double-click = store (don’t let preceding clicks recall)
+  btn.addEventListener('dblclick', (e) => {
+    clearTimeout(btn._recallTimer);
+    btn._preventNextClick = true;   // block the subsequent synthetic click
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    storeToMem(btn);
   });
+
+  // Long-press (touch) = store (no history side-effects)
+  let lpTimer = null;
+  btn.addEventListener('touchstart', () => {
+    setHoldVisual(btn, true);
+    clearTimeout(lpTimer);
+    lpTimer = setTimeout(() => {
+      // Directly store instead of dispatching dblclick; also block the click that follows touchend
+      btn._preventNextClick = true;
+      setHoldVisual(btn, false);
+      storeToMem(btn);
+    }, 600);
+  }, { passive: true });
+
+  function clearLP(){
+    clearTimeout(lpTimer);
+    setHoldVisual(btn, false);
+  }
+  btn.addEventListener('touchend', clearLP, { passive: true });
+  btn.addEventListener('touchcancel', clearLP, { passive: true });
+});
+
 
   /* ===== FRACTION BUTTON PALETTES ===== */
   const FRACTION_PALETTES = {
@@ -1404,7 +1439,6 @@
 </body>
 
 </html>
-
 
 
 
