@@ -763,56 +763,58 @@
   }
 
   // ===== Tape rendering + pixel-perfect center line =====
-  function drawTape(center){
-    if (center<0) center=0;
+function drawTape(center){
+  if (center<0) center=0;
 
-    // Clear old ticks/labels
-    [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
+  // Clear old ticks/labels
+  [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
 
-    const rect = tape.getBoundingClientRect();
-    const mid = rect.width/2;
+  const rect = tape.getBoundingClientRect();
+  const mid = rect.width/2;
 
-    // Generate ticks around the center value
-    const range = 3; // inches on screen
-    const start = Math.max(center - range/2, 0), end = center + range/2;
-    const a = Math.floor(start*16), b = Math.ceil(end*16);
+  // Auto-fit: show exactly N inches across the tape width (no calibration)
+  const VIEW_RANGE_IN = 3;               // how many inches to display across the width
+  const PPI = rect.width / VIEW_RANGE_IN; // pixels per inch derived from container width
 
-    for (let i=a;i<=b;i++){
-      const inches = i/16;
-      // 3px tick width → center by offsetting 1.5px
-      const x = (inches - center)*PPI + mid - 1.5;
+  // Generate ticks around the center value
+  const range = VIEW_RANGE_IN;
+  const start = Math.max(center - range/2, 0), end = center + range/2;
+  const a = Math.floor(start*16), b = Math.ceil(end*16);
 
-      const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
-      if (i%16===0){
-        el.classList.add('num');
-        const lbl=document.createElement('div');
-        lbl.className='tick-label';
-        lbl.textContent=inches.toFixed(0);
-        lbl.style.left=(x+1.5)+'px';
-        tape.appendChild(lbl);
-      } else if (i%8===0) el.classList.add('lg');
-      else if (i%4===0)   el.classList.add('med');
-      else                el.classList.add('small');
+  for (let i=a;i<=b;i++){
+    const inches = i/16;
+    const x = (inches - center)*PPI + mid - 1.5;  // centers around the red line
 
-      tape.appendChild(el);
-    }
+    const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
+    if (i%16===0){
+      el.classList.add('num');
+      const lbl=document.createElement('div');
+      lbl.className='tick-label';
+      lbl.textContent=inches.toFixed(0);
+      lbl.style.left=(x+1.5)+'px';
+      tape.appendChild(lbl);
+    } else if (i%8===0) el.classList.add('lg');
+    else if (i%4===0)   el.classList.add('med');
+    else                el.classList.add('small');
 
-    // Place the red center line at the exact pixel mid (override any CSS)
-    const centerEl = tape.querySelector('.center-line');
-    if (centerEl){
-      // Prefer crisp even width (override to 4px if needed)
-      const desiredW = 4; // change to 5 if you really want thicker (may subpixel-blur on some DPRs)
-      centerEl.style.setProperty('width', desiredW + 'px', 'important');
-      centerEl.style.setProperty('transform', 'none', 'important');
-
-      const midPx = Math.round(rect.width / 2);
-      const leftPx = midPx - (desiredW / 2);
-      centerEl.style.setProperty('left', leftPx + 'px', 'important');
-    }
-
-    // Sweep animation reset
-    sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
+    tape.appendChild(el);
   }
+
+  // Place the red center line at the exact pixel mid (override any CSS)
+  const centerEl = tape.querySelector('.center-line');
+  if (centerEl){
+    const desiredW = 4;
+    centerEl.style.setProperty('width', desiredW + 'px', 'important');
+    centerEl.style.setProperty('transform', 'none', 'important');
+
+    const midPx = Math.round(rect.width / 2);
+    const leftPx = midPx - (desiredW / 2);
+    centerEl.style.setProperty('left', leftPx + 'px', 'important');
+  }
+
+  // Sweep animation reset
+  sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
+}
 
   // ===== Memory helpers =====
   function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
