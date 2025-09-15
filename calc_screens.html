@@ -773,7 +773,7 @@ function drawTape(center){
   const mid = rect.width/2;
 
   // Auto-fit: show exactly N inches across the tape width (no calibration)
-  const VIEW_RANGE_IN = 3;               // how many inches to display across the width
+  const VIEW_RANGE_IN = 2.5;               // how many inches to display across the width
   const PPI = rect.width / VIEW_RANGE_IN; // pixels per inch derived from container width
 
   // Generate ticks around the center value
