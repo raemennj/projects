@@ -1011,10 +1011,9 @@
     }
   });
 
-  // ===== Memory buttons =====
+// ===== Memory buttons =====
 function storeToMem(btn){
-  // (was your dblclick body)
-  let expr = [...tokens];
+  let expr=[...tokens];
   if (currentEntry) expr.push(currentEntry);
   while (expr.length && isOp(expr.at(-1))) expr.pop();
 
@@ -1023,7 +1022,7 @@ function storeToMem(btn){
              + (measure.active ? measureTotal() : 0);
 
   const i = +btn.dataset.mem;
-  const confirmReplace = memorySlots[i] != null
+  const confirmReplace = memorySlots[i]!=null
     ? confirm(`M${i+1} has ${formatResultInchOnlyLabel(memorySlots[i])}. Replace?`)
     : true;
   if (!confirmReplace) return;
@@ -1052,42 +1051,36 @@ document.querySelectorAll('.btn.mem').forEach(btn=>{
   btn._recallTimer = null;
   btn._preventNextClick = false;   // set true by LP or dblclick to block ensuing click
 
-  // Tap = recall (debounced to detect double-click)
+  // Tap = recall (debounced so a dblclick won’t recall first)
   btn.addEventListener('click', (e) => {
-    // Suppress the synthetic click that follows a long-press or dblclick
     if (btn._preventNextClick){
       btn._preventNextClick = false;
       return;
     }
-
-    // If this is the second click of a double-click, cancel pending recall
-    if (e.detail && e.detail > 1){
+    if (e.detail && e.detail > 1){  // second click of a dblclick
       clearTimeout(btn._recallTimer);
       return;
     }
-
     clearTimeout(btn._recallTimer);
-    // Small delay lets us see if a second click (dblclick) arrives
     btn._recallTimer = setTimeout(() => recallFromMem(btn), 300);
   });
 
-  // Double-click = store (don’t let preceding clicks recall)
+  // Double-click = store
   btn.addEventListener('dblclick', (e) => {
     clearTimeout(btn._recallTimer);
-    btn._preventNextClick = true;   // block the subsequent synthetic click
+    btn._preventNextClick = true; // block the synthetic click that follows
     e.preventDefault();
     e.stopImmediatePropagation();
     storeToMem(btn);
   });
 
-  // Long-press (touch) = store (no history side-effects)
+  // Long-press (touch) = store directly (no dispatching dblclick)
   let lpTimer = null;
   btn.addEventListener('touchstart', () => {
     setHoldVisual(btn, true);
     clearTimeout(lpTimer);
     lpTimer = setTimeout(() => {
-      // Directly store instead of dispatching dblclick; also block the click that follows touchend
-      btn._preventNextClick = true;
+      btn._preventNextClick = true; // swallow the click after touchend
       setHoldVisual(btn, false);
       storeToMem(btn);
     }, 600);
@@ -1100,6 +1093,43 @@ document.querySelectorAll('.btn.mem').forEach(btn=>{
   btn.addEventListener('touchend', clearLP, { passive: true });
   btn.addEventListener('touchcancel', clearLP, { passive: true });
 });
+
+// ----- MC: Clear all memory slots (click/touch/keyboard safe) -----
+const mcBtn = document.querySelector('.btn.clear[data-action="mc"]');
+
+function doClearMemory(){
+  const memCount = document.querySelectorAll('.btn.mem').length || 4;
+  memorySlots = new Array(memCount).fill(null);
+  saveMemory();
+  refreshMemLabels();
+  document.querySelectorAll('.btn.mem').forEach(b => b.classList.remove('saved'));
+}
+
+let mcHandled = false; // swallow the ghost click after touchend
+function askAndClear(){ if (confirm('Clear all memory slots?')) doClearMemory(); }
+
+mcBtn.addEventListener('touchend', () => {
+  mcHandled = true;
+  askAndClear();
+}, { passive: true });
+
+mcBtn.addEventListener('click', (e) => {
+  if (mcHandled){
+    mcHandled = false;
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  askAndClear();
+});
+
+mcBtn.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    askAndClear();
+  }
+});
+/* ===== FRACTION BUTTON PALETTES ===== */
 
 
   /* ===== FRACTION BUTTON PALETTES ===== */
