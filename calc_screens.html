@@ -374,6 +374,110 @@
 /* Keep your existing #installBtn look consistent inside slides */
 #installBtn { background:#0ea5a5; color:#111; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; display:none }
 
+/* ===== Carousel Modal ===== */
+.cm-backdrop{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.45); z-index:30;
+}
+.cm-backdrop[aria-hidden="false"]{ display:flex; }
+
+.cm-modal{
+  background:linear-gradient(#2a2f2f, darkslategray);
+  border-radius:calc(var(--bezel-radius, 22px));
+  box-shadow:0 18px 40px rgba(0,0,0,.55), inset 0 2px 6px rgba(255,255,255,.03);
+  color:#e9f5f5;
+  width:min(94vw, 760px);
+  max-height:min(84vh, 720px);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+
+.cm-headbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px;
+  background:var(--bezel-inner, #0f1515);
+  border-bottom:1px solid var(--bezel-divider, rgba(255,255,255,.08));
+}
+.cm-headbar h2{
+  margin:0; font-size:clamp(16px, 2.6vw, 18px);
+  letter-spacing:.02em; color:#d7f0f0;
+}
+
+.cm-iconbtn{
+  background:transparent; border:0; color:#d7f0f0; font-size:18px; cursor:pointer;
+  width:32px; height:32px; border-radius:8px;
+}
+.cm-iconbtn:hover{ background:rgba(255,255,255,.07); }
+
+.cm-viewport{
+  position:relative; overflow:hidden;
+  background:linear-gradient(180deg, #0f1a1a, #0d1616);
+  padding:10px;
+}
+
+.cm-track{
+  display:flex; gap:10px; /* visual gutter between cards */
+  transform:translateX(0%);
+  transition: transform .35s ease;
+  will-change: transform;
+}
+.cm-track.dragging{ transition:none; }
+
+.cm-card{
+  flex:0 0 100%;
+  background:#fffdee;
+  color:#222;
+  border-radius:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.12);
+  padding:16px 18px; overflow:auto; max-height:calc(min(84vh, 720px) - 60px);
+}
+@media (prefers-color-scheme: dark){
+  .cm-card{ background:#0f1717; color:#dbeef0; }
+}
+
+.cm-card-head{
+  font-weight:800; margin-bottom:6px; font-size:clamp(16px, 2.5vw, 18px);
+}
+.cm-card-sub{ margin:0 0 10px 0; opacity:.85; }
+
+.cm-list{ padding-left:16px; margin:8px 0 12px 0; }
+.cm-list li{ margin:6px 0; }
+
+.cm-note{ font-size:13px; opacity:.8; }
+
+.cm-tiles{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.cm-tile{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 12px; border-radius:10px; text-decoration:none; cursor:pointer;
+  background:var(--mem, lightskyblue); color:#083f3f; font-weight:700; border:0;
+  box-shadow:0 2px 4px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.cm-tile:hover{ filter:brightness(1.05); }
+
+.cm-grid2{ display:grid; gap:12px; grid-template-columns:1fr; }
+@media (min-width:640px){ .cm-grid2{ grid-template-columns:1fr 1fr; } }
+
+.cm-nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:36px; height:42px; border-radius:10px; border:0; cursor:pointer;
+  background:rgba(255,255,255,.14); color:#fff; font-weight:800; font-size:22px;
+}
+.cm-prev{ left:12px; } .cm-next{ right:12px; }
+.cm-nav:hover{ background:rgba(255,255,255,.22); }
+
+.cm-dots{ display:flex; gap:8px; justify-content:center; align-items:center; padding:10px 0 2px 0; }
+.cm-dot{
+  width:8px; height:8px; border-radius:999px; background:rgba(255,255,255,.35); border:0; cursor:pointer;
+}
+.cm-dot[aria-selected="true"]{ background:#0ea5a5; }
+
+.cm-memgrid{ display:grid; gap:8px; grid-template-columns:repeat(2,1fr); }
+.cm-memcell{
+  background:#111; color:#d7f0f0; border-radius:10px; padding:10px 12px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.cm-memcell .k{ opacity:.7; }
+.cm-memcell .v{ font-weight:700; }
 	  
 	  
 	  
@@ -489,93 +593,96 @@
 
 </div>
 
-<!-- Modal Carousel -->
-<div id="modal" class="modal" aria-hidden="true">
-  <div class="modal__sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal__bar">
-      <div class="modal__title" id="modalTitle">Inch Calc — Help & Menu</div>
-      <div class="modal__controls">
-        <button id="installBtn" class="modal__btn" style="display:none">Install</button>
-        <button id="closeModal" class="modal__btn modal__btn--ghost" aria-label="Close">Close</button>
-      </div>
+<!-- Carousel Modal -->
+<div id="cmBackdrop" class="cm-backdrop" aria-hidden="true">
+  <div class="cm-modal panel" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+    <div class="cm-headbar">
+      <h2 id="cmTitle">Inch Calc — Guide & Tools</h2>
+      <button id="cmClose" class="cm-iconbtn" aria-label="Close">✕</button>
     </div>
 
-    <div class="carousel" id="car" data-count="4">
-      <div class="car-track" id="carTrack" style="transform: translateX(0%)">
-        <!-- Slide 1: Landing -->
-        <section class="car-slide" aria-label="Menu & Links">
-          <h3>Welcome</h3>
-          <p>Swipe, tap the edge arrows, or use ← → to navigate. This area hosts quick links, future ideas, and promos.</p>
+    <div class="cm-viewport">
+      <div id="cmTrack" class="cm-track">
 
-          <div class="link-grid" style="margin-top:12px">
-            <div class="tile">
-              <a href="segment_tape.html">Segment Calculator</a>
-              <small>Divide spans into equal segments with tape-measure friendly outputs.</small>
+        <!-- Slide 0: Home / Hub -->
+        <section class="cm-card">
+          <header class="cm-card-head">Welcome</header>
+          <p class="cm-card-sub">A tape-measure companion: combine inches, decimals, and fractions.</p>
+
+          <ul class="cm-list">
+            <li><b>Chain math:</b> 42 1/4 + 2.375 + 9/16</li>
+            <li><b>Results:</b> red line on tape, mixed fraction (1/16″), precise decimal</li>
+            <li><b>Memory:</b> long-press M1–M4 to save; tap to recall; MC to clear</li>
+          </ul>
+
+          <div class="cm-tiles">
+            <a href="segment_tape.html" class="cm-tile">Segment Calculator ↗</a>
+            <button id="installBtn" class="cm-tile" style="display:none;">Install App</button>
+          </div>
+        </section>
+
+        <!-- Slide 1: Basics -->
+        <section class="cm-card">
+          <header class="cm-card-head">Basics</header>
+          <div class="cm-grid2">
+            <div>
+              <p><b>Keys:</b> + − × ÷ do what you expect. ← deletes a character; <b>C</b> clears.</p>
+              <p><b>Fractions:</b> tap 1/16…15/16; typing <code>1</code> then <code>1/2</code> shows <b>1 1/2</b> in history.</p>
+              <p><b>Feet (Ft):</b> type a number then tap <b>Ft</b> to enter feet; hold <b>Ft</b> 1s to preview results in feet.</p>
             </div>
-            <div class="tile">
-              <a href="#">Board Spacing (coming)</a>
-              <small>Evenly distribute boards + symmetric edge gaps.</small>
-            </div>
-            <div class="tile">
-              <a href="#">Centerline Tools (coming)</a>
-              <small>Find centers, offsets, and mirrored marks fast.</small>
-            </div>
-            <div class="tile">
-              <a href="#">Ad / Tips</a>
-              <small>Quick pro tips, project highlights, or sponsor card.</small>
+            <div>
+              <p><b>Copy:</b> tap a result to copy.</p>
+              <p><b>Repeat (↻):</b> repeats the last op+term (enabled when valid).</p>
+              <p><b>Undo (hold ←):</b> removes last “number + its operator”.</p>
             </div>
           </div>
         </section>
 
-        <!-- Slide 2: Basics -->
-        <section class="car-slide" aria-label="Basics: Keys & Editing">
-          <h3>Basics</h3>
-          <p>
-            Math: <span class="pill">+</span> <span class="pill">−</span> <span class="pill">×</span> <span class="pill">÷</span>
-          </p>
-          <ul>
-            <li>Enter whole numbers, tap a fraction key to add a fractional part (e.g., <span class="pill">4</span> + <span class="pill">1/8</span>).</li>
-            <li><span class="pill">←</span> <b>Back</b> removes one character; hold to remove the last number and its operator.</li>
-            <li><span class="pill">C</span> <b>Clear</b> resets the current expression and outputs.</li>
-            <li><span class="pill">Ft</span> builds feet-and-inches:
-              type feet, press Ft, then add inches/fractions. Hold Ft for a 1-second “Feet Peek” to see results in feet.</li>
-            <li><span class="pill">↻</span> <b>Repeat</b> repeats the last op+term when available (enabled state updates automatically).</li>
+        <!-- Slide 2: Results View -->
+        <section class="cm-card">
+          <header class="cm-card-head">Results — 3 ways</header>
+          <ul class="cm-list">
+            <li><b>Tape:</b> red line marks exact decimal position (auto-fit view)</li>
+            <li><b>Left:</b> rounded to nearest 1/16″ in mixed fraction</li>
+            <li><b>Right:</b> precise decimal to 0.0000</li>
           </ul>
+          <p class="cm-note">When feet appear anywhere in the expression, plain inches are annotated with a <b>″</b> mark in history for clarity.</p>
         </section>
 
-        <!-- Slide 3: Results -->
-        <section class="car-slide" aria-label="Results: 3 Ways">
-          <h3>Results — 3 Ways</h3>
-          <ul>
-            <li><b>Tape red line</b> visually marks the exact decimal location (auto-fit scale, no calibration required).</li>
-            <li><b>Left output</b> is rounded to the nearest 1/16″ (or feet-&-inches when peeking).</li>
-            <li><b>Right output</b> is precise decimal (inch or foot units depending on mode).</li>
+        <!-- Slide 3: Memory -->
+        <section class="cm-card">
+          <header class="cm-card-head">Memory Slots</header>
+          <ul class="cm-list">
+            <li><b>Tap M1–M4:</b> recall the value</li>
+            <li><b>Long-press / Double-click:</b> save/replace the slot</li>
+            <li><b>MC:</b> clears all slots</li>
           </ul>
-          <p>Tap either output to copy to clipboard.</p>
+          <div id="cmMemPreview" class="cm-memgrid" aria-live="polite"></div>
         </section>
 
-        <!-- Slide 4: Memory -->
-        <section class="car-slide" aria-label="Memory Slots">
-          <h3>Memory Slots</h3>
-          <ul>
-            <li><b>M1–M4</b> tap = recall. (Debounced so a fast double-tap won’t recall, it stores instead.)</li>
-            <li><b>Double-click</b> or <b>long-press</b> an M-button to store the current value (replace prompt if already filled).</li>
-            <li><b>MC</b> clears all memory slots (with confirmation).</li>
-            <li>Labels show stored inches in a compact format (e.g., <code>3 5/16</code>).</li>
+        <!-- Slide 4: What’s New / Info -->
+        <section class="cm-card">
+          <header class="cm-card-head">Info</header>
+          <ul class="cm-list">
+            <li>History now shows <b>exact decimals as typed</b> (no auto mixed-fraction)</li>
+            <li>Mixed numbers only when you tap a fraction after a whole number</li>
+            <li>Feet preview (hold <b>Ft</b>) shows alternate units without changing the math</li>
           </ul>
+          <div class="cm-tiles">
+            <a href="https://raemennj.github.io/projects/calc_screens.html" class="cm-tile">Project Page ↗</a>
+          </div>
         </section>
+
       </div>
 
-      <!-- Discreet edge arrows -->
-      <div class="car-edge" aria-hidden="true">
-        <button class="car-nav prev" id="carPrev" aria-label="Previous slide">‹</button>
-        <button class="car-nav next" id="carNext" aria-label="Next slide">›</button>
-      </div>
+      <!-- Nav controls -->
+      <button id="cmPrev" class="cm-nav cm-prev" aria-label="Previous">‹</button>
+      <button id="cmNext" class="cm-nav cm-next" aria-label="Next">›</button>
+      <div id="cmDots" class="cm-dots" role="tablist" aria-label="Slides"></div>
     </div>
-
-    <div class="car-dots" id="carDots" role="tablist" aria-label="Help pages"></div>
   </div>
 </div>
+
 
 <div id="updateToast" style="position:fixed; left:50%; transform:translateX(-50%); bottom:48px; background:#111; color:#fff; padding:8px 12px; border-radius:8px; display:none; gap:8px; align-items:center; z-index:40;"> <span>Update available</span>
   <button id="updateReload" style="background:#0ea5a5; color:#111; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;">Refresh</button>
@@ -1419,60 +1526,140 @@ mcBtn.addEventListener('keydown', (e) => {
     });
   }
 
-  // Modal
-  const modal=document.getElementById('modal');
-  document.getElementById('menuBtn').addEventListener('click',()=>{ modal.style.display='flex'; });
-  document.getElementById('closeModal').addEventListener('click',()=>{ modal.style.display='none'; });
-  modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
+  /* ===== Carousel Modal (cards only, not full-screen screenshot) ===== */
+(function carouselModal(){
+  const backdrop = document.getElementById('cmBackdrop');
+  const track = document.getElementById('cmTrack');
+  const dotsWrap = document.getElementById('cmDots');
+  const prevBtn = document.getElementById('cmPrev');
+  const nextBtn = document.getElementById('cmNext');
+  const closeBtn = document.getElementById('cmClose');
+  const openBtn  = document.getElementById('menuBtn');
+  const memPreview = document.getElementById('cmMemPreview');
 
-  // Prevent body scroll, allow results/history/modal/output scroll/selection
-  document.addEventListener('touchmove', e=>{
-    if (e.target.closest('.history') || e.target.closest('.output') || e.target.closest('#modal')) return;
-    e.preventDefault();
-  }, {passive:false});
+  const slideCount = track ? track.children.length : 0;
+  let idx = 0;
+  let lastFocus = null;
 
-  // === Feet Peek (hold) ===
-  (function enableFeetPeek(){
-    const DELAY_MS = 1000; // 1s hold
-    let holdTimer = null;
-    let peeking = false;
-    let suppressNextClick = false;
+  // Build dots
+  function buildDots(){
+    if (!dotsWrap) return;
+    dotsWrap.innerHTML = '';
+    for (let i=0;i<slideCount;i++){
+      const b = document.createElement('button');
+      b.className = 'cm-dot';
+      b.setAttribute('role','tab');
+      b.setAttribute('aria-label', `Slide ${i+1}`);
+      b.addEventListener('click', ()=> goTo(i));
+      dotsWrap.appendChild(b);
+    }
+  }
 
-    const start = () => {
-      clearTimeout(holdTimer);
-      setHoldVisual(feetBtn, true);
-      holdTimer = setTimeout(()=>{
-        peeking = true;
-        suppressNextClick = true;
-        displayMode = 'feet';
-        feetBtn.classList.add('peek');
-        evaluate();
-      }, DELAY_MS);
-    };
-    const end = () => {
-      clearTimeout(holdTimer);
-      setHoldVisual(feetBtn, false);
-      if (peeking){
-        peeking = false;
-        displayMode = 'inch';
-        feetBtn.classList.remove('peek');
-        evaluate();
-      }
-    };
+  function syncUI(){
+    // Move the track
+    track.style.transform = `translateX(${(-idx*100)}%)`;
+    // Dots
+    [...dotsWrap.children].forEach((d,i)=> d.setAttribute('aria-selected', i===idx ? 'true' : 'false'));
+    // Prev/Next disabled?
+    prevBtn.disabled = (idx===0);
+    nextBtn.disabled = (idx===slideCount-1);
+  }
 
-    feetBtn.addEventListener('pointerdown', start);
-    feetBtn.addEventListener('pointerup', end);
-    feetBtn.addEventListener('pointercancel', end);
-    feetBtn.addEventListener('mouseleave', end);
+  function goTo(n){
+    idx = Math.max(0, Math.min(slideCount-1, n));
+    syncUI();
+  }
+  const next = () => goTo(idx+1);
+  const prev = () => goTo(idx-1);
 
-    feetBtn.addEventListener('click', (e)=>{
-      if (suppressNextClick){
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        suppressNextClick = false;
-      }
-    }, true);
+  // Open/close
+  function open(){
+    if (!backdrop) return;
+    lastFocus = document.activeElement;
+    backdrop.setAttribute('aria-hidden','false');
+    renderMemoryPreview();
+    buildDots();
+    syncUI();
+    // focus close for accessibility
+    setTimeout(()=> closeBtn?.focus(), 0);
+    // block body touch scroll while open except inside card
+    document.body.style.overscrollBehavior = 'contain';
+  }
+  function close(){
+    backdrop.setAttribute('aria-hidden','true');
+    document.body.style.overscrollBehavior = '';
+    lastFocus?.focus?.();
+  }
+
+  // Hook existing menu button
+  openBtn?.addEventListener('click', open);
+  closeBtn?.addEventListener('click', close);
+  backdrop?.addEventListener('click', (e)=>{ if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', (e)=>{
+    if (backdrop.getAttribute('aria-hidden') === 'true') return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
+
+  // Swipe (only the track moves)
+  (function enableSwipe(){
+    const viewport = backdrop?.querySelector('.cm-viewport');
+    if (!viewport || !track) return;
+
+    let startX = 0, curX = 0, dragging = false, width = 1;
+
+    function onDown(e){
+      const p = e.touches ? e.touches[0] : e;
+      startX = curX = p.clientX;
+      width = viewport.clientWidth || 1;
+      dragging = true;
+      track.classList.add('dragging');
+    }
+    function onMove(e){
+      if (!dragging) return;
+      const p = e.touches ? e.touches[0] : e;
+      curX = p.clientX;
+      const dx = curX - startX;
+      const pct = (dx / width) * 100;
+      // slide position + drag offset
+      track.style.transform = `translateX(${(-idx*100 + pct)}%)`;
+    }
+    function onUp(){
+      if (!dragging) return;
+      dragging = false;
+      track.classList.remove('dragging');
+      const dx = curX - startX;
+      const threshold = Math.max(60, width * 0.18); // pixels
+      if (dx > threshold) prev();
+      else if (dx < -threshold) next();
+      else syncUI(); // snap back
+    }
+
+    viewport.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    viewport.addEventListener('touchstart', onDown, {passive:true});
+    window.addEventListener('touchmove', onMove, {passive:false});
+    window.addEventListener('touchend', onUp);
   })();
+
+  // Dynamic memory preview (reads your existing memorySlots)
+  function renderMemoryPreview(){
+    if (!memPreview) return;
+    const cells = [];
+    for (let i=0;i<4;i++){
+      const v = memorySlots[i];
+      const display = (v==null) ? '—' : formatResultInch(v).fraction.replace('″','');
+      cells.push(`<div class="cm-memcell"><span class="k">M${i+1}</span><span class="v">${display}</span></div>`);
+    }
+    memPreview.innerHTML = cells.join('');
+  }
+
+  // Expose a tiny API if you want to deep-link a slide later:
+  window._cmGoTo = goTo; // e.g., _cmGoTo(3)
+})();
+
 
   /* ====== REPEAT BUTTON ====== */
   const repeatBtn = document.getElementById('repeatBtn');
