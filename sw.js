@@ -1,6 +1,6 @@
 // sw.js  — place this file next to your HTML (e.g., /projects/sw.js)
 const CACHE_PREFIX = 'inch-calc';
-const VERSION = '2025-09-19';            // bump this when you change assets
+const VERSION = '2025-09-20';            // bump this when you change assets
 const CACHE_NAME = `${CACHE_PREFIX}-${VERSION}`;
 
 const ASSETS = [
@@ -108,6 +108,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') self.skipWaiting();
 });
+
 
 
 
