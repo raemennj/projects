@@ -427,6 +427,7 @@
 </div>
 <div id="copyToast"><span>Copied</span></div>
  
+
 <script>
 (() => {
   'use strict';
@@ -517,11 +518,10 @@
   const MEMORY_KEY = 'calcMemorySlots_uniform420';
   let memorySlots = [null,null,null,null];
 
-  let tokens = [];                 // raw tokens for math
-  let tokenDisplays = [];          // pretty display for measurement tokens
-  let currentEntry = '';           // normal numeric entry (non-measure)
+  let tokens = [];                 // raw tokens for math (strings)
+  let tokenDisplays = [];          // pretty display overrides for matching indices
+  let currentEntry = '';           // verbatim numeric entry (string), decimals preserved
   let tmr = null;
-  const PPI = 170;                 // pixels-per-inch for visual tape
 
   // Feet-builder state (active until finalized by an operator)
   let measure = { active:false, feet:0, inches:0, inEntry:'' };
@@ -533,8 +533,6 @@
   const isOp = t => ['+','-','*','/'].includes(t);
   const isWhole = s => /^-?\d+$/.test(s);
   const isDec = s => /^-?\d+\.\d+$/.test(s);
-  const splitDec = s => { const [w, d='0'] = s.split('.'); return [parseInt(w,10), parseFloat('0.'+d)]; };
-  const fracFromDec = d => { const D=16; let n=Math.round(d*D), g=gcd(n,D); return `${n/g}/${D/g}`; };
   const prettyOp = (op) => ({ '*':'×', '/':'÷', '-':'−', '+':'+' }[op] || op);
   const roundToSixteenth = (x)=> Math.round(x*16)/16;
 
@@ -605,33 +603,28 @@
     measure = { active:false, feet:0, inches:0, inEntry:'' };
   }
 
-  /* --- Pretty history with precedence parentheses + inch marks when feet appear --- */
+  /* ---------- HISTORY / DISPLAY (no decimal→fraction auto-convert) ---------- */
   function tokenDisplayAt(idx, tok){
-    if (tokenDisplays[idx]) return tokenDisplays[idx];
-    if (isDec(tok)){
-      const [w,f] = splitDec(tok);
-      return f>0 ? `${w} ${fracFromDec(f)}` : `${w}`;
-    }
-    return `${tok}`;
+    // If we set a pretty display (e.g., mixed number from whole + fraction button), use it.
+    // Otherwise show the raw token exactly as typed.
+    return (tokenDisplays[idx] !== undefined) ? tokenDisplays[idx] : String(tok);
   }
 
   function buildDisplayArr(){
     const arr = [];
+
+    // Committed tokens
     for (let i=0;i<tokens.length;i++){
       const t = tokens[i];
       if (isOp(t)) arr.push({type:'op', value:t});
-      else arr.push({type:'num', value:t, display: tokenDisplayAt(i,t)});
+      else         arr.push({type:'num', value:t, display: tokenDisplayAt(i,t)});
     }
 
-    // Append the live entry (measure or number)
+    // Live entry (measure OR verbatim currentEntry)
     if (measure.active){
-      arr.push({type:'num', value: String(measureTotal()), display: measureDisplay()});
+      arr.push({ type:'num', value:String(measureTotal()), display: measureDisplay() });
     } else if (currentEntry){
-      const t = currentEntry;
-      const display = isDec(t)
-        ? (()=>{ const [w,f]=splitDec(t); return f>0 ? `${w} ${fracFromDec(f)}` : `${w}`; })()
-        : t;
-      arr.push({type:'num', value:t, display});
+      arr.push({ type:'num', value:currentEntry, display:currentEntry });
     }
 
     // Keep trailing operator visible, but don’t include it in grouping
@@ -656,7 +649,7 @@
       return;
     }
 
-    // If ANY feet are present in the expression, show explicit inches (″) on inch-only terms
+    // If ANY feet are present, show explicit inches (″) on inch-only terms
     const feetPresent = arr.some(n => n.type==='num' && typeof n.display==='string' && n.display.includes('′'));
     const markInches = (txt) => {
       if (!feetPresent) return txt;
@@ -762,59 +755,59 @@
     }
   }
 
-  // ===== Tape rendering + pixel-perfect center line =====
-function drawTape(center){
-  if (center<0) center=0;
+  // ===== Tape rendering + exact red center line =====
+  function drawTape(center){
+    if (center<0) center=0;
 
-  // Clear old ticks/labels
-  [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
+    // Clear old ticks/labels
+    [...tape.querySelectorAll('.tick,.tick-label')].forEach(n=>n.remove());
 
-  const rect = tape.getBoundingClientRect();
-  const mid = rect.width/2;
+    const rect = tape.getBoundingClientRect();
+    const mid = rect.width/2;
 
-  // Auto-fit: show exactly N inches across the tape width (no calibration)
-  const VIEW_RANGE_IN = 2.5;               // how many inches to display across the width
-  const PPI = rect.width / VIEW_RANGE_IN; // pixels per inch derived from container width
+    // Auto-fit: show exactly N inches across the tape width (no calibration)
+    const VIEW_RANGE_IN = 2.5;                // how many inches to display across the width
+    const PPI = rect.width / VIEW_RANGE_IN;   // pixels per inch derived from container width
 
-  // Generate ticks around the center value
-  const range = VIEW_RANGE_IN;
-  const start = Math.max(center - range/2, 0), end = center + range/2;
-  const a = Math.floor(start*16), b = Math.ceil(end*16);
+    // Generate ticks around the center value
+    const range = VIEW_RANGE_IN;
+    const start = Math.max(center - range/2, 0), end = center + range/2;
+    const a = Math.floor(start*16), b = Math.ceil(end*16);
 
-  for (let i=a;i<=b;i++){
-    const inches = i/16;
-    const x = (inches - center)*PPI + mid - 1.5;  // centers around the red line
+    for (let i=a;i<=b;i++){
+      const inches = i/16;
+      const x = (inches - center)*PPI + mid - 1.5;  // centers around the red line
 
-    const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
-    if (i%16===0){
-      el.classList.add('num');
-      const lbl=document.createElement('div');
-      lbl.className='tick-label';
-      lbl.textContent=inches.toFixed(0);
-      lbl.style.left=(x+1.5)+'px';
-      tape.appendChild(lbl);
-    } else if (i%8===0) el.classList.add('lg');
-    else if (i%4===0)   el.classList.add('med');
-    else                el.classList.add('small');
+      const el = document.createElement('div'); el.className='tick'; el.style.left = x+'px';
+      if (i%16===0){
+        el.classList.add('num');
+        const lbl=document.createElement('div');
+        lbl.className='tick-label';
+        lbl.textContent=inches.toFixed(0);
+        lbl.style.left=(x+1.5)+'px';
+        tape.appendChild(lbl);
+      } else if (i%8===0) el.classList.add('lg');
+      else if (i%4===0)   el.classList.add('med');
+      else                el.classList.add('small');
 
-    tape.appendChild(el);
+      tape.appendChild(el);
+    }
+
+    // Place the red center line at the exact pixel mid (override any CSS)
+    const centerEl = tape.querySelector('.center-line');
+    if (centerEl){
+      const desiredW = 4;
+      centerEl.style.setProperty('width', desiredW + 'px', 'important');
+      centerEl.style.setProperty('transform', 'none', 'important');
+
+      const midPx = Math.round(rect.width / 2);
+      const leftPx = midPx - (desiredW / 2);
+      centerEl.style.setProperty('left', leftPx + 'px', 'important');
+    }
+
+    // Sweep animation reset
+    sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
   }
-
-  // Place the red center line at the exact pixel mid (override any CSS)
-  const centerEl = tape.querySelector('.center-line');
-  if (centerEl){
-    const desiredW = 4;
-    centerEl.style.setProperty('width', desiredW + 'px', 'important');
-    centerEl.style.setProperty('transform', 'none', 'important');
-
-    const midPx = Math.round(rect.width / 2);
-    const leftPx = midPx - (desiredW / 2);
-    centerEl.style.setProperty('left', leftPx + 'px', 'important');
-  }
-
-  // Sweep animation reset
-  sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
-}
 
   // ===== Memory helpers =====
   function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
@@ -844,43 +837,50 @@ function drawTape(center){
     });
   }
 
-  // ===== Number / decimal entry =====
-  document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
+  /* ---------- DIGITS & DECIMAL (preserve exact typing) ---------- */
+  document.querySelectorAll('.btn[data-val]').forEach(b => b.addEventListener('click', () => {
     const val = b.dataset.val;
-    if (measure.active){
 
+    if (measure.active){
+      // User is building inches for a feet token: keep their typed string
       measure.inEntry += val;
       updateInput(); qEval();
       return;
     }
-    currentEntry += val; updateInput(); qEval();
+
+    currentEntry += val;           // e.g. "2.015" is kept verbatim
+    updateInput(); qEval();
   }));
 
-  document.querySelector('.btn.dec[data-val="."]').addEventListener('click',()=>{
+  document.querySelector('.btn.dec[data-val="."]').addEventListener('click', () => {
     if (measure.active){
-      if (!measure.inEntry.includes('.')) measure.inEntry = measure.inEntry ? (measure.inEntry + '.') : '0.';
+      if (!measure.inEntry.includes('.')) {
+        measure.inEntry = measure.inEntry ? (measure.inEntry + '.') : '0.';
+      }
       updateInput(); qEval();
       return;
     }
-    if (currentEntry.includes('.')) return;
-    currentEntry = currentEntry ? currentEntry+'.' : '0.';
+
+    if (currentEntry.includes('.')) return; // avoid 2..015
+    currentEntry = currentEntry ? (currentEntry + '.') : '0.';
     updateInput(); qEval();
   });
 
-  // ===== Operators =====
-  document.querySelectorAll('.btn.operator[data-op]').forEach(b=>b.addEventListener('click',()=>{
+  /* ---------- OPERATORS (commit raw currentEntry) ---------- */
+  document.querySelectorAll('.btn.operator[data-op]').forEach(b => b.addEventListener('click', () => {
     const op = b.dataset.op;
+
     if (measure.active) finalizeMeasureToken();
 
     if (currentEntry){
       tokens.push(currentEntry);
-      tokenDisplays.push(undefined);
-      currentEntry='';
+      tokenDisplays.push(undefined); // show exactly what was typed later
+      currentEntry = '';
     }
     if (!tokens.length && op !== '-') { updateInput(); qEval(); return; }
 
     if (isOp(tokens.at(-1))){
-      tokens[tokens.length-1] = op;
+      tokens[tokens.length - 1] = op;
     } else {
       tokens.push(op);
       tokenDisplays.push(undefined);
@@ -990,7 +990,7 @@ function drawTape(center){
       const ft = parseFloat(currentEntry);
       const total = ft * 12;
       tokens.push(String(total));
-      tokenDisplays.push(`${ft}\u2032`);
+      tokenDisplays.push(`${ft}\u2032`);   // pretty feet token in history
       currentEntry='';
       updateInput(); qEval();
       return;
@@ -1013,174 +1013,14 @@ function drawTape(center){
     }
   });
 
-// ===== Memory buttons =====
-function storeToMem(btn){
-  let expr=[...tokens];
-  if (currentEntry) expr.push(currentEntry);
-  while (expr.length && isOp(expr.at(-1))) expr.pop();
-
-  let base = expr.length ? math.evaluate(expr.join(' ')) : 0;
-  let valNum = (typeof base === 'number' ? base : base.toNumber())
-             + (measure.active ? measureTotal() : 0);
-
-  const i = +btn.dataset.mem;
-  const confirmReplace = memorySlots[i]!=null
-    ? confirm(`M${i+1} has ${formatResultInchOnlyLabel(memorySlots[i])}. Replace?`)
-    : true;
-  if (!confirmReplace) return;
-
-  memorySlots[i] = valNum;
-  saveMemory();
-  refreshMemLabels();
-
-  // Saved flash
-  btn.classList.add('saved');
-  setTimeout(() => btn.classList.remove('saved'), 480);
-}
-
-function recallFromMem(btn){
-  const i = +btn.dataset.mem, v = memorySlots[i];
-  if (v == null) return;
-
-  if (measure.active) finalizeMeasureToken();
-  if (currentEntry) { tokens.push(currentEntry); tokenDisplays.push(undefined); }
-  currentEntry = String(v);
-  updateInput(); evaluate();
-}
-
-document.querySelectorAll('.btn.mem').forEach(btn=>{
-  // Per-button guards
-  btn._recallTimer = null;
-  btn._preventNextClick = false;   // set true by LP or dblclick to block ensuing click
-
-  // Tap = recall (debounced so a dblclick won’t recall first)
-  btn.addEventListener('click', (e) => {
-    if (btn._preventNextClick){
-      btn._preventNextClick = false;
-      return;
-    }
-    if (e.detail && e.detail > 1){  // second click of a dblclick
-      clearTimeout(btn._recallTimer);
-      return;
-    }
-    clearTimeout(btn._recallTimer);
-    btn._recallTimer = setTimeout(() => recallFromMem(btn), 300);
-  });
-
-  // Double-click = store
-  btn.addEventListener('dblclick', (e) => {
-    clearTimeout(btn._recallTimer);
-    btn._preventNextClick = true; // block the synthetic click that follows
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    storeToMem(btn);
-  });
-
-  // Long-press (touch) = store directly (no dispatching dblclick)
-  let lpTimer = null;
-  btn.addEventListener('touchstart', () => {
-    setHoldVisual(btn, true);
-    clearTimeout(lpTimer);
-    lpTimer = setTimeout(() => {
-      btn._preventNextClick = true; // swallow the click after touchend
-      setHoldVisual(btn, false);
-      storeToMem(btn);
-    }, 600);
-  }, { passive: true });
-
-  function clearLP(){
-    clearTimeout(lpTimer);
-    setHoldVisual(btn, false);
-  }
-  btn.addEventListener('touchend', clearLP, { passive: true });
-  btn.addEventListener('touchcancel', clearLP, { passive: true });
-});
-
-// ----- MC: Clear all memory slots (click/touch/keyboard safe) -----
-const mcBtn = document.querySelector('.btn.clear[data-action="mc"]');
-
-function doClearMemory(){
-  const memCount = document.querySelectorAll('.btn.mem').length || 4;
-  memorySlots = new Array(memCount).fill(null);
-  saveMemory();
-  refreshMemLabels();
-  document.querySelectorAll('.btn.mem').forEach(b => b.classList.remove('saved'));
-}
-
-let mcHandled = false; // swallow the ghost click after touchend
-function askAndClear(){ if (confirm('Clear all memory slots?')) doClearMemory(); }
-
-mcBtn.addEventListener('touchend', () => {
-  mcHandled = true;
-  askAndClear();
-}, { passive: true });
-
-mcBtn.addEventListener('click', (e) => {
-  if (mcHandled){
-    mcHandled = false;
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
-  askAndClear();
-});
-
-mcBtn.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    askAndClear();
-  }
-});
-/* ===== FRACTION BUTTON PALETTES ===== */
-
-
-  /* ===== FRACTION BUTTON PALETTES ===== */
-  const FRACTION_PALETTES = {
-     '1/16': { bg: '#1a75ff', fg:'#fff' },
-     '1/8': { bg: '#66a3ff', fg:'#fff' },
-     '3/16': { bg: '#1a75ff', fg:'#fff' },
-     '1/4': { bg: '#66a3ff', fg:'#fff' },
-     '5/16': { bg: '#1a75ff', fg:'#fff' },
-     '3/8': { bg: '#66a3ff', fg:'#fff' },
-     '7/16': { bg: '#1a75ff', fg:'#fff' },
-     '1/2': { bg: '#66a3ff', fg:'#fff' },
-     '9/16': { bg: '#1a75ff', fg:'#fff' },
-     '5/8': { bg: '#66a3ff', fg:'#fff' },
-     '11/16': { bg: '#1a75ff', fg:'#fff' },
-     '3/4': { bg: '#66a3ff', fg:'#fff' },
-     '13/16': { bg: '#1a75ff', fg:'#fff' },
-     '7/8': { bg: '#66a3ff', fg:'#fff' },
-     '15/16': { bg: '#1a75ff', fg:'#fff' },
-  };
-
-  function fallbackFor(frac){
-    const [n,d] = frac.split('/').map(Number);
-    if (!n || !d) return { bg: 'hsl(210 70% 50%)', fg:'#fff' };
-    const t = Math.max(0, Math.min(1, n/d));
-    const h = 210 + t * 120; /* blue → magenta */
-    const s = 70, l = 50;
-    return { bg: `hsl(${h} ${s}% ${l}%)`, fg:'#fff' };
-  }
-
-  function applyFractionPalettes(){
-    document.querySelectorAll('.btn.frac[data-frac]').forEach(el=>{
-      const key = el.getAttribute('data-frac');
-      const conf = { ...fallbackFor(key), ...(FRACTION_PALETTES[key]||{}) };
-      if (conf.bg) el.style.setProperty('--btn-bg', conf.bg);
-      if (conf.fg) el.style.setProperty('--btn-fg', conf.fg);
-      if (conf.img) el.style.setProperty('--btn-img', conf.img);
-      if (conf.hoverBg) el.style.setProperty('--btn-hover-bg', conf.hoverBg);
-      if (conf.activeBg) el.style.setProperty('--btn-active-bg', conf.activeBg);
-    });
-  }
-
-  // ===== Fractions input handling =====
-  document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
-    const f=b.dataset.frac;
-    const [n,d]=f.split('/').map(Number);
-    const fVal = n/d;
+  /* ---------- FRACTION BUTTONS (explicit mixed numbers only) ---------- */
+  document.querySelectorAll('.btn.frac').forEach(b => b.addEventListener('click', () => {
+    const f   = b.dataset.frac;           // e.g. "1/2"
+    const [n, d] = f.split('/').map(Number);
+    const fVal = n / d;
 
     if (measure.active){
+      // Add fraction to inches portion of a feet token
       if (!measure.inEntry){
         measure.inches += fVal;
       } else {
@@ -1192,17 +1032,30 @@ mcBtn.addEventListener('keydown', (e) => {
       return;
     }
 
-    if (!currentEntry) {
-      currentEntry = f;
-    } else if (isWhole(currentEntry)) {
-      const whole = parseInt(currentEntry,10);
-      const combined = whole + fVal;
-      tokens.push(String(combined)); tokenDisplays.push(undefined); currentEntry='';
-    } else {
-      tokens.push(currentEntry); tokenDisplays.push(undefined);
-      tokens.push('+');         tokenDisplays.push(undefined);
-      currentEntry=f;
+    if (!currentEntry){
+      // User pressed a fraction first → show exactly that fraction text in history
+      currentEntry = f; // will render as "1/2", "3/8", etc.
+      updateInput(); qEval();
+      return;
     }
+
+    if (isWhole(currentEntry)){
+      // Whole + fraction → commit sum numerically, but show "W N/D" in history
+      const whole = parseInt(currentEntry, 10);
+      const combined = whole + fVal;
+
+      tokens.push(String(combined));
+      tokenDisplays.push(`${whole} ${f}`); // explicit mixed-number display
+      currentEntry = '';
+
+      updateInput(); qEval();
+      return;
+    }
+
+    // If user already typed a decimal/other number, treat the fraction as a separate term
+    tokens.push(currentEntry); tokenDisplays.push(undefined);
+    tokens.push('+');          tokenDisplays.push(undefined);
+    currentEntry = f;          // will display "N/D"
     updateInput(); qEval();
   }));
 
@@ -1462,16 +1315,15 @@ mcBtn.addEventListener('keydown', (e) => {
   loadMemory();
   attachRipples();
   attachPressState();
-  applyFractionPalettes();
   enableClickCopy('#fractionLine, #decimalLine');
 
 })();
 </script>
 
+
 </body>
 
 </html>
-
 
 
 
