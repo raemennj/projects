@@ -1559,41 +1559,60 @@ mcBtn.addEventListener('keydown', (e) => {
     });
   }
 
-  // ===== Fractions input handling =====
-  document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
-    const f=b.dataset.frac;
-    const [n,d]=f.split('/').map(Number);
-    const fVal = n/d;
+/* ===== Fractions input handling — supports "1" + (1/2), "1." + (1/2), replace typed fractions ===== */
+const isWholeOrWholeDot = (s) => /^[+-]?\d+\.?$/.test(s);   // "1" or "1."
+const isTypedFraction   = (s) => /^[+-]?\d+\/\d+$/.test(s); // "3/8"
 
-    if (measure.active){
-      if (!measure.inEntry){
-        measure.inches += fVal;
-      } else {
-        const base = parseFloat(measure.inEntry);
-        measure.inches += base + fVal;
-        measure.inEntry = '';
-      }
-      updateInput(); qEval();
-      return;
-    }
+document.querySelectorAll('.btn.frac').forEach(b => b.addEventListener('click', () => {
+  const f = b.dataset.frac;                 // e.g., "1/2"
+  const [n, d] = f.split('/').map(Number);
+  const fVal = n / d;
 
-    if (!currentEntry) {
-      currentEntry = f;
-} else if (isWhole(currentEntry)) {
-  const whole = parseInt(currentEntry, 10);
-  const combined = whole + fVal;
-  tokens.push(String(combined));
-  // History should reflect the user's intent explicitly: "1 1/2"
-  tokenDisplays.push(`${whole} ${f}`);
-  currentEntry = '';
-}
- else {
-      tokens.push(currentEntry); tokenDisplays.push(undefined);
-      tokens.push('+');         tokenDisplays.push(undefined);
-      currentEntry=f;
+  // Inside feet-builder: add to inches (unchanged)
+  if (measure.active) {
+    if (!measure.inEntry) {
+      measure.inches += fVal;
+    } else {
+      const base = parseFloat(measure.inEntry);
+      measure.inches += base + fVal;
+      measure.inEntry = '';
     }
     updateInput(); qEval();
-  }));
+    return;
+  }
+
+  // No current entry → start with the fraction
+  if (!currentEntry) {
+    currentEntry = f;
+    updateInput(); qEval();
+    return;
+  }
+
+  // Whole (or "1.") + fraction → commit mixed number with pretty label ("1 1/2")
+  if (isWholeOrWholeDot(currentEntry)) {
+    const whole = parseInt(currentEntry, 10);
+    const combined = whole + fVal;                // numeric (e.g., 1.5)
+    tokens.push(String(combined));
+    tokenDisplays.push(`${whole} ${f}`);          // display "1 1/2"
+    currentEntry = '';
+    updateInput(); qEval();
+    return;
+  }
+
+  // Already typed a fraction (e.g., "3/8") → replace it with the tapped one
+  if (isTypedFraction(currentEntry)) {
+    currentEntry = f;
+    updateInput(); qEval();
+    return;
+  }
+
+  // Default: treat as + fraction after the currentEntry
+  tokens.push(currentEntry); tokenDisplays.push(undefined);
+  tokens.push('+');          tokenDisplays.push(undefined);
+  currentEntry = f;
+  updateInput(); qEval();
+}));
+
 
   // ---- UI helpers: ripples / hold visuals / copy-to-clipboard / toasts
   function attachRipples() {
