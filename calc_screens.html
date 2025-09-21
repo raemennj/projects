@@ -1481,14 +1481,22 @@ function storeToMem(btn){
 }
 
 function recallFromMem(btn){
-  const i = +btn.dataset.mem, v = memorySlots[i];
-  if (v == null) return;
+  const i = +btn.dataset.mem;
+  const v = memorySlots[i];
 
+  // Empty slot? Tap = save current result into this slot (no confirm).
+  if (v == null){
+    storeToMem(btn, /*skipConfirm=*/true);
+    return;
+  }
+
+  // Filled slot → recall (existing behavior)
   if (measure.active) finalizeMeasureToken();
   if (currentEntry) { tokens.push(currentEntry); tokenDisplays.push(undefined); }
   currentEntry = String(v);
   updateInput(); evaluate();
 }
+
 
 document.querySelectorAll('.btn.mem').forEach(btn=>{
   // Per-button guards
