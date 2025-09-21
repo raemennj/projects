@@ -1308,10 +1308,27 @@ function drawTape(center){
     setRepeatEnabled(false);
   });
 
-// ===== Feet behavior (tap = commit feet; long-press = preview feet) =====
+// ===== Feet behavior (tap = commit feet; long-press = preview feet; mixed/fraction friendly) =====
 const feetBtn = document.getElementById('feetBtn');
 
-// --- click → commit feet as before (whole = start feet builder; decimal = convert ft→in)
+// --- helpers just for Ft handling ---
+const isWholeOrWholeDot = (s) => /^[+-]?\d+\.?$/.test(s);      // "1" or "1."
+const isTypedFraction   = (s) => /^[+-]?\d+\s*\/\s*\d+$/.test(s);
+function fracToDecimal(s){
+  const m = s.match(/^\s*([+-])?\s*(\d+)\s*\/\s*(\d+)\s*$/);
+  if (!m) return null;
+  const sign = m[1]==='-' ? -1 : 1;
+  const n = +m[2], d = +m[3];
+  if (!d) return null;
+  return sign * (n/d);
+}
+function lastNumericIndex(){
+  let i = tokens.length - 1;
+  while (i >= 0 && isOp(tokens[i])) i--;
+  return i;
+}
+
+// --- click → commit feet (whole/decimal/fraction or convert last mixed token) ---
 let suppressFeetClick = false;
 feetBtn.addEventListener('click', (e) => {
   if (suppressFeetClick) {        // swallow the click that follows a long-press
@@ -1321,6 +1338,41 @@ feetBtn.addEventListener('click', (e) => {
     return;
   }
 
+  // A) Current entry is a fraction → treat it as feet (e.g., "1/2" Ft → 6")
+  if (currentEntry && isTypedFraction(currentEntry)){
+    const ft = fracToDecimal(currentEntry);           // feet as decimal
+    if (ft != null){
+      const totalIn = ft * 12;
+      tokens.push(String(totalIn));
+      tokenDisplays.push(`${currentEntry}\u2032`);     // show 1/2′ in history
+      currentEntry = '';
+      updateInput(); qEval();
+      return;
+    }
+  }
+
+  // B) No current entry: if last token looks like mixed or fraction, convert it to feet
+  if (!currentEntry){
+    const i = lastNumericIndex();
+    if (i >= 0){
+      const disp = tokenDisplays[i];
+      const looksMixed = disp && /^\s*[+-]?\d+\s+\d+\/\d+\s*$/.test(disp);   // "1 1/2"
+      const looksFrac  = disp && /^\s*[+-]?\d+\/\d+\s*$/.test(disp);         // "1/2"
+      const alreadyFeet = disp && disp.includes('′');
+
+      if (!alreadyFeet && (looksMixed || looksFrac)){
+        const val = parseFloat(tokens[i]);            // numeric inches (e.g., 1.5)
+        if (!Number.isNaN(val)){
+          tokens[i] = String(val * 12);               // reinterpret as feet ⇒ inches
+          tokenDisplays[i] = disp + '\u2032';         // add prime to the label
+          updateInput(); qEval();
+          return;
+        }
+      }
+    }
+  }
+
+  // C) Normal paths: decimal feet or whole feet start/commit
   if (isDec(currentEntry)){
     const ft = parseFloat(currentEntry);
     const total = ft * 12;
@@ -1330,19 +1382,22 @@ feetBtn.addEventListener('click', (e) => {
     updateInput(); qEval();
     return;
   }
-  if (isWhole(currentEntry)){
-    measure = { active:true, feet: parseInt(currentEntry,10), inches:0, inEntry:'' };
+  if (isWholeOrWholeDot(currentEntry)){
+    // start feet-builder if desired (treat "1." as "1")
+    const feetWhole = parseInt(currentEntry,10);
+    measure = { active:true, feet: feetWhole, inches:0, inEntry:'' };
     currentEntry='';
     updateInput(); qEval();
     return;
   }
   if (!currentEntry) return;
 
-  const ft = parseFloat(currentEntry);
-  if (!Number.isNaN(ft)){
-    const total = ft * 12;
+  // D) Loose parse fallback (e.g., "1.5")
+  const ftLoose = parseFloat(currentEntry);
+  if (!Number.isNaN(ftLoose)){
+    const total = ftLoose * 12;
     tokens.push(String(total));
-    tokenDisplays.push(`${ft}\u2032`);
+    tokenDisplays.push(`${ftLoose}\u2032`);
     currentEntry='';
     updateInput(); qEval();
   }
@@ -1376,6 +1431,7 @@ feetBtn.addEventListener('pointerdown', () => {
   }, 600);
 });
 function clearFeetHold(){
+
   clearTimeout(feetHoldTimer);
   endFeetPeek();
 }
@@ -1397,6 +1453,7 @@ feetBtn.addEventListener('keyup', (e) => {
     endFeetPeek();
   }
 });
+
 
 // ===== Memory buttons =====
 function storeToMem(btn){
@@ -1559,60 +1616,41 @@ mcBtn.addEventListener('keydown', (e) => {
     });
   }
 
-/* ===== Fractions input handling — supports "1" + (1/2), "1." + (1/2), replace typed fractions ===== */
-const isWholeOrWholeDot = (s) => /^[+-]?\d+\.?$/.test(s);   // "1" or "1."
-const isTypedFraction   = (s) => /^[+-]?\d+\/\d+$/.test(s); // "3/8"
+  // ===== Fractions input handling =====
+  document.querySelectorAll('.btn.frac').forEach(b=>b.addEventListener('click',()=>{
+    const f=b.dataset.frac;
+    const [n,d]=f.split('/').map(Number);
+    const fVal = n/d;
 
-document.querySelectorAll('.btn.frac').forEach(b => b.addEventListener('click', () => {
-  const f = b.dataset.frac;                 // e.g., "1/2"
-  const [n, d] = f.split('/').map(Number);
-  const fVal = n / d;
+    if (measure.active){
+      if (!measure.inEntry){
+        measure.inches += fVal;
+      } else {
+        const base = parseFloat(measure.inEntry);
+        measure.inches += base + fVal;
+        measure.inEntry = '';
+      }
+      updateInput(); qEval();
+      return;
+    }
 
-  // Inside feet-builder: add to inches (unchanged)
-  if (measure.active) {
-    if (!measure.inEntry) {
-      measure.inches += fVal;
-    } else {
-      const base = parseFloat(measure.inEntry);
-      measure.inches += base + fVal;
-      measure.inEntry = '';
+    if (!currentEntry) {
+      currentEntry = f;
+} else if (isWhole(currentEntry)) {
+  const whole = parseInt(currentEntry, 10);
+  const combined = whole + fVal;
+  tokens.push(String(combined));
+  // History should reflect the user's intent explicitly: "1 1/2"
+  tokenDisplays.push(`${whole} ${f}`);
+  currentEntry = '';
+}
+ else {
+      tokens.push(currentEntry); tokenDisplays.push(undefined);
+      tokens.push('+');         tokenDisplays.push(undefined);
+      currentEntry=f;
     }
     updateInput(); qEval();
-    return;
-  }
-
-  // No current entry → start with the fraction
-  if (!currentEntry) {
-    currentEntry = f;
-    updateInput(); qEval();
-    return;
-  }
-
-  // Whole (or "1.") + fraction → commit mixed number with pretty label ("1 1/2")
-  if (isWholeOrWholeDot(currentEntry)) {
-    const whole = parseInt(currentEntry, 10);
-    const combined = whole + fVal;                // numeric (e.g., 1.5)
-    tokens.push(String(combined));
-    tokenDisplays.push(`${whole} ${f}`);          // display "1 1/2"
-    currentEntry = '';
-    updateInput(); qEval();
-    return;
-  }
-
-  // Already typed a fraction (e.g., "3/8") → replace it with the tapped one
-  if (isTypedFraction(currentEntry)) {
-    currentEntry = f;
-    updateInput(); qEval();
-    return;
-  }
-
-  // Default: treat as + fraction after the currentEntry
-  tokens.push(currentEntry); tokenDisplays.push(undefined);
-  tokens.push('+');          tokenDisplays.push(undefined);
-  currentEntry = f;
-  updateInput(); qEval();
-}));
-
+  }));
 
   // ---- UI helpers: ripples / hold visuals / copy-to-clipboard / toasts
   function attachRipples() {
