@@ -673,12 +673,12 @@
 
         <!-- Slide 0: Home / Hub -->
         <section class="cm-card">
-          <header class="cm-card-head">Welcome</header>
-          <p class="cm-card-sub">A tape-measure companion: combine inches, decimals, and fractions.</p>
+          <header class="cm-card-head">Tape Measure Calculator</header>
+          <p class="cm-card-sub">A tape-measure companion.</p>
 
           <ul class="cm-list">
             <li><b>Chain math:</b> 42 1/4 + 2.375 + 9/16</li>
-            <li><b>Results:</b> red line on tape, mixed fraction (1/16″), precise decimal</li>
+            <li><b>Instant Results:</b> I, mixed fraction (1/16″), precise decimal</li>
             <li><b>Memory:</b> long-press M1–M4 to save; tap to recall; MC to clear</li>
           </ul>
 
@@ -693,9 +693,9 @@
           <header class="cm-card-head">Basics</header>
           <div class="cm-grid2">
             <div>
-              <p><b>Keys:</b> + − × ÷ do what you expect. ← deletes a character; <b>C</b> clears.</p>
-              <p><b>Fractions:</b> tap 1/16…15/16; typing <code>1</code> then <code>1/2</code> shows <b>1 1/2</b> in history.</p>
-              <p><b>Feet (Ft):</b> type a number then tap <b>Ft</b> to enter feet; hold <b>Ft</b> 1s to preview results in feet.</p>
+              <p><b>Operators + − × ÷</b> do what you expect. <b>C</b> clears.</p>
+              <p><b>Easy One-Tap Fractions:</b> tap 1/16 through 15/16 </p>
+              <p><b>Feet (Ft):</b> type a whole or decimal number then tap <b>Ft</b> to enter feet; hold <b>Ft</b> 1s to preview results in feet.</p>
             </div>
             <div>
               <p><b>Copy:</b> tap a result to copy.</p>
@@ -1308,35 +1308,95 @@ function drawTape(center){
     setRepeatEnabled(false);
   });
 
-  // ===== Feet behavior (tap) =====
-  const feetBtn = document.getElementById('feetBtn');
-  feetBtn.addEventListener('click',()=>{
-    if (isDec(currentEntry)){
-      const ft = parseFloat(currentEntry);
-      const total = ft * 12;
-      tokens.push(String(total));
-      tokenDisplays.push(`${ft}\u2032`);
-      currentEntry='';
-      updateInput(); qEval();
-      return;
-    }
-    if (isWhole(currentEntry)){
-      measure = { active:true, feet: parseInt(currentEntry,10), inches:0, inEntry:'' };
-      currentEntry='';
-      updateInput(); qEval();
-      return;
-    }
-    if (!currentEntry) return;
+// ===== Feet behavior (tap = commit feet; long-press = preview feet) =====
+const feetBtn = document.getElementById('feetBtn');
 
+// --- click → commit feet as before (whole = start feet builder; decimal = convert ft→in)
+let suppressFeetClick = false;
+feetBtn.addEventListener('click', (e) => {
+  if (suppressFeetClick) {        // swallow the click that follows a long-press
+    suppressFeetClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
+  if (isDec(currentEntry)){
     const ft = parseFloat(currentEntry);
-    if (!Number.isNaN(ft)){
-      const total = ft * 12;
-      tokens.push(String(total));
-      tokenDisplays.push(`${ft}\u2032`);
-      currentEntry='';
-      updateInput(); qEval();
-    }
-  });
+    const total = ft * 12;
+    tokens.push(String(total));
+    tokenDisplays.push(`${ft}\u2032`);
+    currentEntry='';
+    updateInput(); qEval();
+    return;
+  }
+  if (isWhole(currentEntry)){
+    measure = { active:true, feet: parseInt(currentEntry,10), inches:0, inEntry:'' };
+    currentEntry='';
+    updateInput(); qEval();
+    return;
+  }
+  if (!currentEntry) return;
+
+  const ft = parseFloat(currentEntry);
+  if (!Number.isNaN(ft)){
+    const total = ft * 12;
+    tokens.push(String(total));
+    tokenDisplays.push(`${ft}\u2032`);
+    currentEntry='';
+    updateInput(); qEval();
+  }
+});
+
+// --- long-press (600ms) → temporarily show results in feet while held
+let feetHoldTimer = null;
+let feetPeekActive = false;
+
+function startFeetPeek(){
+  if (feetPeekActive) return;
+  feetPeekActive = true;
+  displayMode = 'feet';
+  setHoldVisual(feetBtn, true);   // uses your existing .btn.hold pulse
+  evaluate();
+}
+function endFeetPeek(){
+  if (!feetPeekActive) return;
+  feetPeekActive = false;
+  displayMode = 'inch';
+  setHoldVisual(feetBtn, false);
+  evaluate();
+}
+
+// Pointer (covers mouse + touch with Pointer Events)
+feetBtn.addEventListener('pointerdown', () => {
+  clearTimeout(feetHoldTimer);
+  feetHoldTimer = setTimeout(() => {
+    suppressFeetClick = true;     // prevent the click after a hold
+    startFeetPeek();
+  }, 600);
+});
+function clearFeetHold(){
+  clearTimeout(feetHoldTimer);
+  endFeetPeek();
+}
+feetBtn.addEventListener('pointerup', clearFeetHold);
+feetBtn.addEventListener('pointercancel', clearFeetHold);
+feetBtn.addEventListener('pointerleave', clearFeetHold);
+
+// Optional: keyboard “hold to peek” (Space)
+feetBtn.addEventListener('keydown', (e) => {
+  if (e.code === 'Space'){
+    e.preventDefault();
+    startFeetPeek();
+  }
+});
+feetBtn.addEventListener('keyup', (e) => {
+  if (e.code === 'Space'){
+    e.preventDefault();
+    suppressFeetClick = true;     // Space would also fire click on button
+    endFeetPeek();
+  }
+});
 
 // ===== Memory buttons =====
 function storeToMem(btn){
