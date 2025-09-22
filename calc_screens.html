@@ -569,6 +569,63 @@
 .mc-k{ opacity:.7; }
 .mc-v{ font-weight:800; }
  
+/* ===== Memory Groups mini-carousel ===== */
+.mg-viewport{
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0f1a1a, #0d1616);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  min-height: 220px;
+}
+.mg-track{
+  display: flex;
+  gap: 0;
+  transform: translate3d(0,0,0);
+  transition: transform .3s ease;
+  will-change: transform;
+}
+.mg-track.dragging{ transition: none; }
+
+.mg-slide{
+  flex: 0 0 100%;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  background-clip: padding-box;
+
+  padding: 14px 16px;
+  color: #d7f0f0;
+}
+.mg-title{
+  font-weight: 800;
+  font-size: clamp(14px, 2.4vw, 16px);
+  margin-bottom: 8px;
+}
+.mg-subtle{ opacity:.8; font-size: 12px; margin-left:6px; }
+
+.mg-list{
+  display:grid; gap:8px;
+}
+.mg-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:#0f1515; border:1px solid rgba(255,255,255,.08);
+  border-radius: 10px; padding: 10px 12px;
+}
+.mg-k{ opacity:.7 }
+.mg-v{ font-weight:800 }
+
+.mg-dots{
+  display:flex; gap:8px; justify-content:center; align-items:center;
+  padding: 10px 0;
+}
+.mg-dot{
+  width: 8px; height: 8px; border-radius: 999px; border: 0;
+  background: rgba(255,255,255,.35);
+}
+.mg-dot[aria-selected="true"]{ background: #0ea5a5; }
+
+	  
+	  
 	  
   </style>
 </head>
@@ -742,29 +799,29 @@
         <section class="cm-card">
           <header class="cm-card-head">Memory Slots</header>
 		        <!-- Slide: Memory Center -->
-        <section class="cm-card" id="memCenter">
-          <header class="cm-card-head">Memory Center</header>
-          <p class="cm-card-sub">Manage sets of M1–M4 (project presets).</p>
+ <section class="cm-card" id="memCenter">
+  <header class="cm-card-head">Memory Center</header>
+  <p class="cm-card-sub">Swipe to switch groups — focused group loads automatically.</p>
 
-          <div class="cm-tiles">
-            <button id="mcClear" class="cm-tile">Clear Memory Slots</button>
-            <button id="mcSaveCurrent" class="cm-tile">Save Memory Slots</button>
-          </div>
+  <!-- Top controls -->
+  <div class="cm-tiles" id="mcControls" style="margin-bottom:10px;">
+    <button id="mcClear" class="cm-tile">Clear Slots</button>
+    <button id="mcSaveCurrent" class="cm-tile">Save Slots</button>
+    <span id="mcCounter" class="pill" aria-live="polite">— / —</span>
+  </div>
 
-          <!-- List of saved sets (tap to load) -->
-          <div id="mcList" class="cm-groupgrid" aria-live="polite" style="margin-top:12px;"></div>
+  <!-- Mini-carousel (Groups) -->
+  <div id="mgViewport" class="mg-viewport" aria-label="Memory Groups">
+    <div id="mgTrack" class="mg-track"></div>
+    <div id="mgDots" class="mg-dots" role="tablist" aria-label="Groups"></div>
+  </div>
 
-          <!-- Paging (optional, simple) -->
-          <div id="mcPager" class="cm-tiles" style="margin-top:8px;">
-            <button id="mcPrevPage" class="cm-tile">‹ Prev</button>
-            <span id="mcPageLabel" class="pill">Page 1</span>
-            <button id="mcNextPage" class="cm-tile">Next ›</button>
-          </div>
+  <!-- First-visit hint -->
+  <p class="cm-note" id="mgHint" style="margin-top:6px;">
+    Swipe left/right to browse groups. The focused group loads automatically.
+  </p>
+</section>
 
-          <p class="cm-note" style="margin-top:10px;">
-            Tip: Tap a set to load it into M1–M4 instantly.
-          </p>
-        </section>
 	
          
           
@@ -1211,82 +1268,256 @@ function drawTape(center){
       span.textContent = text;
     });
   }
-/* ===== Memory Center (simple groups of M1–M4) ===== */
+/* ===== Memory Center (mini-carousel with swipe-to-load) ===== */
 const MEM_GROUPS_KEY = 'calcMemGroups_v1';
-let memGroups = [];             // [{id, name, slots:[num|null x4]}]
-let mcPage = 0;
-const MC_PER_PAGE = 4;
+let memGroups = []; // [{id, name, slots:[num|null,num|null,num|null,num|null]}]
 
 function loadMemGroups(){ try{ const s = localStorage.getItem(MEM_GROUPS_KEY); if (s) memGroups = JSON.parse(s); }catch{} }
 function saveMemGroups(){ localStorage.setItem(MEM_GROUPS_KEY, JSON.stringify(memGroups)); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
-function fmtInchesShort(v){ return v==null ? '—' : formatResultInch(v).fraction.replace('″',''); }
+const slotsEqual = (a,b)=> a.length===4 && b.length===4 && a.every((v,i)=>Object.is(v,b[i]));
+const fmtShort = (v)=> v==null ? '—' : formatResultInch(v).fraction.replace('″','');
 
-function renderMemCenter(){
-  const cont = document.getElementById('mcList');
-  const lab  = document.getElementById('mcPageLabel');
-  if (!cont) return;
+let mgState = {
+  slides: [],        // [{kind:'current'|'group', name, slots, id?}]
+  index: 0,          // focused slide index
+  dragging: false,
+  startX: 0,
+  curX: 0,
+  width: 1,
+  lastLoadedIndex: null, // for idempotence
+  undoStack: null        // {slots:[...], index:int} // (reserved for future Undo)
+};
 
-  const start = mcPage * MC_PER_PAGE;
-  const pageItems = memGroups.slice(start, start + MC_PER_PAGE);
+// Build slides array: inject “Current (unsaved)” only if live doesn’t match a saved group
+function mgBuildSlides(){
+  const live = memorySlots.slice(0,4); // live M1–M4
+  const match = memGroups.find(g => slotsEqual(g.slots, live));
+  const slides = [];
 
-  cont.innerHTML = pageItems.map(g => `
-    <div class="mc-card" data-gid="${g.id}" title="Tap to load">
-      <div class="mc-title">${g.name}</div>
-      <div class="mc-slots">
-        ${g.slots.map((v,i)=>`
-          <div class="mc-slot">
-            <span class="mc-k">M${i+1}</span>
-            <span class="mc-v">${fmtInchesShort(v)}</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
+  if (!match){
+    slides.push({ kind:'current', name:'Current', slots: live });
+  }
 
-  // One-tap load into M1–M4
-  cont.querySelectorAll('.mc-card').forEach(card=>{
-    const id = card.dataset.gid;
-    card.addEventListener('click', ()=>{
-      const g = memGroups.find(x=>x.id===id);
-      if (!g) return;
-      memorySlots = g.slots.slice(0,4);
-      saveMemory();
-      refreshMemLabels();
-      showToast(`Loaded ${g.name}`);
-    });
-  });
+  for (const g of memGroups){
+    slides.push({ kind:'group', id:g.id, name:g.name, slots:g.slots });
+  }
 
-  // Paging
-  const pages = Math.max(1, Math.ceil(memGroups.length / MC_PER_PAGE));
-  if (lab) lab.textContent = `Page ${mcPage+1} / ${pages}`;
-  const prev = document.getElementById('mcPrevPage');
-  const next = document.getElementById('mcNextPage');
-  if (prev) prev.disabled = (mcPage<=0);
-  if (next) next.disabled = (mcPage>=pages-1);
+  mgState.slides = slides;
+
+  // initial index: 0 if we added Current; else the matching group’s position
+  if (!match){
+    mgState.index = 0;
+  } else {
+    const idx = slides.findIndex(s => s.kind==='group' && s.id===match.id);
+    mgState.index = Math.max(0, idx);
+  }
+  mgState.lastLoadedIndex = null; // force first commit logic
 }
 
+// Render slides + dots, sync counter, and position track
+function mgRender(){
+  const vp = document.getElementById('mgViewport');
+  const track = document.getElementById('mgTrack');
+  const dots = document.getElementById('mgDots');
+  const counter = document.getElementById('mcCounter');
+  if (!vp || !track || !dots) return;
+
+  // slides
+  track.innerHTML = mgState.slides.map((s,i) => {
+    const badge = (s.kind==='current')
+      ? `<span class="mg-subtle">(unsaved)</span>`
+      : (mgState.index===i ? `<span class="mg-subtle">(loaded)</span>` : '');
+    const rows = [0,1,2,3].map(k => `
+      <div class="mg-row">
+        <span class="mg-k">M${k+1}</span>
+        <span class="mg-v">${fmtShort(s.slots[k])}</span>
+      </div>`).join('');
+    return `
+      <section class="mg-slide" aria-label="${s.name}">
+        <div class="mg-title">${s.name} ${badge}</div>
+        <div class="mg-list">${rows}</div>
+      </section>`;
+  }).join('');
+
+  // dots
+  dots.innerHTML = mgState.slides.map((_,i)=> `<button class="mg-dot" role="tab" aria-selected="${mgState.index===i?'true':'false'}" data-idx="${i}"></button>`).join('');
+  dots.querySelectorAll('.mg-dot').forEach(btn=>{
+    btn.addEventListener('click', ()=> mgGoTo(+btn.dataset.idx, /*commit=*/true));
+  });
+
+  // counter
+  counter.textContent = `${mgState.index+1} / ${mgState.slides.length}`;
+
+  // position
+  mgSyncPosition();
+}
+
+function mgSyncPosition(){
+  const track = document.getElementById('mgTrack');
+  if (!track) return;
+  track.style.transform = `translateX(${-(mgState.index*100)}%)`;
+  // update dots selection
+  document.querySelectorAll('#mgDots .mg-dot').forEach((d,i)=> d.setAttribute('aria-selected', (i===mgState.index) ? 'true' : 'false'));
+  // update counter
+  const counter = document.getElementById('mcCounter');
+  if (counter) counter.textContent = `${mgState.index+1} / ${mgState.slides.length}`;
+}
+
+// Snap and maybe commit
+function mgGoTo(idx, commit){
+  const n = mgState.slides.length;
+  mgState.index = Math.max(0, Math.min(n-1, idx));
+  mgSyncPosition();
+  if (commit) mgCommitAutoLoad();
+}
+
+// Auto-load if focused slide is a saved group
+function mgCommitAutoLoad(){
+  const s = mgState.slides[mgState.index];
+  if (!s || s.kind!=='group') return;
+
+  // idempotence: don’t reload the same index repeatedly
+  if (mgState.lastLoadedIndex === mgState.index) return;
+
+  // push undo snapshot (reserved)
+  mgState.undoStack = { slots: memorySlots.slice(0,4), index: mgState.lastLoadedIndex };
+
+  // load
+  memorySlots = s.slots.slice(0,4);
+  saveMemory();
+  refreshMemLabels();
+
+  mgState.lastLoadedIndex = mgState.index;
+
+  // toast
+  showToast(`Loaded ${s.name}`);
+}
+
+// Pointer swipe
+function mgBindSwipe(){
+  const vp = document.getElementById('mgViewport');
+  const track = document.getElementById('mgTrack');
+  if (!vp || !track) return;
+
+  function onDown(e){
+    const p = e.touches ? e.touches[0] : e;
+    mgState.dragging = true;
+    mgState.startX = mgState.curX = p.clientX;
+    mgState.width = vp.clientWidth || 1;
+    track.classList.add('dragging');
+  }
+  function onMove(e){
+    if (!mgState.dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    mgState.curX = p.clientX;
+    const dx = mgState.curX - mgState.startX;
+    const pct = (dx / mgState.width) * 100;
+    track.style.transform = `translateX(${-(mgState.index*100 - pct)}%)`;
+  }
+  function onUp(){
+    if (!mgState.dragging) return;
+    mgState.dragging = false;
+    track.classList.remove('dragging');
+
+    const dx = mgState.curX - mgState.startX;
+    const thresholdPx = Math.max(40, mgState.width * 0.18);
+    let next = mgState.index;
+    if (dx > thresholdPx) next = mgState.index - 1;
+    else if (dx < -thresholdPx) next = mgState.index + 1;
+
+    mgGoTo(next, /*commit*/true);
+  }
+
+  // avoid double-binding
+  vp._mgBound && vp.removeEventListener('pointerdown', vp._mgBound);
+  vp.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  vp.addEventListener('touchstart', onDown, {passive:true});
+  window.addEventListener('touchmove', onMove, {passive:false});
+  window.addEventListener('touchend', onUp);
+  vp._mgBound = onDown;
+}
+
+// Index of a group slide by id
+function mgIndexOfGroup(id){
+  return mgState.slides.findIndex(s => s.kind==='group' && s.id===id);
+}
+
+// Clear current live slots (global)
 function clearMemorySlots(){
   const memCount = document.querySelectorAll('.btn.mem').length || 4;
   memorySlots = new Array(memCount).fill(null);
   saveMemory();
   refreshMemLabels();
-  document.querySelectorAll('.btn.mem').forEach(b => b.classList.remove('saved'));
   showToast('Memory cleared');
 }
 
+// Save current live slots as a new or overwriting group
 function saveCurrentAsGroup(){
-  const slots = memorySlots.slice(0,4);
-  const base = 'Set';
+  const live = memorySlots.slice(0,4);
+  // name proposal
+  const base = 'Group';
   let n = 1; const names = new Set(memGroups.map(g=>g.name));
   while (names.has(`${base} ${n}`)) n++;
-  const name = prompt('Name this set:', `${base} ${n}`) || `${base} ${n}`;
-  memGroups.unshift({ id: uid(), name: name.trim(), slots });
+  let name = prompt('Name this group:', `${base} ${n}`);
+  if (!name) name = `${base} ${n}`;
+  name = name.trim();
+
+  // overwrite?
+  const existing = memGroups.find(g => g.name.toLowerCase() === name.toLowerCase());
+  if (existing){
+    const ok = confirm(`A group named "${name}" exists. Overwrite it?`);
+    if (!ok) return;
+    existing.slots = live;
+    saveMemGroups();
+    mgBuildSlides();
+    mgRender();
+    const go = mgIndexOfGroup(existing.id);
+    if (go >= 0) { mgGoTo(go, /*commit*/true); }
+    showToast(`Saved as "${name}"`);
+    return;
+  }
+
+  // new group
+  const g = { id: uid(), name, slots: live };
+  memGroups.unshift(g);
   saveMemGroups();
-  mcPage = 0;
-  renderMemCenter();
-  showToast(`Saved ${name.trim()}`);
+
+  mgBuildSlides();
+  mgRender();
+  const go = mgIndexOfGroup(g.id);
+  if (go >= 0) { mgGoTo(go, /*commit*/true); }
+  showToast(`Saved as "${name}"`);
 }
+
+// Entry point when opening Memory Center
+function openMemoryCenterInit(){
+  loadMemGroups();
+  mgBuildSlides();
+  mgRender();
+  mgBindSwipe();
+
+  // If we started on a saved group (no Current), ensure it's loaded exactly once
+  const first = mgState.slides[mgState.index];
+  if (first && first.kind === 'group'){
+    mgCommitAutoLoad();
+  }
+}
+
+// Hook buttons
+window.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('mcClear')?.addEventListener('click', ()=>{
+    if (confirm('Clear current memory slots (M1–M4)?')) {
+      clearMemorySlots();
+      // rebuild slides so Current reflects cleared state
+      mgBuildSlides();
+      mgRender();
+    }
+  });
+  document.getElementById('mcSaveCurrent')?.addEventListener('click', saveCurrentAsGroup);
+});
 
 // Hook Memory Center buttons once DOM is ready
 window.addEventListener('DOMContentLoaded', ()=>{
