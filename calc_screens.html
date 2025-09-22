@@ -937,8 +937,7 @@
   const fractionLine = document.getElementById('fractionLine');
   const decimalLine = document.getElementById('decimalLine');
 
-  const MEMORY_KEY = 'calcMemorySlots_uniform420';
-  let memorySlots = [null,null,null,null];
+
 
   let tokens = [];                 // raw tokens for math
   let tokenDisplays = [];          // pretty display for measurement tokens
@@ -1235,33 +1234,60 @@ function drawTape(center){
   sweep.classList.remove('animate'); void sweep.offsetWidth; sweep.classList.add('animate');
 }
 
-  // ===== Memory helpers =====
-  function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
-  function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
+ /* ===== Memory (simple & sturdy) ===== */
+const MEM_KEY = 'calcMemorySlots_uniform420_v1';
+let memorySlots = [null, null, null, null];
 
-  function ensureLabelSpan(btn){
-    let span = btn.querySelector('.btn-label');
-    if (!span){
-      span = document.createElement('span');
-      span.className = 'btn-label';
-      span.textContent = btn.textContent;
-      btn.replaceChildren(span);
-    }
-    return span;
-  }
+// normalize to [number|null] x4
+function _coerceSlots(arr){
+  const a = Array.isArray(arr) ? arr.slice(0,4) : [];
+  while (a.length < 4) a.push(null);
+  return a.map(v => (typeof v === 'number' && Number.isFinite(v)) ? +v : null);
+}
 
-  function formatResultInchOnlyLabel(v){
-    return formatResultInch(v).fraction.replace('"','');
+function loadMemory(){
+  try{
+    const raw = localStorage.getItem(MEM_KEY);
+    if (!raw) { memorySlots = [null,null,null,null]; refreshMemLabels(); return; }
+    const obj = JSON.parse(raw);
+    memorySlots = _coerceSlots(obj?.slots);
+  }catch{
+    memorySlots = [null,null,null,null];
   }
+  refreshMemLabels();
+}
 
-  function refreshMemLabels(){
-    document.querySelectorAll('.btn.mem').forEach(btn=>{
-      const i=+btn.dataset.mem, v=memorySlots[i];
-      const text = v==null ? `M${i+1}` : formatResultInchOnlyLabel(v);
-      const span = ensureLabelSpan(btn);
-      span.textContent = text;
-    });
+// plain save
+function saveMemory(){
+  try{
+    localStorage.setItem(MEM_KEY, JSON.stringify({ slots: _coerceSlots(memorySlots), t: Date.now() }));
+  }catch{/* ignore quota or transient errors */}
+}
+
+// debounced save for rapid changes
+let _memTimer = null;
+function saveMemoryDebounced(){
+  clearTimeout(_memTimer);
+  _memTimer = setTimeout(saveMemory, 120);
+}
+
+// keep other tabs/windows in sync (cheap & optional)
+window.addEventListener('storage', (e) => {
+  if (e.key === MEM_KEY && e.newValue){
+    try{
+      const obj = JSON.parse(e.newValue);
+      memorySlots = _coerceSlots(obj?.slots);
+      refreshMemLabels();
+    }catch{}
   }
+});
+
+// final flush when leaving/hiding
+window.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveMemory();
+});
+window.addEventListener('beforeunload', saveMemory);
+
 /* ===== Memory Center (mini-carousel with swipe-to-load) ===== */
 const MEM_GROUPS_KEY = 'calcMemGroups_v1';
 let memGroups = []; // [{id, name, slots:[num|null,num|null,num|null,num|null]}]
@@ -1379,8 +1405,9 @@ function mgCommitAutoLoad(){
 
   // load
   memorySlots = s.slots.slice(0,4);
-  saveMemory();
+  saveMemoryDebounced();
   refreshMemLabels();
+
 
   mgState.lastLoadedIndex = mgState.index;
 
@@ -1443,10 +1470,11 @@ function mgIndexOfGroup(id){
 function clearMemorySlots(){
   const memCount = document.querySelectorAll('.btn.mem').length || 4;
   memorySlots = new Array(memCount).fill(null);
-  saveMemory();
+  saveMemoryDebounced();
   refreshMemLabels();
   showToast('Memory cleared');
 }
+
 
 // Save current live slots as a new or overwriting group
 function saveCurrentAsGroup(){
@@ -1811,15 +1839,17 @@ function storeToMem(btn){
   let valNum = (typeof base === 'number' ? base : base.toNumber())
              + (measure.active ? measureTotal() : 0);
 
-  const i = +btn.dataset.mem;
-  const confirmReplace = memorySlots[i]!=null
-    ? confirm(`M${i+1} has ${formatResultInchOnlyLabel(memorySlots[i])}. Replace?`)
-    : true;
-  if (!confirmReplace) return;
+const i = +btn.dataset.mem;
+const currentLabel = memorySlots[i] != null
+  ? formatResultInch(memorySlots[i]).fraction.replace('″','')
+  : null;
+const confirmReplace = currentLabel ? confirm(`M${i+1} has ${currentLabel}. Replace?`) : true;
+if (!confirmReplace) return;
 
-  memorySlots[i] = valNum;
-  saveMemory();
-  refreshMemLabels();
+if (!Number.isFinite(valNum)) valNum = 0;  // safety
+memorySlots[i] = valNum;
+saveMemoryDebounced();
+refreshMemLabels();
 
   // Saved flash
   btn.classList.add('saved');
