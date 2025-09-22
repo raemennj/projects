@@ -1600,7 +1600,7 @@ function doRenameLabel(el){
   // Rebuild slides so the label shows immediately and keep focus on same group
   const id = g.id;
   mgBuildSlides();
-  function saveCurrentAsGroup(){();
+  mgRender();
   const go = mgIndexOfGroup(id);
   if (go >= 0) mgGoTo(go, /*commit=*/false);
 
