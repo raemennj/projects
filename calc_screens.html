@@ -1289,12 +1289,22 @@ function mgBuildSlides(){
   const match = memGroups.find(g => slotsEqual(g.slots, live));
   const slides = [];
 
+  // “Current” (unsaved) gets default labels
   if (!match){
-    slides.push({ kind:'current', name:'Current', slots: live });
+    slides.push({
+      kind: 'current',
+      name: 'Current',
+      slots: live,
+      labels: ['M1','M2','M3','M4']
+    });
   }
 
+  // Saved groups: include labels if present; fallback to defaults
   for (const g of memGroups){
-    slides.push({ kind:'group', id:g.id, name:g.name, slots:g.slots });
+    const labels = (Array.isArray(g.labels) && g.labels.length === 4)
+      ? g.labels
+      : ['M1','M2','M3','M4'];
+    slides.push({ kind:'group', id:g.id, name:g.name, slots:g.slots, labels });
   }
 
   mgState.slides = slides;
@@ -1309,6 +1319,8 @@ function mgBuildSlides(){
   mgState.lastLoadedIndex = null; // force first commit logic
 }
 
+
+
 // Render slides + dots, sync counter, and position track
 function mgRender(){
   const vp = document.getElementById('mgViewport');
@@ -1317,16 +1329,27 @@ function mgRender(){
   const counter = document.getElementById('mcCounter');
   if (!vp || !track || !dots) return;
 
-  // slides
   track.innerHTML = mgState.slides.map((s,i) => {
     const badge = (s.kind==='current')
       ? `<span class="mg-subtle">(unsaved)</span>`
       : (mgState.index===i ? `<span class="mg-subtle">(loaded)</span>` : '');
-    const rows = [0,1,2,3].map(k => `
-      <div class="mg-row">
-        <span class="mg-k">M${k+1}</span>
-        <span class="mg-v">${fmtShort(s.slots[k])}</span>
-      </div>`).join('');
+
+    const labels = (Array.isArray(s.labels) && s.labels.length === 4)
+      ? s.labels
+      : ['M1','M2','M3','M4'];
+
+    const rows = [0,1,2,3].map(k => {
+      const label = labels[k] || `M${k+1}`;
+      return `
+        <div class="mg-row">
+          <span class="mg-k"
+                title="Long-press to rename"
+                data-slide="${i}"
+                data-slot="${k}">${label}</span>
+          <span class="mg-v">${fmtShort(s.slots[k])}</span>
+        </div>`;
+    }).join('');
+
     return `
       <section class="mg-slide" aria-label="${s.name}">
         <div class="mg-title">${s.name} ${badge}</div>
@@ -1335,7 +1358,9 @@ function mgRender(){
   }).join('');
 
   // dots
-  dots.innerHTML = mgState.slides.map((_,i)=> `<button class="mg-dot" role="tab" aria-selected="${mgState.index===i?'true':'false'}" data-idx="${i}"></button>`).join('');
+  dots.innerHTML = mgState.slides
+    .map((_,i)=> `<button class="mg-dot" role="tab" aria-selected="${mgState.index===i?'true':'false'}" data-idx="${i}"></button>`)
+    .join('');
   dots.querySelectorAll('.mg-dot').forEach(btn=>{
     btn.addEventListener('click', ()=> mgGoTo(+btn.dataset.idx, /*commit=*/true));
   });
@@ -1345,7 +1370,11 @@ function mgRender(){
 
   // position
   mgSyncPosition();
+
+  // NEW: enable long-press to rename slot labels (saved groups only)
+  bindSlotLabelRenames();
 }
+
 
 function mgSyncPosition(){
   const track = document.getElementById('mgTrack');
@@ -1459,12 +1488,15 @@ function saveCurrentAsGroup(){
   if (!name) name = `${base} ${n}`;
   name = name.trim();
 
-  // overwrite?
   const existing = memGroups.find(g => g.name.toLowerCase() === name.toLowerCase());
   if (existing){
     const ok = confirm(`A group named "${name}" exists. Overwrite it?`);
     if (!ok) return;
     existing.slots = live;
+    // keep any existing labels; otherwise create defaults
+    if (!Array.isArray(existing.labels) || existing.labels.length !== 4){
+      existing.labels = ['M1','M2','M3','M4'];
+    }
     saveMemGroups();
     mgBuildSlides();
     mgRender();
@@ -1474,8 +1506,8 @@ function saveCurrentAsGroup(){
     return;
   }
 
-  // new group
-  const g = { id: uid(), name, slots: live };
+  // new group with default labels
+  const g = { id: uid(), name, slots: live, labels: ['M1','M2','M3','M4'] };
   memGroups.unshift(g);
   saveMemGroups();
 
@@ -1485,6 +1517,7 @@ function saveCurrentAsGroup(){
   if (go >= 0) { mgGoTo(go, /*commit*/true); }
   showToast(`Saved as "${name}"`);
 }
+
 
 // Entry point when opening Memory Center
 function openMemoryCenterInit(){
@@ -1513,6 +1546,66 @@ window.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('mcSaveCurrent')?.addEventListener('click', saveCurrentAsGroup);
 });
 
+function bindSlotLabelRenames(){
+  const track = document.getElementById('mgTrack');
+  if (!track) return;
+
+  track.querySelectorAll('.mg-k').forEach(el => {
+    let timer = null;
+
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        doRenameLabel(el);
+      }, 600); // long-press threshold
+    };
+    const disarm = () => clearTimeout(timer);
+
+    // Pointer events (covers mouse & touch on modern browsers)
+    el.addEventListener('pointerdown', arm);
+    el.addEventListener('pointerup', disarm);
+    el.addEventListener('pointercancel', disarm);
+    el.addEventListener('pointerleave', disarm);
+
+    // Touch fallback for older browsers
+    el.addEventListener('touchstart', arm, { passive: true });
+    el.addEventListener('touchend', disarm);
+    el.addEventListener('touchcancel', disarm);
+  });
+}
+
+function doRenameLabel(el){
+  const slideIdx = +el.dataset.slide;
+  const slotIdx  = +el.dataset.slot;
+  const s = mgState.slides[slideIdx];
+  if (!s) return;
+
+  // Only saved groups persist labels; “Current” is a live, unsaved preview
+  if (s.kind !== 'group') { showToast('Save these slots as a group to add labels'); return; }
+
+  const g = memGroups.find(g => g.id === s.id);
+  if (!g) return;
+
+  if (!Array.isArray(g.labels) || g.labels.length !== 4){
+    g.labels = ['M1','M2','M3','M4'];
+  }
+
+  const current = g.labels[slotIdx] || `M${slotIdx+1}`;
+  const next = prompt('Label for this slot:', current);
+  if (!next) return;
+
+  g.labels[slotIdx] = next.trim().slice(0, 24); // small cap to keep UI tidy
+  saveMemGroups();
+
+  // Rebuild slides so the label shows immediately and keep focus on same group
+  const id = g.id;
+  mgBuildSlides();
+  function saveCurrentAsGroup(){();
+  const go = mgIndexOfGroup(id);
+  if (go >= 0) mgGoTo(go, /*commit=*/false);
+
+  showToast('Label updated');
+}
 
 
   // ===== Number / decimal entry =====
