@@ -796,10 +796,8 @@
         </section>
 
         <!-- Slide 3: Memory -->
-        <section class="cm-card">
-          <header class="cm-card-head">Memory Slots</header>
-		        <!-- Slide: Memory Center -->
- <section class="cm-card" id="memCenter">
+ <!-- Slide 3: Memory (Memory Center) -->
+<section class="cm-card" id="memCenter">
   <header class="cm-card-head">Memory Center</header>
   <p class="cm-card-sub">Swipe to switch groups — focused group loads automatically.</p>
 
@@ -822,10 +820,6 @@
   </p>
 </section>
 
-	
-         
-          
-        </section>
 
         <!-- Slide 4: What’s New / Info -->
         <section class="cm-card">
@@ -1519,19 +1513,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('mcSaveCurrent')?.addEventListener('click', saveCurrentAsGroup);
 });
 
-// Hook Memory Center buttons once DOM is ready
-window.addEventListener('DOMContentLoaded', ()=>{
-  loadMemGroups();
-  document.getElementById('mcClear')?.addEventListener('click', ()=>{
-    if (confirm('Clear all current memory slots (M1–M4)?')) clearMemorySlots();
-  });
-  document.getElementById('mcSaveCurrent')?.addEventListener('click', saveCurrentAsGroup);
-  document.getElementById('mcPrevPage')?.addEventListener('click', ()=>{ if (mcPage>0){ mcPage--; renderMemCenter(); } });
-  document.getElementById('mcNextPage')?.addEventListener('click', ()=>{
-    const pages = Math.max(1, Math.ceil(memGroups.length/MC_PER_PAGE));
-    if (mcPage < pages-1){ mcPage++; renderMemCenter(); }
-  });
-});
+
 
   // ===== Number / decimal entry =====
   document.querySelectorAll('.btn[data-val]').forEach(b=>b.addEventListener('click',()=>{
@@ -1919,8 +1901,9 @@ function openMemoryCenter(){
   if (window._cmOpen && window._cmGoTo && window._cmIndexOf && memEl){
     window._cmOpen();
     const i = window._cmIndexOf(memEl);
-    if (i >= 0) window._cmGoTo(i);
-    renderMemCenter();
+if (i >= 0) window._cmGoTo(i);
+openMemoryCenterInit();     // ✅ new
+
   } else {
     // Fallback: open the menu; user can swipe to the Memory Center card
     document.getElementById('menuBtn')?.click();
