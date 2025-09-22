@@ -937,8 +937,98 @@
   const fractionLine = document.getElementById('fractionLine');
   const decimalLine = document.getElementById('decimalLine');
 
-  const MEMORY_KEY = 'calcMemorySlots_uniform420';
-  let memorySlots = [null,null,null,null];
+  // ==== BEGIN REPLACEMENT: robust memory slots persistence ====
+const MEMORY_KEY = 'calcMemorySlots_uniform420_v2';
+const MEMORY_BACKUP_KEY = MEMORY_KEY + '_bak';
+let memorySlots = [null, null, null, null];
+
+// tiny checksum to verify writes
+function crc(str){
+  let h = 0; for (let i=0; i<str.length; i++){ h = (h*31 + str.charCodeAt(i)) | 0; }
+  return String(h >>> 0);
+}
+
+function atomicWriteLS(key, obj){
+  const payload = JSON.stringify(obj);
+  const meta = { payload, crc: crc(payload), ts: Date.now(), ver: 1 };
+  const tmpKey = key + '_tmp';
+  try{
+    localStorage.setItem(tmpKey, JSON.stringify(meta));
+    // verify round-trip
+    const readBack = localStorage.getItem(tmpKey);
+    if (!readBack) throw new Error('tmp write missing');
+    const parsed = JSON.parse(readBack);
+    if (!parsed || parsed.crc !== meta.crc) throw new Error('crc mismatch');
+    // commit + backup
+    localStorage.setItem(key, readBack);
+    localStorage.setItem(key + '_bak', readBack);
+    localStorage.removeItem(tmpKey);
+  }catch(e){
+    console.warn('atomicWriteLS failed', e);
+    try{ localStorage.setItem(key + '_bak', JSON.stringify(meta)); }catch(_){}
+  }
+}
+
+function safeReadLS(key){
+  function readOne(k){
+    const raw = localStorage.getItem(k);
+    if (!raw) return null;
+    try{
+      const meta = JSON.parse(raw);
+      if (!meta || typeof meta.payload !== 'string') return null;
+      if (meta.crc !== crc(meta.payload)) return null;
+      return JSON.parse(meta.payload);
+    }catch{ return null; }
+  }
+  return readOne(key) ?? readOne(key + '_bak');
+}
+
+// migrate from old plain-array key if present
+function migrateOldSlots(){
+  try{
+    const old = localStorage.getItem('calcMemorySlots_uniform420');
+    if (!old) return false;
+    const arr = JSON.parse(old);
+    if (!Array.isArray(arr)) return false;
+    const cleaned = arr.slice(0,4).map(v => (Number.isFinite(v) ? v : null));
+    atomicWriteLS(MEMORY_KEY, { slots: cleaned });
+    return true;
+  }catch{ return false; }
+}
+
+function loadMemory(){
+  const data = safeReadLS(MEMORY_KEY);
+  if (!data){
+    migrateOldSlots();
+  }
+  const d2 = safeReadLS(MEMORY_KEY);
+  if (d2 && Array.isArray(d2.slots)){
+    memorySlots = d2.slots.slice(0,4).map(v => (Number.isFinite(v) ? v : null));
+  } else {
+    memorySlots = [null,null,null,null];
+    atomicWriteLS(MEMORY_KEY, { slots: memorySlots });
+  }
+  refreshMemLabels();
+}
+
+function saveMemory(){
+  const cleaned = memorySlots.slice(0,4).map(v => (Number.isFinite(v) ? v : (v==null ? null : Number(v))));
+  atomicWriteLS(MEMORY_KEY, { slots: cleaned });
+  memorySlots = cleaned;
+}
+
+// keep other tabs/windows/PWA views in sync
+window.addEventListener('storage', (e) => {
+  if (e.key === MEMORY_KEY || e.key === MEMORY_BACKUP_KEY){
+    const data = safeReadLS(MEMORY_KEY);
+    if (data && Array.isArray(data.slots)){
+      memorySlots = data.slots.slice(0,4);
+      refreshMemLabels();
+    }
+  }
+});
+// ==== END REPLACEMENT ====
+
 
   let tokens = [];                 // raw tokens for math
   let tokenDisplays = [];          // pretty display for measurement tokens
@@ -1236,8 +1326,7 @@ function drawTape(center){
 }
 
   // ===== Memory helpers =====
-  function loadMemory(){ try{ const s=localStorage.getItem(MEMORY_KEY); if (s) memorySlots = JSON.parse(s);}catch{} refreshMemLabels(); }
-  function saveMemory(){ localStorage.setItem(MEMORY_KEY, JSON.stringify(memorySlots)); }
+  
 
   function ensureLabelSpan(btn){
     let span = btn.querySelector('.btn-label');
