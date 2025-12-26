@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Step 10 PDF.js Smoke Test</title>
+  <style>
+    :root { --hdr: 56px; --pad: 12px; }
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      height: var(--hdr);
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 var(--pad);
+      background: #111; color: #fff;
+      /* iPhone notch support */
+      padding-top: env(safe-area-inset-top);
+    }
+    header .btn {
+      appearance: none; border: 0; border-radius: 10px;
+      padding: 10px 12px; background: #2a2a2a; color: #fff;
+      font-weight: 600;
+    }
+    header .title { font-weight: 700; opacity: .95; }
+    header .meta { margin-left: auto; font-size: 12px; opacity: .8; }
+
+    #status { padding: 10px var(--pad); font-size: 13px; background: #f5f5f5; border-bottom: 1px solid #e5e5e5; }
+    #controls { padding: 10px var(--pad); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #eee; }
+    #controls button {
+      appearance: none; border: 1px solid #ddd; background: #fff; border-radius: 10px;
+      padding: 10px 12px; font-weight: 700;
+    }
+
+    #viewport {
+      height: calc(100vh - var(--hdr) - 44px - 52px);
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      background: #fafafa;
+      padding: 14px var(--pad) 40px;
+    }
+
+    .pageWrap { margin: 0 auto 14px; width: fit-content; }
+    canvas { display: block; background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.10); }
+    .pageLabel { font-size: 12px; opacity: .6; margin: 6px 8px 0; }
+
+    .err { color: #b00020; font-weight: 700; }
+    code { background: #eee; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="btn" id="backBtn">Back</button>
+    <div class="title">Step 10 (PDF.js test)</div>
+    <div class="meta" id="meta">—</div>
+  </header>
+
+  <div id="status">Loading…</div>
+
+  <div id="controls">
+    <button id="render2">Render first 2 pages</button>
+    <button id="renderAll">Render all pages</button>
+    <button id="clear">Clear</button>
+  </div>
+
+  <main id="viewport" aria-label="PDF viewer scroll area"></main>
+
+  <script type="module">
+    // Step Ten PDF on AA Netherlands (direct PDF):
+    const PDF_URL = "https://aa-netherlands.org/wp-content/uploads/2020/03/en_step10.pdf";
+
+    // PDF.js ES module (hosted by Mozilla)
+    import * as pdfjsLib from "https://mozilla.github.io/pdf.js/build/pdf.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://mozilla.github.io/pdf.js/build/pdf.worker.mjs";
+
+    const $status = document.getElementById("status");
+    const $meta = document.getElementById("meta");
+    const $viewport = document.getElementById("viewport");
+
+    document.getElementById("backBtn").addEventListener("click", () => history.back());
+
+    document.getElementById("clear").addEventListener("click", () => {
+      $viewport.innerHTML = "";
+      $status.textContent = "Cleared.";
+    });
+
+    let pdf = null;
+
+    function setStatus(msg, isError = false) {
+      $status.innerHTML = isError ? `<span class="err">${msg}</span>` : msg;
+    }
+
+    function currentScaleForPage(page, baseViewportWidth) {
+      const wrapWidth = Math.min($viewport.clientWidth - 24, 900); // cap for desktop
+      return Math.max(0.5, wrapWidth / baseViewportWidth);
+    }
+
+    async function loadPdf() {
+      setStatus("Fetching PDF…");
+      try {
+        // If the remote host doesn't allow cross-origin reads, this will fail (CORS).
+        const loadingTask = pdfjsLib.getDocument({ url: PDF_URL });
+        pdf = await loadingTask.promise;
+        $meta.textContent = `${pdf.numPages} pages`;
+        setStatus(`Loaded PDF OK. Ready to render.`);
+      } catch (e) {
+        console.error(e);
+        setStatus(
+          `Failed to load PDF. This is usually a CORS block from the PDF host, which means your app can't fetch the PDF bytes cross-origin. ` +
+          `Open DevTools console for the exact error.`,
+          true
+        );
+        $meta.textContent = "—";
+        pdf = null;
+      }
+    }
+
+    async function renderPage(pageNumber) {
+      const page = await pdf.getPage(pageNumber);
+
+      // Measure at scale=1 to compute a "fit width" scale.
+      const vp1 = page.getViewport({ scale: 1 });
+      const scale = currentScaleForPage(page, vp1.width);
+      const viewport = page.getViewport({ scale });
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { alpha: false });
+
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+
+      const wrap = document.createElement("div");
+      wrap.className = "pageWrap";
+      wrap.appendChild(canvas);
+
+      const label = document.createElement("div");
+      label.className = "pageLabel";
+      label.textContent = `Page ${pageNumber}`;
+      wrap.appendChild(label);
+
+      $viewport.appendChild(wrap);
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    }
+
+    async function renderFirstTwo() {
+      if (!pdf) return;
+      $viewport.innerHTML = "";
+      setStatus("Rendering first 2 pages…");
+      await renderPage(1);
+      if (pdf.numPages >= 2) await renderPage(2);
+      setStatus("Rendered first 2 pages.");
+    }
+
+    async function renderAll() {
+      if (!pdf) return;
+      $viewport.innerHTML = "";
+      setStatus("Rendering all pages… (this may take a bit)");
+      for (let i = 1; i <= pdf.numPages; i++) {
+        await renderPage(i);
+        // keep UI responsive
+        await new Promise(r => setTimeout(r, 0));
+      }
+      setStatus("Rendered all pages.");
+    }
+
+    document.getElementById("render2").addEventListener("click", renderFirstTwo);
+    document.getElementById("renderAll").addEventListener("click", renderAll);
+
+    await loadPdf();
+  </script>
+</body>
+</html>
