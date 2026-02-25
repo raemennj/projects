@@ -2,564 +2,381 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Responsive Web Colors Grid</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Named Web Colors — Prism Gallery</title>
   <style>
-    /* General Styles */
+    :root {
+      --bg: #07080f;
+      --bg-soft: #0f1220;
+      --panel: rgba(13, 18, 35, 0.7);
+      --ink: #f3f7ff;
+      --ink-soft: #c5cee8;
+      --accent: #8bd3ff;
+      --border: rgba(157, 183, 255, 0.25);
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      padding: 20px;
-      transition: background-color 0.3s, color 0.3s;
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 20%, #30165f 0%, transparent 45%),
+        radial-gradient(circle at 80% 0%, #004f8f 0%, transparent 40%),
+        radial-gradient(circle at 50% 100%, #492c0d 0%, transparent 35%),
+        var(--bg);
+      min-height: 100vh;
+      padding: clamp(1rem, 2vw, 2rem);
+    }
+
+    .shell {
+      max-width: 1400px;
+      margin: 0 auto;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: clamp(1rem, 2vw, 2rem);
     }
 
     h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       text-align: center;
-      margin-bottom: 20px;
-      transition: color 0.3s;
     }
 
-    /* Controls Section */
+    .subtitle {
+      margin: 0.45rem auto 1.4rem;
+      text-align: center;
+      color: var(--ink-soft);
+      max-width: 70ch;
+    }
+
     .controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .controls button,
-    .controls input[type="text"] {
-      padding: 10px 20px;
-      font-size: 1em;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    /* Dark Mode Toggle Button */
-    #dark-mode-toggle {
-      background-color: #333;
-      color: #fff;
-    }
-
-    #dark-mode-toggle:hover,
-    #dark-mode-toggle:focus {
-      background-color: #555;
-      outline: none;
-    }
-
-    /* Sort Toggle Button */
-    #sort-toggle {
-      background-color: #333;
-      color: #fff;
-    }
-
-    #sort-toggle:hover,
-    #sort-toggle:focus {
-      background-color: #555;
-      outline: none;
-    }
-
-    /* Search Bar */
-    #search-bar {
-      padding: 10px 20px;
-      font-size: 1em;
-      border: 2px solid #333;
-      border-radius: 5px;
-      transition: border-color 0.3s;
-    }
-
-    #search-bar:focus {
-      border-color: #555;
-      outline: none;
-    }
-
-    /* Grid Container */
-    .grid-container {
       display: grid;
-      gap: 10px;
-      /* Default to 1 column */
-      grid-template-columns: repeat(1, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.2rem;
     }
 
-    /* Responsive Grid Columns */
-    @media (min-width: 576px) {
-      .grid-container {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    .controls > * {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      min-height: 46px;
+      font: inherit;
+      color: var(--ink);
+      background: var(--panel);
+      padding: 0.7rem 0.9rem;
     }
 
-    @media (min-width: 768px) {
-      .grid-container {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media (min-width: 992px) {
-      .grid-container {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    @media (min-width: 1200px) {
-      .grid-container {
-        grid-template-columns: repeat(5, 1fr);
-      }
-    }
-
-    /* Color Cell Styles */
-    .color-cell {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      text-transform: capitalize;
-      font-weight: bold;
+    button,
+    select {
       cursor: pointer;
-      transition: transform 0.2s, height 0.2s, box-shadow 0.2s, font-size 0.2s;
-      font-size: 1em;
+    }
+
+    button:hover,
+    select:hover,
+    input:hover,
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      border-color: var(--accent);
       outline: none;
+      box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.2);
     }
 
-    .color-cell:hover,
-    .color-cell:focus {
-      transform: scale(1.05);
-      height: 110px; /* Slightly increase height on hover/focus */
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Tooltip Styles */
-    .tooltip {
-      visibility: hidden;
-      width: max-content;
-      background-color: rgba(0, 0, 0, 0.75);
-      color: #fff;
+    #status {
+      margin: 0.4rem 0 1rem;
+      color: var(--ink-soft);
+      font-size: 0.95rem;
       text-align: center;
-      border-radius: 5px;
-      padding: 5px 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .swatch {
+      position: relative;
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 16px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 14px 24px rgba(0, 0, 0, 0.3);
+      transform: translateY(0) scale(1);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .swatch::before {
+      content: "";
       position: absolute;
-      z-index: 1;
-      bottom: 120%;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02) 45%, rgba(0, 0, 0, 0.18));
+      opacity: 0.9;
+      z-index: 0;
+    }
+
+    .swatch:hover,
+    .swatch:focus-visible,
+    .swatch.active {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 20px 30px rgba(0, 0, 0, 0.42);
+      z-index: 2;
+    }
+
+    .tip {
+      position: absolute;
       left: 50%;
-      transform: translateX(-50%);
+      bottom: 8px;
+      transform: translateX(-50%) translateY(8px);
+      width: max-content;
+      max-width: calc(100% - 12px);
+      border-radius: 10px;
+      padding: 0.4rem 0.5rem;
+      text-align: center;
+      font-size: 0.76rem;
+      font-weight: 600;
+      line-height: 1.25;
       opacity: 0;
-      transition: opacity 0.3s;
-      white-space: nowrap;
-      font-size: 0.9em;
+      transition: opacity 160ms ease, transform 160ms ease;
+      pointer-events: none;
+      z-index: 1;
+      background: rgba(8, 12, 26, 0.88);
+      color: #ffffff;
+      text-wrap: balance;
     }
 
-    .color-cell:hover .tooltip,
-    .color-cell:focus .tooltip {
-      visibility: visible;
+    .swatch:hover .tip,
+    .swatch:focus-visible .tip,
+    .swatch.active .tip {
       opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
-    /* Confirmation Message */
-    #confirmation {
+    .name {
+      display: block;
+      text-transform: capitalize;
+      letter-spacing: 0.03em;
+      margin-bottom: 2px;
+    }
+
+    .meta {
+      display: block;
+      font-size: 0.68rem;
+      opacity: 0.92;
+    }
+
+    #toast {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: #4caf50;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 5px;
+      top: 16px;
+      right: 16px;
+      background: rgba(18, 28, 56, 0.95);
+      color: #dff1ff;
+      border: 1px solid rgba(143, 214, 255, 0.55);
+      border-radius: 12px;
+      padding: 0.7rem 0.9rem;
       opacity: 0;
-      transition: opacity 0.5s;
-      z-index: 1000;
+      transform: translateY(-8px);
+      transition: opacity 180ms ease, transform 180ms ease;
+      pointer-events: none;
     }
 
-    #confirmation.show {
+    #toast.show {
       opacity: 1;
+      transform: translateY(0);
     }
 
-    /* Dark Mode Styles */
-    body.dark-mode {
-      background-color: #121212;
-      color: #ffffff;
-    }
-
-    body.dark-mode h1 {
-      color: #ffffff;
-    }
-
-    body.dark-mode .controls button,
-    body.dark-mode #search-bar {
-      background-color: #ccc;
-      color: #000;
-    }
-
-    body.dark-mode .controls button:hover,
-    body.dark-mode .controls button:focus {
-      background-color: #aaa;
-    }
-
-    body.dark-mode #search-bar {
-      border-color: #ccc;
-    }
-
-    body.dark-mode #search-bar:focus {
-      border-color: #aaa;
-    }
-
-    body.dark-mode .color-cell {
-      box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
-    }
-
-    body.dark-mode .color-cell:hover,
-    body.dark-mode .color-cell:focus {
-      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
-    }
-
-    body.dark-mode .tooltip {
-      background-color: rgba(255, 255, 255, 0.9);
-      color: #000;
-    }
-
-    /* Flexible Text Size */
-    @media (min-width: 576px) {
-      .color-cell {
-        font-size: 1.1em;
+    @media (max-width: 620px) {
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+        gap: 0.6rem;
       }
-    }
-
-    @media (min-width: 768px) {
-      .color-cell {
-        font-size: 1.2em;
-      }
-    }
-
-    @media (min-width: 992px) {
-      .color-cell {
-        font-size: 1.3em;
-      }
-    }
-
-    @media (min-width: 1200px) {
-      .color-cell {
-        font-size: 1.4em;
-      }
-    }
-
-    /* Focus Styles for Accessibility */
-    .color-cell:focus, .controls button:focus, #search-bar:focus {
-      outline: 2px solid #000;
-      outline-offset: 2px;
-    }
-
-    body.dark-mode .color-cell:focus, 
-    body.dark-mode .controls button:focus, 
-    body.dark-mode #search-bar:focus {
-      outline: 2px solid #fff;
     }
   </style>
 </head>
 <body>
-  <h1>r a e m e n n - Web Colors</h1>
-  
-  <div class="controls">
-    <button id="dark-mode-toggle" aria-pressed="false">Dark Mode</button>
-    <button id="sort-toggle" aria-pressed="true">Sort</button>
-    <input type="text" id="search-bar" placeholder="Search colors..." aria-label="Search colors by name">
-  </div>
-  
-  <div id="color-grid" class="grid-container" aria-label="Web Colors Grid"></div>
+  <main class="shell">
+    <h1>Named Web Colors</h1>
+    <p class="subtitle">A prism gallery of CSS named colors. Hover for tooltip on desktop, tap for tap-tip on touch devices. Tap/click any swatch to copy its HEX value.</p>
 
-  <!-- Confirmation Message -->
-  <div id="confirmation" role="alert" aria-live="assertive">Copied to clipboard!</div>
+    <section class="controls" aria-label="Color controls">
+      <input id="search" type="search" placeholder="Search by color name..." aria-label="Search colors by name">
+      <select id="sort" aria-label="Sort colors">
+        <option value="alpha">Sort: Alphabetical</option>
+        <option value="hue">Sort: Hue spectrum</option>
+      </select>
+      <button id="theme" type="button" aria-pressed="false">Use Light Backdrop</button>
+    </section>
+
+    <p id="status" aria-live="polite"></p>
+    <section id="grid" class="grid" aria-label="Named web color swatches"></section>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // JavaScript Code
-
-    // List of standard CSS color names
     const colorNames = [
-      "aliceblue", "antiquewhite", "aqua", "aquamarine", "azure",
-      "beige", "bisque", "black", "blanchedalmond", "blue",
-      "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse",
-      "chocolate", "coral", "cornflowerblue", "cornsilk", "crimson",
-      "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray",
-      "darkgreen", "darkgrey", "darkkhaki", "darkmagenta", "darkolivegreen",
-      "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen",
-      "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise",
-      "darkviolet", "deeppink", "deepskyblue", "dimgray", "dimgrey",
-      "dodgerblue", "firebrick", "floralwhite", "forestgreen", "fuchsia",
-      "gainsboro", "ghostwhite", "gold", "goldenrod", "gray",
-      "green", "greenyellow", "grey", "honeydew", "hotpink",
-      "indianred", "indigo", "ivory", "khaki", "lavender",
-      "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral",
-      "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey",
-      "lightpink", "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray",
-      "lightslategrey", "lightsteelblue", "lightyellow", "lime", "limegreen",
-      "linen", "magenta", "maroon", "mediumaquamarine", "mediumblue",
-      "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen",
-      "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose",
-      "moccasin", "navajowhite", "navy", "oldlace", "olive",
-      "olivedrab", "orange", "orangered", "orchid", "palegoldenrod",
-      "palegreen", "paleturquoise", "palevioletred", "papayawhip", "peachpuff",
-      "peru", "pink", "plum", "powderblue", "purple",
-      "rebeccapurple", "red", "rosybrown", "royalblue", "saddlebrown",
-      "salmon", "sandybrown", "seagreen", "seashell", "sienna",
-      "silver", "skyblue", "slateblue", "slategray", "slategrey",
-      "snow", "springgreen", "steelblue", "tan", "teal",
-      "thistle", "tomato", "turquoise", "violet", "wheat",
+      "aliceblue", "antiquewhite", "aqua", "aquamarine", "azure", "beige", "bisque", "black", "blanchedalmond",
+      "blue", "blueviolet", "brown", "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue",
+      "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen", "darkgrey",
+      "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen",
+      "darkslateblue", "darkslategray", "darkslategrey", "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray",
+      "dimgrey", "dodgerblue", "firebrick", "floralwhite", "forestgreen", "fuchsia", "gainsboro", "ghostwhite", "gold",
+      "goldenrod", "gray", "green", "greenyellow", "grey", "honeydew", "hotpink", "indianred", "indigo", "ivory",
+      "khaki", "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral", "lightcyan",
+      "lightgoldenrodyellow", "lightgray", "lightgreen", "lightgrey", "lightpink", "lightsalmon", "lightseagreen", "lightskyblue",
+      "lightslategray", "lightslategrey", "lightsteelblue", "lightyellow", "lime", "limegreen", "linen", "magenta", "maroon",
+      "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen",
+      "mediumturquoise", "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin", "navajowhite", "navy", "oldlace",
+      "olive", "olivedrab", "orange", "orangered", "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred",
+      "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue", "purple", "rebeccapurple", "red", "rosybrown", "royalblue",
+      "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna", "silver", "skyblue", "slateblue", "slategray",
+      "slategrey", "snow", "springgreen", "steelblue", "tan", "teal", "thistle", "tomato", "turquoise", "violet", "wheat",
       "white", "whitesmoke", "yellow", "yellowgreen"
     ];
 
-    // Helper function to convert RGB to HSL
-    function rgbToHsl(r, g, b) {
-      r /= 255; g /= 255; b /= 255;
-      
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      let h, s, l;
-      
-      l = (max + min) / 2;
-      
-      if(max === min){
-          h = s = 0; // achromatic
-      } else {
-          const d = max - min;
-          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-          
-          switch(max){
-              case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-              case g: h = (b - r) / d + 2; break;
-              case b: h = (r - g) / d + 4; break;
-          }
-          
-          h /= 6;
-      }
-      
-      return [h * 360, s, l];
-    }
+    const state = {
+      filter: "",
+      sort: localStorage.getItem("webcolors.sort") || "alpha",
+      lightMode: localStorage.getItem("webcolors.light") === "true"
+    };
 
-    // Helper function to convert RGB to HEX
-    function rgbToHex(r, g, b) {
-      return "#" + [r, g, b].map(x => {
-        const hex = x.toString(16);
-        return hex.length === 1 ? "0" + hex : hex;
-      }).join('');
-    }
+    const search = document.getElementById("search");
+    const sort = document.getElementById("sort");
+    const grid = document.getElementById("grid");
+    const status = document.getElementById("status");
+    const toast = document.getElementById("toast");
+    const theme = document.getElementById("theme");
 
-    // Function to determine contrasting text color (black or white)
-    function getContrastingTextColor(bgColor) {
-      // Create a temporary element to get the computed color
-      const tempElem = document.createElement("div");
-      tempElem.style.color = bgColor;
-      document.body.appendChild(tempElem);
+    const parseColor = (name) => {
+      const probe = document.createElement("span");
+      probe.style.color = name;
+      document.body.append(probe);
+      const rgb = getComputedStyle(probe).color.match(/\d+/g).map(Number);
+      probe.remove();
 
-      // Get the computed RGB color
-      const computedColor = window.getComputedStyle(tempElem).color;
-      document.body.removeChild(tempElem);
-
-      // Extract RGB components
-      const rgb = computedColor.match(/\d+/g).map(Number);
       const [r, g, b] = rgb;
+      const hex = `#${[r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`;
+      return { r, g, b, hex };
+    };
 
-      // Calculate luminance
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    const rgbToHue = ({ r, g, b }) => {
+      const rn = r / 255;
+      const gn = g / 255;
+      const bn = b / 255;
+      const max = Math.max(rn, gn, bn);
+      const min = Math.min(rn, gn, bn);
+      const delta = max - min;
+      if (!delta) return 0;
+      let hue = 0;
+      if (max === rn) hue = ((gn - bn) / delta) % 6;
+      else if (max === gn) hue = (bn - rn) / delta + 2;
+      else hue = (rn - gn) / delta + 4;
+      return Math.round(hue * 60 < 0 ? hue * 60 + 360 : hue * 60);
+    };
 
-      // Return black for light backgrounds and white for dark backgrounds
-      return luminance > 0.5 ? "black" : "white";
-    }
-
-    // Create an array of color objects with hue, RGB, and HEX
-    const colorData = colorNames.map(color => {
-      // Create a temporary element to compute RGB
-      const tempElem = document.createElement("div");
-      tempElem.style.color = color;
-      document.body.appendChild(tempElem);
-      
-      const computedColor = window.getComputedStyle(tempElem).color;
-      document.body.removeChild(tempElem);
-      
-      // Extract RGB components
-      const rgb = computedColor.match(/\d+/g).map(Number);
-      const [r, g, b] = rgb;
-      
-      // Convert to HSL and get hue
-      const [h, s, l] = rgbToHsl(r, g, b);
-      
-      // Convert RGB to HEX
-      const hex = rgbToHex(r, g, b);
-      
-      return { name: color, hue: h, rgb: `rgb(${r}, ${g}, ${b})`, hex: hex };
+    const colorData = colorNames.map((name) => {
+      const { r, g, b, hex } = parseColor(name);
+      return {
+        name,
+        hex,
+        rgb: `rgb(${r}, ${g}, ${b})`,
+        hue: rgbToHue({ r, g, b })
+      };
     });
 
-    // Sorting functions
-    function sortAlphabetically(a, b) {
-      return a.name.localeCompare(b.name);
-    }
+    const showToast = (message) => {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1400);
+    };
 
-    function sortByHue(a, b) {
-      if (a.hue === b.hue) {
-        return a.name.localeCompare(b.name);
+    const sortColors = (colors) => {
+      const copy = [...colors];
+      if (state.sort === "hue") {
+        copy.sort((a, b) => a.hue - b.hue || a.name.localeCompare(b.name));
+      } else {
+        copy.sort((a, b) => a.name.localeCompare(b.name));
       }
-      return a.hue - b.hue;
-    }
+      return copy;
+    };
 
-    // Function to render the color grid
-    function renderGrid(sortedColors, filterText = '') {
-      // Clear existing grid
-      gridContainer.innerHTML = '';
-      
-      // Create a document fragment for better performance
-      const fragment = document.createDocumentFragment();
+    const render = () => {
+      const filtered = colorData.filter((c) => c.name.includes(state.filter.toLowerCase()));
+      const sorted = sortColors(filtered);
+      grid.innerHTML = "";
 
-      // Filter colors based on search input
-      const filteredColors = sortedColors.filter(colorObj => 
-        colorObj.name.toLowerCase().includes(filterText.toLowerCase())
-      );
+      sorted.forEach((color) => {
+        const swatch = document.createElement("button");
+        swatch.type = "button";
+        swatch.className = "swatch";
+        swatch.style.background = color.name;
+        swatch.setAttribute("aria-label", `${color.name}, ${color.hex}, ${color.rgb}`);
 
-      // Populate the grid with filtered and sorted colors
-      filteredColors.forEach(colorObj => {
-        const cell = document.createElement("div");
-        cell.className = "color-cell";
-        cell.style.backgroundColor = colorObj.name;
+        const tip = document.createElement("span");
+        tip.className = "tip";
+        tip.innerHTML = `<span class="name">${color.name}</span><span class="meta">${color.hex} • ${color.rgb}</span>`;
+        swatch.append(tip);
 
-        const textColor = getContrastingTextColor(colorObj.name);
-        cell.style.color = textColor;
-        cell.textContent = colorObj.name;
-
-        // Create tooltip element
-        const tooltip = document.createElement("span");
-        tooltip.className = "tooltip";
-        tooltip.textContent = `${colorObj.hex} | ${colorObj.rgb}`;
-        cell.appendChild(tooltip);
-
-        // Add ARIA attributes for accessibility
-        cell.setAttribute("role", "button");
-        cell.setAttribute("aria-label", `${colorObj.name}, background color, HEX ${colorObj.hex}, RGB ${colorObj.rgb}`);
-        cell.setAttribute("tabindex", "0"); // Make focusable
-
-        // Event listener for copying to clipboard
-        cell.addEventListener("click", () => {
-          copyToClipboard(colorObj.hex);
+        swatch.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(color.hex);
+            showToast(`Copied ${color.hex}`);
+          } catch {
+            showToast(`Color: ${color.name} (${color.hex})`);
+          }
+          swatch.classList.add("active");
+          clearTimeout(swatch.tipTimer);
+          swatch.tipTimer = setTimeout(() => swatch.classList.remove("active"), 1100);
         });
 
-        // Event listener for keyboard activation
-        cell.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            copyToClipboard(colorObj.hex);
-          }
-        });
-
-        fragment.appendChild(cell);
+        grid.append(swatch);
       });
 
-      gridContainer.appendChild(fragment);
-    }
+      status.textContent = `Showing ${sorted.length} of ${colorData.length} named colors.`;
+    };
 
-    // Function to copy text to clipboard and show confirmation
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        showConfirmation(`Copied ${text} to clipboard!`);
-      }).catch(err => {
-        showConfirmation('Failed to copy!', true);
-      });
-    }
-
-    // Function to show confirmation message
-    function showConfirmation(message, isError = false) {
-      confirmation.textContent = message;
-      confirmation.style.backgroundColor = isError ? '#f44336' : '#4caf50';
-      confirmation.classList.add('show');
-      setTimeout(() => {
-        confirmation.classList.remove('show');
-      }, 2000);
-    }
-
-    // Initialize state from localStorage
-    let isDarkMode = localStorage.getItem("darkMode") === "true" || false;
-    let isAlphabetical = localStorage.getItem("sortMode") !== "hue";
-    let currentFilter = localStorage.getItem("filterText") || '';
-
-    // Elements
-    const gridContainer = document.getElementById("color-grid");
-    const sortToggle = document.getElementById("sort-toggle");
-    const darkModeToggle = document.getElementById("dark-mode-toggle");
-    const searchBar = document.getElementById("search-bar");
-    const confirmation = document.getElementById("confirmation");
-
-    // Apply initial dark mode state
-    if (isDarkMode) {
-      document.body.classList.add("dark-mode");
-      darkModeToggle.setAttribute("aria-pressed", "true");
-    }
-
-    // Apply initial sort and filter state
-    function applyInitialSortAndFilter() {
-      if (isAlphabetical) {
-        sortToggle.textContent = "Sort";
-        sortToggle.setAttribute("aria-pressed", "true");
-        renderGrid(colorData.slice().sort(sortAlphabetically), currentFilter);
-      } else {
-        sortToggle.textContent = "Sort";
-        sortToggle.setAttribute("aria-pressed", "false");
-        renderGrid(colorData.slice().sort(sortByHue), currentFilter);
-      }
-    }
-
-    // Set initial search bar value
-    searchBar.value = currentFilter;
-
-    applyInitialSortAndFilter();
-
-    // Handle sort toggle button
-    sortToggle.addEventListener("click", () => {
-      isAlphabetical = !isAlphabetical;
-      localStorage.setItem("sortMode", isAlphabetical ? "alphabetical" : "hue");
-
-      if(isAlphabetical) {
-        sortToggle.textContent = "Sort";
-        sortToggle.setAttribute("aria-pressed", "true");
-        renderGrid(colorData.slice().sort(sortAlphabetically), currentFilter);
-      } else {
-        sortToggle.textContent = "Sort";
-        sortToggle.setAttribute("aria-pressed", "false");
-        renderGrid(colorData.slice().sort(sortByHue), currentFilter);
-      }
+    search.addEventListener("input", (event) => {
+      state.filter = event.target.value;
+      render();
     });
 
-    // Handle dark mode toggle button
-    darkModeToggle.addEventListener("click", () => {
-      isDarkMode = !isDarkMode;
-      localStorage.setItem("darkMode", isDarkMode);
-      document.body.classList.toggle("dark-mode", isDarkMode);
-      darkModeToggle.setAttribute("aria-pressed", isDarkMode);
+    sort.value = state.sort;
+    sort.addEventListener("change", (event) => {
+      state.sort = event.target.value;
+      localStorage.setItem("webcolors.sort", state.sort);
+      render();
     });
 
-    // Handle search input
-    searchBar.addEventListener("input", (e) => {
-      currentFilter = e.target.value;
-      localStorage.setItem("filterText", currentFilter);
-      applyInitialSortAndFilter();
+    const setThemeState = () => {
+      document.documentElement.style.setProperty("--bg", state.lightMode ? "#ecf1ff" : "#07080f");
+      document.documentElement.style.setProperty("--bg-soft", state.lightMode ? "#ffffff" : "#0f1220");
+      document.documentElement.style.setProperty("--panel", state.lightMode ? "rgba(255,255,255,0.86)" : "rgba(13,18,35,0.7)");
+      document.documentElement.style.setProperty("--ink", state.lightMode ? "#0f1530" : "#f3f7ff");
+      document.documentElement.style.setProperty("--ink-soft", state.lightMode ? "#42557f" : "#c5cee8");
+      theme.textContent = state.lightMode ? "Use Dark Backdrop" : "Use Light Backdrop";
+      theme.setAttribute("aria-pressed", String(state.lightMode));
+    };
+
+    theme.addEventListener("click", () => {
+      state.lightMode = !state.lightMode;
+      localStorage.setItem("webcolors.light", String(state.lightMode));
+      setThemeState();
     });
 
-    // Handle keyboard accessibility for sort toggle
-    sortToggle.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        sortToggle.click();
-      }
-    });
-
-    // Handle keyboard accessibility for dark mode toggle
-    darkModeToggle.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        darkModeToggle.click();
-      }
-    });
-
-    // Handle keyboard accessibility for search bar
-    searchBar.addEventListener("keydown", (e) => {
-      // No specific action needed, but ensure it can be focused
-    });
+    setThemeState();
+    render();
   </script>
 </body>
 </html>
