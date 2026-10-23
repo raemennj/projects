@@ -1,0 +1,8 @@
+name = "project-workbench-bridge"
+main = "worker.mjs"
+compatibility_date = "2026-10-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://raemennj.github.io"
+# Set PROJECT_PAGE_IDS privately alongside the secrets below.
+# If GitHub Pages uses a custom domain, set ALLOWED_ORIGIN to that exact origin.
