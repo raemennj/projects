@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101914">
+<title>One Ring — Project Command Center</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="mobile"><strong>◉ ONE RING</strong><button id="menu-toggle">Sections ☰</button></div>
+<div class="app">
+<aside id="sidebar">
+<div class="identity"><div class="ring">I</div><div><b>One Ring</b><small>PROJECT COMMAND CENTER</small></div></div>
+<div class="menuhead">WORKSPACE</div><nav id="nav"></nav>
+<div class="foot"><div id="connection-status">● Preview mode</div><b>One source of truth</b><p>Your private Google Sheet remains the master record. Your data is never bundled into this public site.</p></div>
+</aside>
+<main>
+<header><div><div id="eyebrow" class="eyebrow">THE CONTROL ROOM</div><h1 id="heading">The big picture.</h1><p id="subheading"></p></div><div class="actions"><button id="refresh" class="btn">↻ Refresh</button><button id="connect" class="btn primary">Connect Sheet ↗</button></div></header>
+<div id="banner"></div>
+<div id="view"></div>
+<footer>ONE RING · Project discovery, progress, and history · Google Sheets is the source of truth.</footer>
+</main></div>
+<div id="overlay" class="overlay hidden"><div class="drawer" role="dialog" aria-modal="true" aria-label="Project details"><button id="close" class="close" aria-label="Close">×</button><div id="detail"></div></div></div>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="./app.js"></script>
+</body></html>
